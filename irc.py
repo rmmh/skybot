@@ -1,9 +1,9 @@
-import thread, socket, asyncore, asynchat, sys, re
-import Queue
+import sys, re, thread, Queue
+import socket, asyncore, asynchat
 queue = Queue.Queue
 
 class crlf_tcp(asynchat.async_chat):
-    "Handles tcp connections that consist of lines ending with crlf"
+    "Handles tcp connections that consist of utf-8 lines ending with crlf"
     def __init__(self, host, port):
         asynchat.async_chat.__init__(self)
         self.set_terminator('\r\n')
@@ -51,8 +51,8 @@ class irc(object):
         self.conn = crlf_tcp(network, port)
         thread.start_new_thread(self.conn.run,())
         self.out = queue() #responses from the server are placed here 
-        # format: [rawline, (prefix, command, params),
-        # (nick, user, host), command, paramlist]
+        # format: [rawline, prefix, command, params,
+        # nick, user, host, paramlist, msg]
         self.nick(nick)
         self.cmd("USER", ["skybot v0.01", "0", "bot"])
         thread.start_new_thread(self.parse_loop,())
@@ -66,8 +66,11 @@ class irc(object):
                 prefix, command, params = irc_noprefix_re.match(msg).groups()
             nick, user, host = irc_netmask_re.match(prefix).groups()
             paramlist = irc_param_re.findall(params)
-            self.out.put([msg, (prefix, command, params), (nick, user, host),
-                    command, paramlist])
+            lastparam = ""
+            if paramlist and paramlist[-1].startswith(':'):
+                    lastparam = paramlist[-1][1:]
+            self.out.put([msg, prefix, command, params, nick, user, host,
+                    paramlist, lastparam])
             if command == "PING":
                 self.cmd("PONG", [params])
 
@@ -88,21 +91,3 @@ class irc(object):
 
     def send(self, str):
         self.conn.oqueue.put(str)
-        
-s = irc('irc.synirc.net', 'skybot')
-s.join("#cobol")
-
-def readlines(s):
-    for line in sys.stdin:
-        print line
-        s.msg('#cobol',line.rstrip())
-
-thread.start_new_thread(readlines, (s,))
-
-while True:
-    try:
-        print repr(s.out.get(timeout=2))
-    except Queue.Empty:
-        pass
-    except KeyboardInterrupt:
-        sys.exit()
