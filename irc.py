@@ -1,6 +1,20 @@
-import sys, re, thread, Queue
-import socket, asyncore, asynchat
+import sys
+import re
+import socket
+import thread 
+import asyncore
+import asynchat
+import Queue
+
 queue = Queue.Queue
+
+def decode(txt, codecs=['utf-8', 'iso-8859-1', 'shift_jis', 'cp1252']):
+    if len(codecs) == 0:
+        return txt.decode('utf-8', 'ignore')
+    try:
+        return txt.decode(codecs[0])
+    except UnicodeDecodeError:
+        return decode(txt, codecs[1:])
 
 class crlf_tcp(asynchat.async_chat):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
@@ -17,30 +31,28 @@ class crlf_tcp(asynchat.async_chat):
 
     def run(self):
         self.connect((self.host, self.port))
-        thread.start_new_thread(self.queue_read_loop,())
         asyncore.loop()
 
+    def handle_connect(self):
+        thread.start_new_thread(self.queue_read_loop,())
+
     def queue_read_loop(self):
-        #this is an attempt at making this thread-safe
-        #at least with this, only TWO things could be modifying the output
-        #buffer at the same time
         while True:
             line = self.oqueue.get()
-            print ">>> %r" % line
-            self.push(line.encode('utf-8')+'\r\n')
+            print ">>> %r" % line   
+            self.push(line.encode('utf-8','replace')+'\r\n')
 
     def collect_incoming_data(self, data):
         self.buffer += data
     
     def found_terminator(self):
         line = self.buffer
-        # print repr(line)
-        self.iqueue.put(line.encode('utf-8'))
+        self.iqueue.put(decode(line))
         self.buffer = ''
 
 irc_prefix_re = re.compile(r'(.*?) (.*?) (.*)')
 irc_noprefix_re = re.compile(r'()(.*?) (.*)')
-irc_param_re = re.compile(r'(?:^|(?<= ))(:.*|[^ ]*)')
+irc_param_re = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)')
 irc_netmask_re = re.compile(r':?([^!@]*)!?([^@]*)@?(.*)')
 
 class irc(object):

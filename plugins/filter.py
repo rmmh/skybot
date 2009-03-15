@@ -1,13 +1,12 @@
 import re
 
-def setup(bot):
-    bot.filter("default_filters", filter_suite)
-
+#filter
 def filter_suite(bot, func, args, input):
     args.setdefault('events', ['PRIVMSG'])
 
     if input.command not in args['events']:
-        return False
+        if args['events'] != '*':
+            return None
 
     args.setdefault('hook', r'(.*)')
     args.setdefault('prefix', True)
@@ -16,9 +15,10 @@ def filter_suite(bot, func, args, input):
     if args['prefix']:
         hook = bot.commandprefix + args['hook']
 
-    m = re.match(hook, input.msg)
-    if not m:
-        return False
-    
-    input.re = m
+    input.re = re.match(hook, input.msg)
+    if input.re is None:
+        return None
+
+    input.inp = ' '.join(input.re.groups())
+
     return input
