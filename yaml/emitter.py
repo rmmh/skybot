@@ -11,8 +11,6 @@ __all__ = ['Emitter', 'EmitterError']
 from error import YAMLError
 from events import *
 
-import re
-
 class EmitterError(YAMLError):
     pass
 
@@ -77,6 +75,9 @@ class Emitter(object):
         self.column = 0
         self.whitespace = True
         self.indention = True
+
+        # Whether the document requires an explicit document indicator
+        self.open_ended = False
 
         # Formatting details.
         self.canonical = canonical
@@ -153,7 +154,7 @@ class Emitter(object):
 
     def expect_stream_start(self):
         if isinstance(self.event, StreamStartEvent):
-            if self.event.encoding:
+            if self.event.encoding and not getattr(self.stream, 'encoding', None):
                 self.encoding = self.event.encoding
             self.write_stream_start()
             self.state = self.expect_first_document_start
@@ -171,6 +172,9 @@ class Emitter(object):
 
     def expect_document_start(self, first=False):
         if isinstance(self.event, DocumentStartEvent):
+            if (self.event.version or self.event.tags) and self.open_ended:
+                self.write_indicator(u'...', True)
+                self.write_indent()
             if self.event.version:
                 version_text = self.prepare_version(self.event.version)
                 self.write_version_directive(version_text)
@@ -194,6 +198,9 @@ class Emitter(object):
                     self.write_indent()
             self.state = self.expect_document_root
         elif isinstance(self.event, StreamEndEvent):
+            if self.open_ended:
+                self.write_indicator(u'...', True)
+                self.write_indent()
             self.write_stream_end()
             self.state = self.expect_nothing
         else:
@@ -538,7 +545,7 @@ class Emitter(object):
             raise EmitterError("tag handle must start and end with '!': %r"
                     % (handle.encode('utf-8')))
         for ch in handle[1:-1]:
-            if not (u'0' <= ch <= u'9' or u'A' <= ch <= 'Z' or u'a' <= ch <= 'z'    \
+            if not (u'0' <= ch <= u'9' or u'A' <= ch <= u'Z' or u'a' <= ch <= u'z'  \
                     or ch in u'-_'):
                 raise EmitterError("invalid character %r in the tag handle: %r"
                         % (ch.encode('utf-8'), handle.encode('utf-8')))
@@ -553,7 +560,7 @@ class Emitter(object):
             end = 1
         while end < len(prefix):
             ch = prefix[end]
-            if u'0' <= ch <= u'9' or u'A' <= ch <= 'Z' or u'a' <= ch <= 'z'  \
+            if u'0' <= ch <= u'9' or u'A' <= ch <= u'Z' or u'a' <= ch <= u'z'   \
                     or ch in u'-;/?!:@&=+$,_.~*\'()[]':
                 end += 1
             else:
@@ -583,7 +590,7 @@ class Emitter(object):
         start = end = 0
         while end < len(suffix):
             ch = suffix[end]
-            if u'0' <= ch <= u'9' or u'A' <= ch <= 'Z' or u'a' <= ch <= 'z'  \
+            if u'0' <= ch <= u'9' or u'A' <= ch <= u'Z' or u'a' <= ch <= u'z'   \
                     or ch in u'-;/?:@&=+$,_.~*\'()[]'   \
                     or (ch == u'!' and handle != u'!'):
                 end += 1
@@ -606,7 +613,7 @@ class Emitter(object):
         if not anchor:
             raise EmitterError("anchor must not be empty")
         for ch in anchor:
-            if not (u'0' <= ch <= u'9' or u'A' <= ch <= 'Z' or u'a' <= ch <= 'z'    \
+            if not (u'0' <= ch <= u'9' or u'A' <= ch <= u'Z' or u'a' <= ch <= u'z'  \
                     or ch in u'-_'):
                 raise EmitterError("invalid character %r in the anchor: %r"
                         % (ch.encode('utf-8'), anchor.encode('utf-8')))
@@ -627,15 +634,13 @@ class Emitter(object):
         line_breaks = False
         special_characters = False
 
-        # Whitespaces.
-        inline_spaces = False          # non-space space+ non-space
-        inline_breaks = False          # non-space break+ non-space
-        leading_spaces = False         # ^ space+ (non-space | $)
-        leading_breaks = False         # ^ break+ (non-space | $)
-        trailing_spaces = False        # (^ | non-space) space+ $
-        trailing_breaks = False        # (^ | non-space) break+ $
-        inline_breaks_spaces = False   # non-space break+ space+ non-space
-        mixed_breaks_spaces = False    # anything else
+        # Important whitespace combinations.
+        leading_space = False
+        leading_break = False
+        trailing_space = False
+        trailing_break = False
+        break_space = False
+        space_break = False
 
         # Check document indicators.
         if scalar.startswith(u'---') or scalar.startswith(u'...'):
@@ -643,32 +648,23 @@ class Emitter(object):
             flow_indicators = True
 
         # First character or preceded by a whitespace.
-        preceeded_by_space = True
+        preceeded_by_whitespace = True
 
         # Last character or followed by a whitespace.
-        followed_by_space = (len(scalar) == 1 or
+        followed_by_whitespace = (len(scalar) == 1 or
                 scalar[1] in u'\0 \t\r\n\x85\u2028\u2029')
 
-        # The current series of whitespaces contain plain spaces.
-        spaces = False
+        # The previous character is a space.
+        previous_space = False
 
-        # The current series of whitespaces contain line breaks.
-        breaks = False
-
-        # The current series of whitespaces contain a space followed by a
-        # break.
-        mixed = False
-
-        # The current series of whitespaces start at the beginning of the
-        # scalar.
-        leading = False
+        # The previous character is a break.
+        previous_break = False
 
         index = 0
         while index < len(scalar):
             ch = scalar[index]
 
             # Check for indicators.
-
             if index == 0:
                 # Leading indicators are special characters.
                 if ch in u'#,[]{}&*!|>\'\"%@`': 
@@ -676,9 +672,9 @@ class Emitter(object):
                     block_indicators = True
                 if ch in u'?:':
                     flow_indicators = True
-                    if followed_by_space:
+                    if followed_by_whitespace:
                         block_indicators = True
-                if ch == u'-' and followed_by_space:
+                if ch == u'-' and followed_by_whitespace:
                     flow_indicators = True
                     block_indicators = True
             else:
@@ -687,14 +683,13 @@ class Emitter(object):
                     flow_indicators = True
                 if ch == u':':
                     flow_indicators = True
-                    if followed_by_space:
+                    if followed_by_whitespace:
                         block_indicators = True
-                if ch == u'#' and preceeded_by_space:
+                if ch == u'#' and preceeded_by_whitespace:
                     flow_indicators = True
                     block_indicators = True
 
             # Check for line breaks, special, and unicode characters.
-
             if ch in u'\n\x85\u2028\u2029':
                 line_breaks = True
             if not (ch == u'\n' or u'\x20' <= ch <= u'\x7E'):
@@ -706,65 +701,33 @@ class Emitter(object):
                 else:
                     special_characters = True
 
-            # Spaces, line breaks, and how they are mixed. State machine.
-
-            # Start or continue series of whitespaces.
-            if ch in u' \n\x85\u2028\u2029':
-                if spaces and breaks:
-                    if ch != u' ':      # break+ (space+ break+)    => mixed
-                        mixed = True
-                elif spaces:
-                    if ch != u' ':      # (space+ break+)   => mixed
-                        breaks = True
-                        mixed = True
-                elif breaks:
-                    if ch == u' ':      # break+ space+
-                        spaces = True
-                else:
-                    leading = (index == 0)
-                    if ch == u' ':      # space+
-                        spaces = True
-                    else:               # break+
-                        breaks = True
-
-            # Series of whitespaces ended with a non-space.
-            elif spaces or breaks:
-                if leading:
-                    if spaces and breaks:
-                        mixed_breaks_spaces = True
-                    elif spaces:
-                        leading_spaces = True
-                    elif breaks:
-                        leading_breaks = True
-                else:
-                    if mixed:
-                        mixed_breaks_spaces = True
-                    elif spaces and breaks:
-                        inline_breaks_spaces = True
-                    elif spaces:
-                        inline_spaces = True
-                    elif breaks:
-                        inline_breaks = True
-                spaces = breaks = mixed = leading = False
-
-            # Series of whitespaces reach the end.
-            if (spaces or breaks) and (index == len(scalar)-1):
-                if spaces and breaks:
-                    mixed_breaks_spaces = True
-                elif spaces:
-                    trailing_spaces = True
-                    if leading:
-                        leading_spaces = True
-                elif breaks:
-                    trailing_breaks = True
-                    if leading:
-                        leading_breaks = True
-                spaces = breaks = mixed = leading = False
+            # Detect important whitespace combinations.
+            if ch == u' ':
+                if index == 0:
+                    leading_space = True
+                if index == len(scalar)-1:
+                    trailing_space = True
+                if previous_break:
+                    break_space = True
+                previous_space = True
+                previous_break = False
+            elif ch in u'\n\x85\u2028\u2029':
+                if index == 0:
+                    leading_break = True
+                if index == len(scalar)-1:
+                    trailing_break = True
+                if previous_space:
+                    space_break = True
+                previous_space = False
+                previous_break = True
+            else:
+                previous_space = False
+                previous_break = False
 
             # Prepare for the next character.
             index += 1
-            preceeded_by_space = (ch in u'\0 \t\r\n\x85\u2028\u2029')
-            followed_by_space = (index+1 >= len(scalar) or
+            preceeded_by_whitespace = (ch in u'\0 \t\r\n\x85\u2028\u2029')
+            followed_by_whitespace = (index+1 >= len(scalar) or
                     scalar[index+1] in u'\0 \t\r\n\x85\u2028\u2029')
 
         # Let's decide what styles are allowed.
@@ -774,28 +737,28 @@ class Emitter(object):
         allow_double_quoted = True
         allow_block = True
 
-        # Leading and trailing whitespace are bad for plain scalars. We also
-        # do not want to mess with leading whitespaces for block scalars.
-        if leading_spaces or leading_breaks or trailing_spaces:
-            allow_flow_plain = allow_block_plain = allow_block = False
-
-        # Trailing breaks are fine for block scalars, but unacceptable for
-        # plain scalars.
-        if trailing_breaks:
+        # Leading and trailing whitespaces are bad for plain scalars.
+        if (leading_space or leading_break
+                or trailing_space or trailing_break):
             allow_flow_plain = allow_block_plain = False
 
-        # The combination of (space+ break+) is only acceptable for block
+        # We do not permit trailing spaces for block scalars.
+        if trailing_space:
+            allow_block = False
+
+        # Spaces at the beginning of a new line are only acceptable for block
         # scalars.
-        if inline_breaks_spaces:
+        if break_space:
             allow_flow_plain = allow_block_plain = allow_single_quoted = False
 
-        # Mixed spaces and breaks, as well as special character are only
+        # Spaces followed by breaks, as well as special character are only
         # allowed for double quoted scalars.
-        if mixed_breaks_spaces or special_characters:
+        if space_break or special_characters:
             allow_flow_plain = allow_block_plain =  \
             allow_single_quoted = allow_block = False
 
-        # We don't emit multiline plain scalars.
+        # Although the plain scalar writer supports breaks, we never emit
+        # multiline plain scalars.
         if line_breaks:
             allow_flow_plain = allow_block_plain = False
 
@@ -838,6 +801,7 @@ class Emitter(object):
         self.whitespace = whitespace
         self.indention = self.indention and indention
         self.column += len(data)
+        self.open_ended = False
         if self.encoding:
             data = data.encode(self.encoding)
         self.stream.write(data)
@@ -1008,25 +972,26 @@ class Emitter(object):
             end += 1
         self.write_indicator(u'"', False)
 
-    def determine_chomp(self, text):
-        tail = text[-2:]
-        while len(tail) < 2:
-            tail = u' '+tail
-        if tail[-1] in u'\n\x85\u2028\u2029':
-            if tail[-2] in u'\n\x85\u2028\u2029':
-                return u'+'
-            else:
-                return u''
-        else:
-            return u'-'
+    def determine_block_hints(self, text):
+        hints = u''
+        if text:
+            if text[0] in u' \n\x85\u2028\u2029':
+                hints += unicode(self.best_indent)
+            if text[-1] not in u'\n\x85\u2028\u2029':
+                hints += u'-'
+            elif len(text) == 1 or text[-2] in u'\n\x85\u2028\u2029':
+                hints += u'+'
+        return hints
 
     def write_folded(self, text):
-        chomp = self.determine_chomp(text)
-        self.write_indicator(u'>'+chomp, True)
-        self.write_indent()
-        leading_space = False
+        hints = self.determine_block_hints(text)
+        self.write_indicator(u'>'+hints, True)
+        if hints[-1:] == u'+':
+            self.open_ended = True
+        self.write_line_break()
+        leading_space = True
         spaces = False
-        breaks = False
+        breaks = True
         start = end = 0
         while end <= len(text):
             ch = None
@@ -1072,10 +1037,12 @@ class Emitter(object):
             end += 1
 
     def write_literal(self, text):
-        chomp = self.determine_chomp(text)
-        self.write_indicator(u'|'+chomp, True)
-        self.write_indent()
-        breaks = False
+        hints = self.determine_block_hints(text)
+        self.write_indicator(u'|'+hints, True)
+        if hints[-1:] == u'+':
+            self.open_ended = True
+        self.write_line_break()
+        breaks = True
         start = end = 0
         while end <= len(text):
             ch = None
@@ -1105,6 +1072,8 @@ class Emitter(object):
             end += 1
 
     def write_plain(self, text, split=True):
+        if self.root_context:
+            self.open_ended = True
         if not text:
             return
         if not self.whitespace:
@@ -1113,7 +1082,7 @@ class Emitter(object):
             if self.encoding:
                 data = data.encode(self.encoding)
             self.stream.write(data)
-        self.writespace = False
+        self.whitespace = False
         self.indention = False
         spaces = False
         breaks = False
@@ -1126,7 +1095,7 @@ class Emitter(object):
                 if ch != u' ':
                     if start+1 == end and self.column > self.best_width and split:
                         self.write_indent()
-                        self.writespace = False
+                        self.whitespace = False
                         self.indention = False
                     else:
                         data = text[start:end]

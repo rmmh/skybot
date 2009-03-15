@@ -8,10 +8,13 @@ from nodes import *
 from loader import *
 from dumper import *
 
+__version__ = '3.08'
+
 try:
     from cyaml import *
+    __with_libyaml__ = True
 except ImportError:
-    pass
+    __with_libyaml__ = False
 
 def scan(stream, Loader=Loader):
     """
@@ -35,8 +38,7 @@ def compose(stream, Loader=Loader):
     and produce the corresponding representation tree.
     """
     loader = Loader(stream)
-    if loader.check_node():
-        return loader.get_node()
+    return loader.get_single_node()
 
 def compose_all(stream, Loader=Loader):
     """
@@ -47,6 +49,14 @@ def compose_all(stream, Loader=Loader):
     while loader.check_node():
         yield loader.get_node()
 
+def load(stream, Loader=Loader):
+    """
+    Parse the first YAML document in a stream
+    and produce the corresponding Python object.
+    """
+    loader = Loader(stream)
+    return loader.get_single_data()
+
 def load_all(stream, Loader=Loader):
     """
     Parse all YAML documents in a stream
@@ -56,14 +66,13 @@ def load_all(stream, Loader=Loader):
     while loader.check_data():
         yield loader.get_data()
 
-def load(stream, Loader=Loader):
+def safe_load(stream):
     """
     Parse the first YAML document in a stream
     and produce the corresponding Python object.
+    Resolve only basic YAML tags.
     """
-    loader = Loader(stream)
-    if loader.check_data():
-        return loader.get_data()
+    return load(stream, SafeLoader)
 
 def safe_load_all(stream):
     """
@@ -72,14 +81,6 @@ def safe_load_all(stream):
     Resolve only basic YAML tags.
     """
     return load_all(stream, SafeLoader)
-
-def safe_load(stream):
-    """
-    Parse the first YAML document in a stream
-    and produce the corresponding Python object.
-    Resolve only basic YAML tags.
-    """
-    return load(stream, SafeLoader)
 
 def emit(events, stream=None, Dumper=Dumper,
         canonical=None, indent=None, width=None,
@@ -90,10 +91,7 @@ def emit(events, stream=None, Dumper=Dumper,
     """
     getvalue = None
     if stream is None:
-        try:
-            from cStringIO import StringIO
-        except ImportError:
-            from StringIO import StringIO
+        from StringIO import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, canonical=canonical, indent=indent, width=width,
@@ -114,10 +112,10 @@ def serialize_all(nodes, stream=None, Dumper=Dumper,
     """
     getvalue = None
     if stream is None:
-        try:
-            from cStringIO import StringIO
-        except ImportError:
+        if encoding is None:
             from StringIO import StringIO
+        else:
+            from cStringIO import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, canonical=canonical, indent=indent, width=width,
@@ -150,10 +148,10 @@ def dump_all(documents, stream=None, Dumper=Dumper,
     """
     getvalue = None
     if stream is None:
-        try:
-            from cStringIO import StringIO
-        except ImportError:
+        if encoding is None:
             from StringIO import StringIO
+        else:
+            from cStringIO import StringIO
         stream = StringIO()
         getvalue = stream.getvalue
     dumper = Dumper(stream, default_style=default_style,

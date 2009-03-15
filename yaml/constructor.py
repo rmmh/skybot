@@ -37,6 +37,13 @@ class BaseConstructor(object):
         if self.check_node():
             return self.construct_document(self.get_node())
 
+    def get_single_data(self):
+        # Ensure that the stream contains a single document and construct it.
+        node = self.get_single_node()
+        if node is not None:
+            return self.construct_document(node)
+        return None
+
     def construct_document(self, node):
         data = self.construct_object(node)
         while self.state_generators:
@@ -61,7 +68,6 @@ class BaseConstructor(object):
                     "found unconstructable recursive node", node.start_mark)
         self.recursive_objects[node] = None
         constructor = None
-        state_constructor = None
         tag_suffix = None
         if node.tag in self.yaml_constructors:
             constructor = self.yaml_constructors[node.tag]
@@ -314,7 +320,10 @@ class SafeConstructor(BaseConstructor):
         second = int(values['second'])
         fraction = 0
         if values['fraction']:
-            fraction = int(values['fraction'][:6].ljust(6, '0'))
+            fraction = values['fraction'][:6]
+            while len(fraction) < 6:
+                fraction += '0'
+            fraction = int(fraction)
         delta = None
         if values['tz_sign']:
             tz_hour = int(values['tz_hour'])
