@@ -26,6 +26,7 @@ class crlf_tcp(asynchat.async_chat):
         self.oqueue = queue() #where we stick things that need to be sent
         self.iqueue = queue() #where we stick things that were received
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 0)
         self.host = host
         self.port = port
 
@@ -72,7 +73,6 @@ class irc(object):
     def parse_loop(self):
         while True:
             msg = self.conn.iqueue.get()
-            print '>>>', msg
             if msg.startswith(":"): #has a prefix
                 prefix, command, params = irc_prefix_re.match(msg).groups()
             else:

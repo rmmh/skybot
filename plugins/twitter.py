@@ -20,4 +20,4 @@ def twitter(bot, input):
         return "can't find that username"
     
     tweet = tweet.find('status')
-    bot.say(': '.join(tweet.find(x).text for x in 'user/name created_at text'.split()))
+    bot.say(': '.join(tweet.find(x).text for x in 'created_at user/name text'.split()))

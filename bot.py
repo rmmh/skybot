@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-network = "localhost"
-nickname = "skybot"
-channel = "#skybot"
+network = "irc.synirc.net"
+nick = "skybot"
+channel = "#cobol"
 
 import sys
 import os
@@ -24,12 +24,13 @@ class Bot(object):
         self.filters = [] #fn, name, func
 
 bot = Bot()
-bot.nickname = nickname
+bot.nick = nick
 bot.channel = channel
 bot.network = network
 
 print 'Loading plugins'
-magic_re = re.compile(r'^\s*#(command|filter)(?:: +(\S+) *(\S.*)?)?\s*$')
+typs = '|'.join('command filter event'.split())
+magic_re = re.compile(r'^\s*#(%s)(?:: +(\S+) *(\S.*)?)?\s*$' % typs)
 
 def reload_plugins(mtime=[0]):
     new_mtime = os.stat('plugins')
@@ -65,8 +66,12 @@ def reload_plugins(mtime=[0]):
                     if typ == 'command':
                         args = {'name': nam, 'hook': nam + rest}
                         bot.commands.append((filename, nam, func, args))
-                    if typ == 'filter':
+                    elif typ == 'filter':
                         bot.filters.append((filename, nam, func))
+                    elif typ == 'event':
+                        args = {'name': nam, 'prefix':False, 
+                            'events': [nam] + rest.split()}
+                        bot.commands.append((filename, nam, func, args))
         except Exception, e:
             print e
 
@@ -75,9 +80,9 @@ def reload_plugins(mtime=[0]):
 reload_plugins()
 
 print 'Connecting to IRC'
-bot.irc = irc.irc(network, nickname)
+bot.irc = irc.irc(network, nick)
 bot.irc.join(channel)
-bot.commandprefix = '^(?:\.|'+nickname+'[:,]*\s*)'
+bot.commandprefix = '^(?:\.|'+nick+'[:,]*\s*)'
 
 print 'Running main loop'
 
@@ -93,7 +98,6 @@ class Input(object):
         self.host = host
         self.paraml = paraml
         self.msg = msg
-        self.doreply = True
 
 class FakeBot(object):
     def __init__(self, bot, input, fn, func):
@@ -101,11 +105,13 @@ class FakeBot(object):
         self.input = input
         self.msg = bot.irc.msg
         self.cmd = bot.irc.cmd
+        self.join = bot.irc.join
         self.fn = func
         self.func = func
+        self.doreply = True
         if input.command == "PRIVMSG":
             self.chan = input.paraml[0]
-    
+
     def say(self, msg):
         self.bot.irc.msg(self.input.paraml[0], msg)
 
@@ -135,6 +141,7 @@ while True:
                     break
             if input == None:
                 continue
+            print '<<<', input.raw
             thread.start_new_thread(FakeBot(bot, input, fn, func).run, ())
     except Queue.Empty:
         pass
