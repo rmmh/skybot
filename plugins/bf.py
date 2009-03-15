@@ -5,109 +5,71 @@ import re
 import random
 
 BUFFER_SIZE = 5000
+MAX_STEPS = 1000000
 
 #command
-def bf(bot, inp, input=None, max_steps=1000000, no_input=0):
-    """Runs a Brainfuck program given as a string.
+def bf(bot, input):
+    """Runs a Brainfuck program."""
     
-    The string must contain nothing but "<>[]+-.,", i.e.
-    be already filtered.
-        
-    If 'input' is None, stdin is used. 'input' can be
-    a string or a tuple; tuples are only used if
-    extended_interpretation is non-zero, and should
-    be more or less obvious in that case.
-    
-    if max_steps is < 0, there is no restriction."""
-    program = re.sub('[^][<>+-.,]', '', inp.inp)
+    program = re.sub('[^][<>+-.,]', '', input.inp)
     
     # create a dict of brackets pairs, for speed later on
-    parens={}
-    open_parens=[]
+    brackets={}
+    open_brackets=[]
     for pos in range(len(program)):
         if program[pos] == '[':
-            open_parens.append(pos)
+            open_brackets.append(pos)
         elif program[pos] == ']':
-            if len(open_parens) > 0:
-                parens[pos] = open_parens[-1]
-                parens[open_parens[-1]] = pos
-                open_parens.pop()
+            if len(open_brackets) > 0:
+                brackets[pos] = open_brackets[-1]
+                brackets[open_brackets[-1]] = pos
+                open_brackets.pop()
             else:
                 return 'unbalanced brackets'
-#    if len(open_parens) != 0:
-#        return 'unbalanced brackets'
+    if len(open_brackets) != 0:
+        return 'unbalanced brackets'
+
     # now we can start interpreting
-    pc = 0        # program counter
+    ip = 0        # instruction pointer
     mp = 0        # memory pointer
     steps = 0 
     memory = [0] * BUFFER_SIZE  #initial memory area
     rightmost = 0
-    if input != None:
-        if type(input) == type(()):
-            # we'll only be using input[0] right now
-            inputs, input = input, input[0]
-        input_pointer = 0
     
     output = ""   #we'll save the output here
     
-    if no_input:
-        eof_reached = 1
-    else:
-        eof_reached = 0
-        
     # the main program loop:
-    while pc < len(program):
-        c = program[pc]
+    while ip < len(program):
+        c = program[ip]
         if   c == '+':
             memory[mp] = memory[mp] + 1 % 256
         elif c == '-':
             memory[mp] = memory[mp] - 1 % 256
         elif c == '>':
-            mp = mp + 1
+            mp += 1
             if mp > rightmost:
                 rightmost = mp
                 if mp >= len(memory):
-                    memory = memory + [0]*BUFFER_SIZE # no restriction on memory growth!
+                    memory.extend([0]*BUFFER_SIZE) # no restriction on memory growth!
         elif c == '<':
             mp = mp - 1 % len(memory)
         elif c == '.':
             output += chr(memory[mp])
             if len(output) > 500:
                 break
-                
-        elif program[pc] == ',':
-            if eof_reached:
-                raise Exception, "Program tries reading past EOF"
-            if input == None:
-                #char = sys.stdin.read(1)
-                char = chr(random.randint(1,255))
-                if char == '': # EOF
-                    memory[mp] = 0
-                    eof_reached = 1
-                else:
-                    memory[mp] = ord(char)
-            else:
-                if input_pointer == len(input): # EOF
-                    memory[mp] = 0
-                    eof_reached = 1
-                else:
-                    memory[mp] = ord(input[input_pointer])
-                    input_pointer = input_pointer + 1
-                
-        elif program[pc] == '[':
+        elif c == ',':
+            memory[mp] = random.randint(1,255)
+        elif c == '[':
             if memory[mp] == 0:
-                pc = parens[pc]
-                
-        elif program[pc] == ']':
+                ip = brackets[ip]
+        elif c == ']':
             if memory[mp] != 0:
-                pc = parens[pc]
+                ip = brackets[ip]
                 
-        pc += 1
+        ip += 1
         steps += 1
-        if max_steps >= 0 and steps > max_steps:
+        if steps > MAX_STEPS:
             output += "Maximum number of steps exceeded"
             break
-        
-        # end of while loop
     
-    return unicode(re.sub('[\r\n\x00]', '/', output), 'iso-8859-1')[:400]
+    return unicode(re.sub('[\r\n\x00]', '/', output), 'iso-8859-1')[:430]
