@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 
 #command: weather
 def weather(bot, input):
-    '''.weather <location> -- queries the google weather API for weather data'''
+    ".weather <location> -- queries the google weather API for weather data"
 
     if not input.inp.strip(): # blank line
         return "welp"

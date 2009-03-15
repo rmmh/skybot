@@ -72,6 +72,7 @@ class irc(object):
     def parse_loop(self):
         while True:
             msg = self.conn.iqueue.get()
+            print '>>>', msg
             if msg.startswith(":"): #has a prefix
                 prefix, command, params = irc_prefix_re.match(msg).groups()
             else:
