@@ -26,13 +26,13 @@ def nrolls(count, n):
                 (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
 
 #command
-def dice(bot, input):
+def dice(input):
     ".dice <diceroll> - simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
-    if not input.inp.strip():
+    if not input.strip():
         return dice.__doc__
 
-    spec = whitespace_re.sub('', input.inp)
+    spec = whitespace_re.sub('', input)
     if not valid_diceroll_re.match(spec):
         return "Invalid diceroll"
     sum = 0

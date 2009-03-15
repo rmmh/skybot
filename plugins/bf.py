@@ -8,10 +8,10 @@ BUFFER_SIZE = 5000
 MAX_STEPS = 1000000
 
 #command
-def bf(bot, input):
+def bf(input):
     """Runs a Brainfuck program."""
     
-    program = re.sub('[^][<>+-.,]', '', input.inp)
+    program = re.sub('[^][<>+-.,]', '', input)
     
     # create a dict of brackets pairs, for speed later on
     brackets={}

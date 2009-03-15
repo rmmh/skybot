@@ -119,7 +119,11 @@ class FakeBot(object):
         self.say(self.input.nick + ': ' + msg)
 
     def run(self):
-        out = self.func(self, self.input)
+        ac = self.func.func_code.co_argcount
+        if ac == 2:
+            out = self.func(self, self.input)
+        elif ac == 1:
+            out = self.func(self.input.inp)
         if out is not None:
             if self.doreply:
                 self.reply(unicode(out))
