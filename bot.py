@@ -19,14 +19,14 @@ import yaml
 os.chdir(sys.path[0]) #do stuff relative to the installation directory
 
 class Bot(object):
-    def __init__(self):
+    def __init__(self, nick, channel, network):
         self.commands = [] # fn, name, func, args
         self.filters = [] #fn, name, func
+        self.nick = nick
+        self.channel = channel
+        self.network = network
 
-bot = Bot()
-bot.nick = nick
-bot.channel = channel
-bot.network = network
+bot = Bot(nick, channel, network)
 
 print 'Loading plugins'
 typs = '|'.join('command filter event'.split())
