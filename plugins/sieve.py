@@ -3,7 +3,7 @@ import re
 import hook
 
 @hook.sieve
-def filter_suite(bot, input, func, args):
+def sieve_suite(bot, input, func, args):
     args.setdefault('events', ['PRIVMSG'])
 
     if input.command not in args['events']:
