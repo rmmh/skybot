@@ -1,7 +1,9 @@
 import re
 
-#filter
-def filter_suite(bot, func, args, input):
+import hook
+
+@hook.sieve
+def filter_suite(bot, input, func, args):
     args.setdefault('events', ['PRIVMSG'])
 
     if input.command not in args['events']:
@@ -14,6 +16,9 @@ def filter_suite(bot, func, args, input):
     hook = args['hook']
     if args['prefix']:
         hook = bot.commandprefix + args['hook']
+
+    if input.command == 'INVITE':
+            print func, hook
 
     input.re = re.match(hook, input.msg)
     if input.re is None:

@@ -1,9 +1,11 @@
 import urllib
 import re
 
+import hook
+
 re_lineends = re.compile(r'[\r\n]*')
 
-#command
+@hook.command
 def py(input):
     res = urllib.urlopen("http://eval.appspot.com/eval?statement=%s" %
                           urllib.quote(input.strip(),safe='')).readlines()

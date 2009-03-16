@@ -4,10 +4,12 @@ http://brainfuck.sourceforge.net/brain.py'''
 import re
 import random
 
+import hook
+
 BUFFER_SIZE = 5000
 MAX_STEPS = 1000000
 
-#command
+@hook.command
 def bf(input):
     """Runs a Brainfuck program."""
     
@@ -50,7 +52,8 @@ def bf(input):
             if mp > rightmost:
                 rightmost = mp
                 if mp >= len(memory):
-                    memory.extend([0]*BUFFER_SIZE) # no restriction on memory growth!
+                    # no restriction on memory growth!
+                    memory.extend([0]*BUFFER_SIZE) 
         elif c == '<':
             mp = mp - 1 % len(memory)
         elif c == '.':

@@ -6,7 +6,9 @@ retrieves most recent tweets
 import urllib
 from xml.etree import ElementTree
 
-#command
+import hook
+
+@hook.command
 def twitter(bot, input):
     '''.twitter <user> - gets most recent tweet from <user>'''
     if not input.inp.strip():

@@ -11,17 +11,18 @@ import imp
 import re
 import thread
 import Queue
-import copy
+import collections
 
 import irc
 import yaml
 
-os.chdir(sys.path[0]) #do stuff relative to the installation directory
+os.chdir(sys.path[0])   #do stuff relative to the installation directory
+sys.path += ['plugins'] # so 'import hook' works without duplication
 
 class Bot(object):
     def __init__(self, nick, channel, network):
-        self.commands = [] # fn, name, func, args
-        self.filters = [] #fn, name, func
+        self.commands = [] # (fn, funcname, name, line), func, args
+        self.filters = [] #(fn, funcname, line), func
         self.nick = nick
         self.channel = channel
         self.network = network
@@ -30,54 +31,42 @@ bot = Bot(nick, channel, network)
 
 print 'Loading plugins'
 typs = '|'.join('command filter event'.split())
-magic_re = re.compile(r'^\s*#(%s)(?:: +(\S+) *(\S.*)?)?\s*$' % typs)
+magic_re = re.compile(r'^\s*#!(%s)(?:: +(\S+) *(\S.*)?)?\s*$' % typs)
 
 def reload_plugins(mtime=[0]):
     new_mtime = os.stat('plugins')
     if new_mtime == mtime[0]:
         return
 
-    bot.commands = []
-    bot.filters = []
-
+    bot.plugs = collections.defaultdict(lambda: [])
 
     for filename in glob.glob("plugins/*.py"):
         shortname = os.path.splitext(os.path.basename(filename))[0]
         try:
             plugin = imp.load_source(shortname, filename)
-            source = open(filename).read().split('\n')
-            #this is a nasty hack, but it simplifies registration
-            funcs = [x for x in dir(plugin) 
-                     if str(type(getattr(plugin,x))) == "<type 'function'>"]
-            for func in funcs:
-                #read the line before the function definition, looking for a
-                # comment that tells the bot about what it does
-                func = getattr(plugin, func)
-                lineno = func.func_code.co_firstlineno
-                if lineno == 1:
-                    continue #can't have a line before the first line...
-                m = magic_re.match(source[lineno-2])
-                if m:
-                    typ, nam, rest = m.groups()
-                    if nam is None:
-                        nam = func.__name__
-                    if rest is None:
-                        rest = '\s*(.*)'
-                    if typ == 'command':
-                        args = {'name': nam, 'hook': nam + rest}
-                        bot.commands.append((filename, nam, func, args))
-                    elif typ == 'filter':
-                        bot.filters.append((filename, nam, func))
-                    elif typ == 'event':
-                        args = {'name': nam, 'prefix':False, 
-                            'events': [nam] + rest.split()}
-                        bot.commands.append((filename, nam, func, args))
+            for thing in dir(plugin):
+                thing = getattr(plugin, thing)
+                if hasattr(thing, '_skybot_hook'):
+                    for type, data in thing._skybot_hook:
+                        bot.plugs[type] += [data]
         except Exception, e:
-            print e
+            print '    error:', e
 
     mtime[0] = new_mtime
 
 reload_plugins()
+
+print '  plugin listing:'
+for type, plugs in sorted(bot.plugs.iteritems()):
+    print '    %s:' % type
+    for plug in plugs:
+        out = '      %s:%s:%s' % (plug[0])
+        print out,
+        if len(plug) == 3 and 'hook' in plug[2]:
+            print '%s%s' % (' ' * (35 - len(out)), plug[2]['hook'])
+        else:
+            print
+print
 
 print 'Connecting to IRC'
 bot.irc = irc.irc(network, nick)
@@ -100,13 +89,12 @@ class Input(object):
         self.msg = msg
 
 class FakeBot(object):
-    def __init__(self, bot, input, fn, func):
+    def __init__(self, bot, input, func):
         self.bot = bot
         self.input = input
         self.msg = bot.irc.msg
         self.cmd = bot.irc.cmd
         self.join = bot.irc.join
-        self.fn = func
         self.func = func
         self.doreply = True
         if input.command == "PRIVMSG":
@@ -130,22 +118,19 @@ class FakeBot(object):
             else:
                 self.say(unicode(out))
 
-print bot.commands
-print bot.filters
-
 while True:
     try: 
         out = bot.irc.out.get(timeout=1)
         reload_plugins()
-        for fn, name, func, args in bot.commands:
+        for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
             input = Input(*out)
-            for fn, nam, filt in bot.filters:
-                input = filt(bot, func, args, input)
+            for fsig, sieve in bot.plugs['sieve']:
+                input = sieve(bot, input, func, args)
                 if input == None:
                     break
             if input == None:
                 continue
             print '<<<', input.raw
-            thread.start_new_thread(FakeBot(bot, input, fn, func).run, ())
+            thread.start_new_thread(FakeBot(bot, input, func).run, ())
     except Queue.Empty:
         pass

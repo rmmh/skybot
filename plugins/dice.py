@@ -6,6 +6,8 @@ simulates dicerolls
 import re
 import random
 
+import hook
+
 whitespace_re = re.compile(r'\s+')
 valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$')
 sign_re = re.compile(r'[+-]?(?:\d*d)?\d+')
@@ -25,7 +27,7 @@ def nrolls(count, n):
             return int(random.normalvariate(.5*(1+n)*count,
                 (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
 
-#command
+@hook.command
 def dice(input):
     ".dice <diceroll> - simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"

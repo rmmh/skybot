@@ -4,7 +4,9 @@
 import urllib
 from xml.etree import ElementTree
 
-#command: weather
+import hook
+
+@hook.command
 def weather(bot, input):
     ".weather <location> -- queries the google weather API for weather data"
 
