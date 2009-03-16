@@ -16,13 +16,11 @@ import collections
 import irc
 import yaml
 
-os.chdir(sys.path[0])   #do stuff relative to the installation directory
+os.chdir(sys.path[0])   # do stuff relative to the installation directory
 sys.path += ['plugins'] # so 'import hook' works without duplication
 
 class Bot(object):
     def __init__(self, nick, channel, network):
-        self.commands = [] # (fn, funcname, name, line), func, args
-        self.filters = [] #(fn, funcname, line), func
         self.nick = nick
         self.channel = channel
         self.network = network
