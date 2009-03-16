@@ -18,7 +18,7 @@ def sieve(func):
     _hook_add(func, ['sieve', (_make_sig(func), func)])
     return func
 
-def command(func, hook=None, **kwargs):
+def command(func=None, hook=None, **kwargs):
     args = {}
     def command_wrapper(func):
         if func.func_code.co_argcount not in (1, 2):
