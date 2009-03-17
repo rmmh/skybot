@@ -31,7 +31,7 @@ def ytdata(id):
 
 youtube_re = re.compile(r'.*youtube.*v=([-_a-z0-9]+)', flags=re.IGNORECASE)
 
-@hook.command(hook=r'(.*)', prefix=False)
+#@hook.command(hook=r'(.*)', prefix=False)
 def youtube(inp):
     m = youtube_re.match(inp)
     if m:
@@ -39,7 +39,3 @@ def youtube(inp):
         return '\x02%(title)s\x02 - rated \x02%(average)s/%(max)s\x02 ' \
                 '(%(numRaters)s) - views \x02%(views)s\x02 - length \x02' \
                 '%(length)s\x02' % data
-
-if __name__ == '__main__':
-    print ytdata('the0KZLEacs')
-    print ytdata('Ct8nZ6eTTiY')
