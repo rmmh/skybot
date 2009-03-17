@@ -4,19 +4,19 @@ retrieves most recent tweets
 """
 
 import urllib
-from xml.etree import ElementTree
+from lxml import etree
 
 import hook
 
 @hook.command
 def twitter(bot, input):
-    '''.twitter <user> - gets most recent tweet from <user>'''
+    ".twitter <user> - gets most recent tweet from <user>"
     if not input.inp.strip():
         return twitter.__doc__
 
     url = "http://twitter.com/statuses/user_timeline/%s.xml?count=1" \
             % urllib.quote(input.inp)
-    tweet = ElementTree.parse(urllib.urlopen(url))
+    tweet = etree.parse(url)
 
     if tweet.find('error') is not None:
         return "can't find that username"

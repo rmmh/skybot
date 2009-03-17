@@ -2,7 +2,7 @@
 "weather, thanks to google"
 
 import urllib
-from xml.etree import ElementTree
+from lxml import etree
 
 import hook
 
@@ -15,7 +15,7 @@ def weather(bot, input):
 
     data = urllib.urlencode({'weather':input.inp.encode('utf-8')})
     url = 'http://www.google.com/ig/api?' + data
-    w = ElementTree.parse(urllib.urlopen(url)).find('weather')
+    w = etree.parse(url).find('weather')
 
     if w.find('problem_cause') is not None:
         return "Couldn't fetch weather data for '%s', try using a zip or " \
