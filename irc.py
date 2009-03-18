@@ -39,7 +39,7 @@ class crlf_tcp(asynchat.async_chat):
 
     def queue_read_loop(self):
         while True:
-            line = self.oqueue.get()
+            line = self.oqueue.get().splitlines()[0][:500]
             print ">>> %r" % line   
             self.push(line.encode('utf-8','replace')+'\r\n')
 
