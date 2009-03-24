@@ -16,7 +16,10 @@ def twitter(bot, input):
 
     url = "http://twitter.com/statuses/user_timeline/%s.xml?count=1" \
             % urllib.quote(input.inp)
-    tweet = etree.parse(url)
+    try:
+        tweet = etree.parse(url)
+    except IOError:
+        return 'RoR: XTREME scalability (twitter is unresponsive)'
 
     if tweet.find('error') is not None:
         return "can't find that username"

@@ -13,7 +13,7 @@ search_url = api_prefix + "?action=opensearch&search=%s&format=xml"
 
 paren_re = re.compile('\s*\(.*\)$')
 
-@hook.command(hook='w')
+@hook.command(hook='w (.*)')
 @hook.command
 def wiki(query):
     print query
@@ -23,6 +23,9 @@ def wiki(query):
 
     ns = '{http://opensearch.org/searchsuggest2}'
     items = x.findall(ns + 'Section/' + ns + 'Item')
+
+    if items == []:
+        return 'no results found'
 
     def extract(item):
         return [item.find(ns + x).text for x in 
