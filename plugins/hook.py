@@ -25,7 +25,7 @@ def command(func=None, hook=None, **kwargs):
             raise ValueError, \
                 'commands must take 1 or 2 arguments: (inp) or (bot, input)'
         args.setdefault('name', func.func_name)
-        args.setdefault('hook', args['name'] + r'\s*(.*)')
+        args.setdefault('hook', args['name'] + r'(?:\s+|$)(.*)')
         _hook_add(func, ['command', (_make_sig(func), func, args)])
         return func
     

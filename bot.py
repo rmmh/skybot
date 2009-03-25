@@ -123,7 +123,11 @@ while True:
         for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
             input = Input(*out)
             for fsig, sieve in bot.plugs['sieve']:
-                input = sieve(bot, input, func, args)
+                try:
+                    input = sieve(bot, input, func, args)
+                except Exception, e:
+                    print 'filter error:', e
+                    input = None
                 if input == None:
                     break
             if input == None:
