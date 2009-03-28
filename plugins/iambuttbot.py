@@ -13,6 +13,6 @@ def iambuttbot(bot, input):
 
     password = open('iambuttbot_password').readlines()[0].strip()
     status = input.inp if len(input.inp) <= 140 else input.inp[:137] + "..."
-    data = urllib.urlencode({"status": status})
+    data = urllib.urlencode({"status": status.encode('utf8')})
     url = 'http://iambuttbot:%s@twitter.com/statuses/update.xml' % password
     response = urllib.urlopen(url, data)
