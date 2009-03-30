@@ -42,10 +42,9 @@ def reload_plugins(mtime=[0]):
         shortname = os.path.splitext(os.path.basename(filename))[0]
         try:
             plugin = imp.load_source(shortname, filename)
-            for thing in dir(plugin):
-                thing = getattr(plugin, thing)
-                if hasattr(thing, '_skybot_hook'):
-                    for type, data in thing._skybot_hook:
+            for obj in vars(plugin).itervalues():
+                if hasattr(obj, '_skybot_hook'): #check for magic
+                    for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
         except Exception, e:
             print '    error:', e
