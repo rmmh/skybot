@@ -4,18 +4,19 @@ import hook
 
 @hook.sieve
 def sieve_suite(bot, input, func, args):
-    args.setdefault('events', ['PRIVMSG'])
+    events = args.get('events', ['PRIVMSG'])
 
-    if input.command not in args['events']:
-        if args['events'] != '*':
-            return None
+    if input.command not in events and events != '*':
+        return None
 
-    args.setdefault('hook', r'(.*)')
+    if input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
+        return None
+
+    hook = args.get('hook', r'(.*)')
     args.setdefault('prefix', True)
     
-    hook = args['hook']
-    if args['prefix']:
-        hook = bot.commandprefix + args['hook']
+    if args.get('prefix', True):
+        hook = bot.commandprefix + hook
 
     if input.command == 'INVITE':
             print func, hook

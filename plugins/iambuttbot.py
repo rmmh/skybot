@@ -6,7 +6,7 @@ posts everything buttbot says to the iambuttbot twitter account
 import urllib
 import hook
 
-@hook.command(hook=r'(.*)', prefix=False)
+@hook.command(hook=r'(.*)', prefix=False, ignorebots=False)
 def iambuttbot(bot, input):
     if input.nick.lower() != 'buttbot': 
         return
