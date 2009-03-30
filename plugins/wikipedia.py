@@ -25,7 +25,10 @@ def wiki(query):
     items = x.findall(ns + 'Section/' + ns + 'Item')
 
     if items == []:
-        return 'no results found'
+        if x.find('error') is not None:
+            return 'error: %(code)s: %(info)s' % x.find('error').attrib
+        else:
+            return 'no results found'
 
     def extract(item):
         return [item.find(ns + x).text for x in 
