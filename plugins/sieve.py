@@ -21,7 +21,7 @@ def sieve_suite(bot, input, func, args):
     if input.command == 'INVITE':
             print func, hook
 
-    input.re = re.match(hook, input.msg)
+    input.re = re.match(hook, input.msg, flags=re.I)
     if input.re is None:
         return None
 
