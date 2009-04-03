@@ -20,7 +20,7 @@ def load_memory(filename, mtimes={}):
     mtime = os.stat(filename).st_mtime
     if mtimes.get(filename, 0) != mtime:
         mtimes[filename] = mtime
-        return dict((x.split(None, 1)[0].lower(), x) for x in 
+        return dict((x.split(None, 1)[0].lower(), x.strip()) for x in 
                 codecs.open(filename, 'r', 'utf-8'))
 
 def save_memory(filename, memory):
