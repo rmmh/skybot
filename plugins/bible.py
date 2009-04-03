@@ -19,4 +19,3 @@ def bible(inp):
         text = text[:text.rfind(' ', 0, 400)] + '...'
 
     return text
-
