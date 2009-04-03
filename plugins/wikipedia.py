@@ -13,12 +13,15 @@ search_url = api_prefix + "?action=opensearch&search=%s&format=xml"
 
 paren_re = re.compile('\s*\(.*\)$')
 
-@hook.command(hook='w (.*)')
+@hook.command(hook='w(\s+.*|$)')
 @hook.command
 def wiki(query):
-    print query
-    q = search_url % (urllib.quote(query, safe=''))
-    print q
+    '''.w/.wiki <phrase> -- gets first sentence of wikipedia article on <phrase>'''
+    
+    if not query.strip():
+        return wiki.__doc__
+
+    q = search_url % (urllib.quote(query.strip(), safe=''))
     x = etree.parse(q)
 
     ns = '{http://opensearch.org/searchsuggest2}'
