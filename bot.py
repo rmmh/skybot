@@ -69,6 +69,7 @@ print 'Connecting to IRC'
 bot.irc = irc.irc(network, nick)
 bot.irc.join(channel)
 bot.commandprefix = '^(?:\.|'+nick+'[:,]*\s*)'
+bot.persist_dir = os.path.abspath('persist')
 
 print 'Running main loop'
 
@@ -84,10 +85,13 @@ class Input(object):
         self.host = host
         self.paraml = paraml
         self.msg = msg
+        if command == "PRIVMSG":
+            self.chan = paraml[0]
 
 class FakeBot(object):
     def __init__(self, bot, input, func):
         self.bot = bot
+        self.persist_dir = bot.persist_dir
         self.input = input
         self.msg = bot.irc.msg
         self.cmd = bot.irc.cmd
