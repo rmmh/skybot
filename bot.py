@@ -29,28 +29,34 @@ class Bot(object):
 bot = Bot(nick, channel, network)
 
 print 'Loading plugins'
-typs = '|'.join('command filter event'.split())
-magic_re = re.compile(r'^\s*#!(%s)(?:: +(\S+) *(\S.*)?)?\s*$' % typs)
 
-def reload_plugins(mtime=[0]):
-    new_mtime = os.stat('plugins')
-    if new_mtime == mtime[0]:
-        return
+plugin_mtimes = {}
 
-    bot.plugs = collections.defaultdict(lambda: [])
+def reload_plugins():
+    
+    if not hasattr(bot, 'plugs'):
+        bot.plugs = collections.defaultdict(lambda: [])
 
-    for filename in glob.glob("plugins/*.py"):
-        shortname = os.path.splitext(os.path.basename(filename))[0]
-        try:
-            plugin = imp.load_source(shortname, filename)
+    for filename in glob.glob("core/*.py") + glob.glob("plugins/*.py"):
+        mtime = os.stat(filename).st_mtime
+        if mtime != plugin_mtimes.get(filename):
+            shortname = os.path.splitext(os.path.basename(filename))[0]
+            try:
+                plugin = imp.load_source(shortname, filename)
+            except Exception, e:
+                print '    error:', e
+                continue
+            
+            # remove plugins already loaded from this filename
+            for name, data in bot.plugs.iteritems():
+                bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
+
             for obj in vars(plugin).itervalues():
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
-        except Exception, e:
-            print '    error:', e
 
-    mtime[0] = new_mtime
+            plugin_mtimes[filename] = mtime
 
 reload_plugins()
 
@@ -69,7 +75,6 @@ print
 print 'Connecting to IRC'
 bot.irc = irc.irc(network, nick)
 bot.irc.join(channel)
-bot.commandprefix = r'^(?:[.!]|'+nick+r'[:,]*\s*)'
 bot.persist_dir = os.path.abspath('persist')
 
 print 'Running main loop'

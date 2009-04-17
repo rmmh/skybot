@@ -16,7 +16,7 @@ def sieve_suite(bot, input, func, args):
     args.setdefault('prefix', True)
     
     if args.get('prefix', True):
-        hook = bot.commandprefix + hook
+        hook = r'^(?:[.!]|' + bot.nick +r'[:,]*\s*)' + hook
 
     if input.command == 'INVITE':
             print func, hook
