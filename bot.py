@@ -13,11 +13,12 @@ import thread
 import Queue
 import collections
 
+sys.path += ['plugins'] # so 'import hook' works without duplication
+
 import irc
 import yaml
 
 os.chdir(sys.path[0])   # do stuff relative to the installation directory
-sys.path += ['plugins'] # so 'import hook' works without duplication
 
 class Bot(object):
     def __init__(self, nick, channel, network):
@@ -68,7 +69,7 @@ print
 print 'Connecting to IRC'
 bot.irc = irc.irc(network, nick)
 bot.irc.join(channel)
-bot.commandprefix = '^(?:\.|'+nick+'[:,]*\s*)'
+bot.commandprefix = r'^(?:[.!]|'+nick+r'[:,]*\s*)'
 bot.persist_dir = os.path.abspath('persist')
 
 print 'Running main loop'
