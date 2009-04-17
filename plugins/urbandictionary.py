@@ -1,6 +1,6 @@
-from lxml import html
-
+import lxml
 import urllib
+
 import hook
 
 @hook.command('u')
@@ -12,10 +12,8 @@ def urban(inp):
 
     url = 'http://www.urbandictionary.com/define.php?term=' + \
             urllib.quote(inp.strip(), safe='')
-    page = html.parse(url)
+    page = lxml.html.parse(url)
     defs = page.xpath("//div[@class='definition']")
-
-    print repr(defs[0].text_content())
 
     if not defs:
         return 'no definitions found'
