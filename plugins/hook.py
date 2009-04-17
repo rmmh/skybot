@@ -39,8 +39,8 @@ def command(func=None, hook=None, **kwargs):
     else:
         return command_wrapper(func)
 
-def event(arg):
-    args = {}
+def event(arg=None, **kwargs):
+    args = kwargs
     def event_wrapper(func):
         if func.func_code.co_argcount != 2:
             raise ValueError, \
@@ -52,7 +52,8 @@ def event(arg):
         return func
     
     if _isfunc(arg):
-        return event_wrapper(arg)
+        return event_wrapper(arg, kwargs)
     else:
-        args['events'] = arg.split()
+        if arg is not None:
+            args['events'] = arg.split()
         return event_wrapper

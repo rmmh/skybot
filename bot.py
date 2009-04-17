@@ -88,19 +88,21 @@ class Input(object):
         self.msg = msg
         if command == "PRIVMSG":
             self.chan = paraml[0]
+        else:
+            self.chan = ""
 
 class FakeBot(object):
     def __init__(self, bot, input, func):
         self.bot = bot
         self.persist_dir = bot.persist_dir
+        self.network = bot.network
         self.input = input
         self.msg = bot.irc.msg
         self.cmd = bot.irc.cmd
         self.join = bot.irc.join
         self.func = func
         self.doreply = True
-        if input.command == "PRIVMSG":
-            self.chan = input.paraml[0]
+        self.chan = input.chan
 
     def say(self, msg):
         self.bot.irc.msg(self.input.paraml[0], msg)
@@ -124,6 +126,7 @@ while True:
     try: 
         out = bot.irc.out.get(timeout=1)
         reload_plugins()
+        printed = False
         for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
             input = Input(*out)
             for fsig, sieve in bot.plugs['sieve']:
@@ -136,7 +139,9 @@ while True:
                     break
             if input == None:
                 continue
-            print '<<<', input.raw
+            if not printed:
+                print '<<<', input.raw
+                printed = True
             thread.start_new_thread(FakeBot(bot, input, func).run, ())
     except Queue.Empty:
         pass
