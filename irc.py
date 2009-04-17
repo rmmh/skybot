@@ -9,12 +9,12 @@ import Queue
 queue = Queue.Queue
 
 def decode(txt, codecs=['utf-8', 'iso-8859-1', 'shift_jis', 'cp1252']):
-    if len(codecs) == 0:
-        return txt.decode('utf-8', 'ignore')
-    try:
-        return txt.decode(codecs[0])
-    except UnicodeDecodeError:
-        return decode(txt, codecs[1:])
+    for codec in ('utf-8', 'iso-8859-1', 'shift_jis', 'cp1252'):
+        try:
+            return txt.decode(codec)
+        except UnicodeDecodeError:
+            continue
+    return txt.decode('utf-8', 'ignore')
 
 class crlf_tcp(asynchat.async_chat):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
