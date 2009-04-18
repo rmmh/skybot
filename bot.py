@@ -92,7 +92,10 @@ class Input(object):
         self.paraml = paraml
         self.msg = msg
         if command == "PRIVMSG":
-            self.chan = paraml[0]
+            if paraml[0] != bot.nick:
+                self.chan = paraml[0]
+            else:
+                self.chan = nick
         else:
             self.chan = ""
 
@@ -110,7 +113,7 @@ class FakeBot(object):
         self.chan = input.chan
 
     def say(self, msg):
-        self.bot.irc.msg(self.input.paraml[0], msg)
+        self.bot.irc.msg(self.chan, msg)
 
     def reply(self, msg):
         self.say(self.input.nick + ': ' + msg)

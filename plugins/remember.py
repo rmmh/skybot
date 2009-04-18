@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 remember.py: written by Scaevolus 2009
 """

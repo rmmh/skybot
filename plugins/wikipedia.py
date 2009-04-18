@@ -1,4 +1,3 @@
-#!/usr/bin/python
 '''Searches wikipedia and returns first sentence of article
 Scaevolus 2009'''
 

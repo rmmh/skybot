@@ -1,4 +1,3 @@
-#!/usr/bin/python
 "weather, thanks to google"
 
 from __future__ import with_statement

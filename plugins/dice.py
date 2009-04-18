@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 """
-dice.py written by Scaevolus 2008, updated 2009
+dice.py: written by Scaevolus 2008, updated 2009
 simulates dicerolls
 """
 import re

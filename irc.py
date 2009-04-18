@@ -8,7 +8,7 @@ import Queue
 
 queue = Queue.Queue
 
-def decode(txt, codecs=['utf-8', 'iso-8859-1', 'shift_jis', 'cp1252']):
+def decode(txt):
     for codec in ('utf-8', 'iso-8859-1', 'shift_jis', 'cp1252'):
         try:
             return txt.decode(codec)
