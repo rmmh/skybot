@@ -4,8 +4,13 @@ import htmlentitydefs
 import re
 
 import hook
+
+
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
+
+
 def unescape(text):
+
     def fixup(m):
         text = m.group(0)
         if text[:2] == "&#":
@@ -24,11 +29,14 @@ def unescape(text):
             except KeyError:
                 pass
         return text # leave as is
+
     return re.sub("&#?\w+;", fixup, text)
+
 ##############################################################################
 
-languages = 'ja fr de ko ru zh'.split();
+languages = 'ja fr de ko ru zh'.split()
 language_pairs = zip(languages[:-1], languages[1:])
+
 
 def goog_trans(text, slang, tlang):
     req_url = 'http://ajax.googleapis.com/ajax/services/language/translate' \
@@ -38,9 +46,10 @@ def goog_trans(text, slang, tlang):
     parsed = yaml.load(json)
     if not 200 <= parsed['responseStatus'] < 300:
         print parsed
-        raise IOError, 'error with the translation server: %d: %s' % (
-                parsed['responseStatus'], '')
+        raise IOError('error with the translation server: %d: %s' % (
+                parsed['responseStatus'], ''))
     return unescape(parsed['responseData']['translatedText'])
+
 
 def babel_gen(inp):
     for language in languages:
@@ -50,12 +59,14 @@ def babel_gen(inp):
         print language, trans, inp
         yield language, trans, inp
 
+
 @hook.command
 def babel(inp):
     try:
         return list(babel_gen(inp))[-1][2]
     except IOError, e:
         return e
+
 
 @hook.command
 def babelext(inp):

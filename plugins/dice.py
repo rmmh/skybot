@@ -12,19 +12,21 @@ valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$')
 sign_re = re.compile(r'[+-]?(?:\d*d)?\d+')
 split_re = re.compile(r'([\d+-]*)d?(\d*)')
 
+
 def nrolls(count, n):
     "roll an n-sided die count times"
     if n < 2: #it's a coin
         if count < 5000:
-            return sum(random.randint(0,1) for x in xrange(count))
+            return sum(random.randint(0, 1) for x in xrange(count))
         else: #fake it
-            return int(random.normalvariate(.5*count,(.75*count)**.5))
+            return int(random.normalvariate(.5*count, (.75*count)**.5))
     else:
         if count < 5000:
-            return sum(random.randint(1,n) for x in xrange(count))
+            return sum(random.randint(1, n) for x in xrange(count))
         else: #fake it
             return int(random.normalvariate(.5*(1+n)*count,
                 (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
+
 
 @hook.command
 def dice(input):
@@ -43,7 +45,7 @@ def dice(input):
         if side == "":
             sum += int(count)
         else:
-            count = int(count) if count not in  " +-" else 1
+            count = int(count) if count not in" +-" else 1
             side = int(side)
             try:
                 if count > 0:
@@ -52,5 +54,5 @@ def dice(input):
                     sum -= nrolls(abs(count), side)
             except OverflowError:
                 return "Thanks for overflowing a float, jerk >:["
-    
+
     return str(sum)

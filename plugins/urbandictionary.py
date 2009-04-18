@@ -3,6 +3,7 @@ import urllib
 
 import hook
 
+
 @hook.command('u')
 @hook.command
 def urban(inp):

@@ -8,6 +8,7 @@ from lxml import etree
 
 import hook
 
+
 @hook.command
 def twitter(bot, input):
     ".twitter <user> - gets most recent tweet from <user>"
@@ -23,7 +24,7 @@ def twitter(bot, input):
 
     if tweet.find('error') is not None:
         return "can't find that username"
-    
+
     tweet = tweet.find('status')
-    bot.say(': '.join(tweet.find(x).text for x in 
+    bot.say(': '.join(tweet.find(x).text for x in
         'created_at user/screen_name text'.split()))

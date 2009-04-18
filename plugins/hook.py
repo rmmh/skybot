@@ -3,32 +3,37 @@ def _isfunc(x):
         return True
     return False
 
+
 def _hook_add(func, add):
     if not hasattr(func, '_skybot_hook'):
         func._skybot_hook = []
     func._skybot_hook.append(add)
 
+
 def _make_sig(f):
     return f.func_code.co_filename, f.func_name, f.func_code.co_firstlineno
 
+
 def sieve(func):
     if func.func_code.co_argcount != 4:
-        raise ValueError, \
-                'sieves must take 4 arguments: (bot, input, func, args)'
+        raise ValueError(
+                'sieves must take 4 arguments: (bot, input, func, args)')
     _hook_add(func, ['sieve', (_make_sig(func), func)])
     return func
 
+
 def command(func=None, hook=None, **kwargs):
     args = {}
+
     def command_wrapper(func):
         if func.func_code.co_argcount not in (1, 2):
-            raise ValueError, \
-                'commands must take 1 or 2 arguments: (inp) or (bot, input)'
+            raise ValueError(
+                'commands must take 1 or 2 arguments: (inp) or (bot, input)')
         args.setdefault('name', func.func_name)
         args.setdefault('hook', args['name'] + r'(?:\s+|$)(.*)')
         _hook_add(func, ['command', (_make_sig(func), func, args)])
         return func
-    
+
     if hook is not None or kwargs or not _isfunc(func):
         if func is not None:
             args['name'] = func
@@ -39,18 +44,19 @@ def command(func=None, hook=None, **kwargs):
     else:
         return command_wrapper(func)
 
+
 def event(arg=None, **kwargs):
     args = kwargs
+
     def event_wrapper(func):
         if func.func_code.co_argcount != 2:
-            raise ValueError, \
-                'events must take 2 arguments: (bot, input)'
+            raise ValueError('events must take 2 arguments: (bot, input)')
         args['name'] = func.func_name
         args['prefix'] = False
         args.setdefault('events', '*')
         _hook_add(func, ['event', (_make_sig(func), func, args)])
         return func
-    
+
     if _isfunc(arg):
         return event_wrapper(arg, kwargs)
     else:

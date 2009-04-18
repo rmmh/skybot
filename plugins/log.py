@@ -16,12 +16,15 @@ log_fds = {} # '%(net)s %(chan)s' : (filename, fd)
 
 timestamp_format = '%H:%M:%S'
 
+
 def get_log_filename(dir, network, chan):
     return os.path.join(dir, 'log', gmtime('%Y'), network,
             gmtime('%%s.%m-%d.log') % chan).lower()
 
+
 def gmtime(format):
     return time.strftime(format, time.gmtime())
+
 
 def get_log_fd(dir, network, chan):
     fn = get_log_filename(dir, network, chan)
@@ -40,10 +43,11 @@ def get_log_fd(dir, network, chan):
 
     return fd
 
+
 @hook.event(ignorebots=False)
 def log(bot, input):
     ".remember <word> <data> -- maps word to data in the memory"
-    with lock: 
+    with lock:
         fd = get_log_fd(bot.persist_dir, bot.network, 'raw')
         fd.write(gmtime(timestamp_format) + ' ' + input.raw + '\n')
 

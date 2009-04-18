@@ -2,6 +2,7 @@ import urllib
 
 import hook
 
+
 @hook.command('god')
 @hook.command
 def bible(inp):
@@ -14,7 +15,7 @@ def bible(inp):
     text = urllib.urlopen(base_url + urllib.quote(inp)).read()
 
     text = ' '.join(text.split())
-    
+
     if len(text) > 400:
         text = text[:text.rfind(' ', 0, 400)] + '...'
 

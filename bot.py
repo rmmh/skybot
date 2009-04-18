@@ -20,7 +20,9 @@ import yaml
 
 os.chdir(sys.path[0])   # do stuff relative to the installation directory
 
+
 class Bot(object):
+
     def __init__(self, nick, channel, network):
         self.nick = nick
         self.channel = channel
@@ -32,8 +34,9 @@ print 'Loading plugins'
 
 plugin_mtimes = {}
 
+
 def reload_plugins():
-    
+
     if not hasattr(bot, 'plugs'):
         bot.plugs = collections.defaultdict(lambda: [])
 
@@ -46,7 +49,7 @@ def reload_plugins():
             except Exception, e:
                 print '    error:', e
                 continue
-            
+
             # remove plugins already loaded from this filename
             for name, data in bot.plugs.iteritems():
                 bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
@@ -79,8 +82,10 @@ bot.persist_dir = os.path.abspath('persist')
 
 print 'Running main loop'
 
+
 class Input(object):
-    def __init__(self, raw, prefix, command, 
+
+    def __init__(self, raw, prefix, command,
             params, nick, user, host, paraml, msg):
         self.raw = raw
         self.prefix = prefix
@@ -99,7 +104,9 @@ class Input(object):
         else:
             self.chan = ""
 
+
 class FakeBot(object):
+
     def __init__(self, bot, input, func):
         self.bot = bot
         self.persist_dir = bot.persist_dir
@@ -131,7 +138,7 @@ class FakeBot(object):
                 self.say(unicode(out))
 
 while True:
-    try: 
+    try:
         out = bot.irc.out.get(timeout=1)
         reload_plugins()
         printed = False

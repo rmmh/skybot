@@ -1,5 +1,6 @@
 import hook
 
+
 #@hook.command
 def goonsay(bot, input):
     bot.say(' __________    /')

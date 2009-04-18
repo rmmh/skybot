@@ -6,6 +6,7 @@ import hook
 
 locale.setlocale(locale.LC_ALL, "")
 
+
 def ytdata(id):
     url = 'http://gdata.youtube.com/feeds/api/videos/' + id
     x = etree.parse(url)
@@ -30,6 +31,7 @@ def ytdata(id):
     return data
 
 youtube_re = re.compile(r'.*youtube.*v=([-_a-z0-9]+)', flags=re.IGNORECASE)
+
 
 #@hook.command(hook=r'(.*)', prefix=False)
 def youtube(inp):

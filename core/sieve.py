@@ -2,6 +2,7 @@ import re
 
 import hook
 
+
 @hook.sieve
 def sieve_suite(bot, input, func, args):
     events = args.get('events', ['PRIVMSG'])
@@ -14,9 +15,10 @@ def sieve_suite(bot, input, func, args):
 
     hook = args.get('hook', r'(.*)')
     args.setdefault('prefix', True)
-    
+
     if args.get('prefix', True):
-        hook = (r'^(?:[.!]|' if input.chan != input.nick else r'^(?:[.!]?|')  + bot.nick +r'[:,]*\s*)' + hook
+        hook = (r'^(?:[.!]|' if input.chan != input.nick else r'^(?:[.!]?|') \
+                + bot.nick +r'[:,]*\s*)' + hook
 
     input.re = re.match(hook, input.msg, flags=re.I)
     if input.re is None:
