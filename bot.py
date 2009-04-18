@@ -44,8 +44,8 @@ def reload_plugins():
         if mtime != plugin_mtimes.get(filename):
             try:
                 code = compile(open(filename, 'U').read(), filename, 'exec')
-                locals = {}
-                eval(code, locals)
+                namespace = {}
+                eval(code, namespace)
             except Exception, e:
                 print '    error:', e
                 continue
@@ -54,7 +54,7 @@ def reload_plugins():
             for name, data in bot.plugs.iteritems():
                 bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
 
-            for obj in locals.itervalues():
+            for obj in namespace.itervalues():
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
