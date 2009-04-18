@@ -7,7 +7,6 @@ channel = "#cobol"
 import sys
 import os
 import glob
-import imp
 import re
 import thread
 import Queue
@@ -43,9 +42,10 @@ def reload_plugins():
     for filename in glob.glob("core/*.py") + glob.glob("plugins/*.py"):
         mtime = os.stat(filename).st_mtime
         if mtime != plugin_mtimes.get(filename):
-            shortname = os.path.splitext(os.path.basename(filename))[0]
             try:
-                plugin = imp.load_source(shortname, filename)
+                code = compile(open(filename, 'U').read(), filename, 'exec')
+                locals = {}
+                eval(code, locals)
             except Exception, e:
                 print '    error:', e
                 continue
@@ -54,7 +54,7 @@ def reload_plugins():
             for name, data in bot.plugs.iteritems():
                 bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
 
-            for obj in vars(plugin).itervalues():
+            for obj in locals.itervalues():
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
@@ -70,7 +70,7 @@ for type, plugs in sorted(bot.plugs.iteritems()):
         out = '      %s:%s:%s' % (plug[0])
         print out,
         if len(plug) == 3 and 'hook' in plug[2]:
-            print '%s%s' % (' ' * (35 - len(out)), plug[2]['hook'])
+            print '%s%s' % (' ' * (40 - len(out)), plug[2]['hook'])
         else:
             print
 print
