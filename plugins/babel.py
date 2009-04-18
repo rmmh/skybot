@@ -45,7 +45,6 @@ def goog_trans(text, slang, tlang):
     json = urllib.urlopen(url).read()
     parsed = yaml.load(json)
     if not 200 <= parsed['responseStatus'] < 300:
-        print parsed
         raise IOError('error with the translation server: %d: %s' % (
                 parsed['responseStatus'], ''))
     return unescape(parsed['responseData']['translatedText'])
@@ -56,7 +55,6 @@ def babel_gen(inp):
         inp = inp.encode('utf8')
         trans = goog_trans(inp, 'en', language).encode('utf8')
         inp = goog_trans(trans, language, 'en')
-        print language, trans, inp
         yield language, trans, inp
 
 

@@ -96,13 +96,11 @@ class Input(object):
         self.host = host
         self.paraml = paraml
         self.msg = msg
-        if command == "PRIVMSG":
-            if paraml[0] != bot.nick:
-                self.chan = paraml[0]
-            else:
-                self.chan = nick
-        else:
-            self.chan = ""
+        self.chan = paraml[0]
+        if self.chan == bot.nick:
+            self.chan = nick
+        elif command =='JOIN':
+            self.chan = msg
 
 
 class FakeBot(object):
@@ -148,7 +146,7 @@ while True:
                 try:
                     input = sieve(bot, input, func, args)
                 except Exception, e:
-                    print 'filter error:', e
+                    print 'sieve error:', e
                     input = None
                 if input == None:
                     break

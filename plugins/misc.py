@@ -3,8 +3,6 @@ import hook
 
 @hook.event('KICK INVITE')
 def rejoin(bot, input):
-    print input.command, input.inp
-
     if input.command == 'KICK':
         if input.paraml[1] == bot.bot.nick:
             if input.paraml[0] == bot.bot.channel:

@@ -68,9 +68,7 @@ def forget(bot, input):
         if not input.inp.strip():
             return forget.__doc__
 
-        print input.inp
         low = input.inp.strip().lower()
-        print repr(low)
         if low not in memory[filename]:
             return "I don't know about that."
         if not hasattr(input, 'chan'):
@@ -88,6 +86,5 @@ def question(bot, input):
         memory.setdefault(filename, load_memory(filename))
 
         word = input.inp.split()[0].lower()
-        print memory[filename]
         if word in memory[filename]:
             bot.say("%s" % memory[filename][word])
