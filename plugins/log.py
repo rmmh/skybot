@@ -21,10 +21,12 @@ formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
     'JOIN': '-!- %(nick)s [%(user)s@%(host)s] has joined %(chan)s',
     'MODE': '-!- mode/%(chan)s [%(param_tail)s] by %(nick)s',
     'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
-    'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s'
+    'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',
+    'QUIT': '-!- %(nick)s has quit [%(msg)s]'
        }
 
 ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
+
 
 def get_log_filename(dir, network, chan):
     return os.path.join(dir, 'log', gmtime('%Y'), network,
@@ -84,6 +86,9 @@ def log(bot, input):
         
         fd = get_log_fd(bot.persist_dir, bot.network, 'raw')
         fd.write(timestamp + ' ' + input.raw + '\n')
+
+        if input.command == 'QUIT':
+            input.chan = 'quit'
 
         if input.chan:
             fd = get_log_fd(bot.persist_dir, bot.network, input.chan)

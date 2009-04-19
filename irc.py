@@ -6,8 +6,6 @@ import asyncore
 import asynchat
 import Queue
 
-queue = Queue.Queue
-
 
 def decode(txt):
     for codec in ('utf-8', 'iso-8859-1', 'shift_jis', 'cp1252'):
@@ -26,8 +24,8 @@ class crlf_tcp(asynchat.async_chat):
         self.set_terminator('\r\n')
         self.buffer = ""
         self.obuffer = ""
-        self.oqueue = queue() #where we stick things that need to be sent
-        self.iqueue = queue() #where we stick things that were received
+        self.oqueue = Queue.Queue() #where we stick things that need to be sent
+        self.iqueue = Queue.Queue() #where we stick things that were received
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 0)
         self.host = host
@@ -67,7 +65,7 @@ class irc(object):
     def __init__(self, network, nick, port=6667):
         self.conn = crlf_tcp(network, port)
         thread.start_new_thread(self.conn.run, ())
-        self.out = queue() #responses from the server are placed here
+        self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
         # nick, user, host, paramlist, msg]
         self.nick(nick)

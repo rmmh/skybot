@@ -1,3 +1,11 @@
+import Queue
+
+class queue(Queue.Queue):
+
+    def __init__(self, maxsize=0):
+        Queue.Queue.__init__(self, maxsize)
+        self._skybot_hook = [['queue', self]]
+
 def _isfunc(x):
     if type(x) == type(_isfunc):
         return True
