@@ -52,10 +52,10 @@ class crlf_tcp(asynchat.async_chat):
         self.iqueue.put(decode(line))
         self.buffer = ''
 
-irc_prefix_re = re.compile(r'(.*?) (.*?) (.*)')
-irc_noprefix_re = re.compile(r'()(.*?) (.*)')
-irc_param_re = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)')
-irc_netmask_re = re.compile(r':?([^!@]*)!?([^@]*)@?(.*)')
+irc_prefix_rem = re.compile(r'(.*?) (.*?) (.*)').match
+irc_noprefix_rem = re.compile(r'()(.*?) (.*)').match
+irc_netmask_rem = re.compile(r':?([^!@]*)!?([^@]*)@?(.*)').match
+irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 
 
 class irc(object):
@@ -76,11 +76,11 @@ class irc(object):
         while True:
             msg = self.conn.iqueue.get()
             if msg.startswith(":"): #has a prefix
-                prefix, command, params = irc_prefix_re.match(msg).groups()
+                prefix, command, params = irc_prefix_rem(msg).groups()
             else:
-                prefix, command, params = irc_noprefix_re.match(msg).groups()
-            nick, user, host = irc_netmask_re.match(prefix).groups()
-            paramlist = irc_param_re.findall(params)
+                prefix, command, params = irc_noprefix_rem(msg).groups()
+            nick, user, host = irc_netmask_rem(prefix).groups()
+            paramlist = irc_param_ref(params)
             lastparam = ""
             if paramlist and paramlist[-1].startswith(':'):
                     lastparam = paramlist[-1][1:]

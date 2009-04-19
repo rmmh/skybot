@@ -1,3 +1,5 @@
+import thread
+
 class Input(object):
 
     def __init__(self, raw, prefix, command,

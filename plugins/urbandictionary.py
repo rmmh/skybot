@@ -1,11 +1,10 @@
-import lxml
+from lxml import html
 import urllib
 
 import hook
 
 
-@hook.command('u')
-@hook.command
+@hook.command(['u', 'urban'])
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
     if not inp.strip():
@@ -13,7 +12,7 @@ def urban(inp):
 
     url = 'http://www.urbandictionary.com/define.php?term=' + \
             urllib.quote(inp.strip(), safe='')
-    page = lxml.html.parse(url)
+    page = html.parse(url)
     defs = page.xpath("//div[@class='definition']")
 
     if not defs:

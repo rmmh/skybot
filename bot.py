@@ -6,18 +6,12 @@ channel = "#cobol"
 
 import sys
 import os
-import glob
-import re
-import thread
 import Queue
-import collections
 
 sys.path += ['plugins'] # so 'import hook' works without duplication
+os.chdir(sys.path[0])   # do stuff relative to the installation directory
 
 import irc
-import yaml
-
-os.chdir(sys.path[0])   # do stuff relative to the installation directory
 
 
 class Bot(object):

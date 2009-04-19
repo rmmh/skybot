@@ -1,3 +1,6 @@
+import glob
+import collections
+
 if 'plugin_mtimes' not in globals():
     mtimes = {}
 
