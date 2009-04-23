@@ -1,8 +1,12 @@
 import glob
 import collections
+import traceback
 
-if 'plugin_mtimes' not in globals():
+if 'mtimes' not in globals():
     mtimes = {}
+
+if 'lastfiles' not in globals():
+    lastfiles = set()
 
 def reload():
     init = False
@@ -13,23 +17,32 @@ def reload():
     for filename in glob.glob("core/*.py"):
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
+            mtimes[filename] = mtime
             try:
                 eval(compile(open(filename, 'U').read(), filename, 'exec'), 
                         globals())
-                mtimes[filename] = mtime
-            except Exception, e:
-                print '    core error:', e
+            except Exception:
+                traceback.print_exc(Exception)
                 continue
 
-    for filename in glob.glob("plugins/*.py"):
+            if filename == 'core/reload.py':
+                reload()
+                return
+
+    fileset = set(glob.glob("plugins/*py"))
+    for name, data in bot.plugs.iteritems(): # remove deleted/moved plugins
+        bot.plugs[name] = filter(lambda x: x[0][0] in fileset, data)
+
+    for filename in fileset:
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
+            mtimes[filename] = mtime
             try:
                 code = compile(open(filename, 'U').read(), filename, 'exec')
                 namespace = {}
                 eval(code, namespace)
-            except Exception, e:
-                print '    error:', e
+            except Exception:
+                traceback.print_exc(Exception)
                 continue
 
             # remove plugins already loaded from this filename
@@ -40,8 +53,6 @@ def reload():
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
-
-            mtimes[filename] = mtime
 
     if init:
         print '  plugin listing:'
@@ -55,4 +66,3 @@ def reload():
                 else:
                     print
         print
-

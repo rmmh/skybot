@@ -1,4 +1,5 @@
 import thread
+import traceback
 
 class Input(object):
 
@@ -53,20 +54,17 @@ class FakeBot(object):
                 self.say(unicode(out))
 
 def main(out):
-    printed = False
     for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
         input = Input(*out)
         for fsig, sieve in bot.plugs['sieve']:
             try:
                 input = sieve(bot, input, func, args)
             except Exception, e:
-                print 'sieve error:', e
+                print 'sieve error',
+                traceback.print_exc(Exception)
                 input = None
             if input == None:
                 break
         if input == None:
             continue
-        if not printed:
-            print '<<<', input.raw
-            printed = True
         thread.start_new_thread(FakeBot(bot, input, func).run, ())

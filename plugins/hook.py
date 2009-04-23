@@ -46,10 +46,7 @@ def command(func=None, hook=None, **kwargs):
         if func is not None:
             args['name'] = func
         if hook is not None:
-            if isinstance(hook, list):
-                args['hook'] = '(?:' + '|'.join(hook) + ')'
-            else:
-                args['hook'] = hook
+            args['hook'] = hook
         args.update(kwargs)
         return command_wrapper
     else:

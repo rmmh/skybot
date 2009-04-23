@@ -4,7 +4,8 @@ import urllib
 import hook
 
 
-@hook.command(['u', 'urban'])
+@hook.command('u')
+@hook.command
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
     if not inp.strip():

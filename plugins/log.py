@@ -80,7 +80,6 @@ def get_log_fd(dir, network, chan):
 
 @hook.event(ignorebots=False)
 def log(bot, input):
-    ".remember <word> <data> -- maps word to data in the memory"
     with lock:
         timestamp = gmtime(timestamp_format)
         
@@ -90,6 +89,10 @@ def log(bot, input):
         if input.command == 'QUIT':
             input.chan = 'quit'
 
+        beau = beautify(input)
+
+        print '%s %s %s' % (timestamp, input.chan, beau)
+
         if input.chan:
             fd = get_log_fd(bot.persist_dir, bot.network, input.chan)
-            fd.write(timestamp + ' ' + beautify(input) + '\n')
+            fd.write(timestamp + ' ' + beau + '\n')
