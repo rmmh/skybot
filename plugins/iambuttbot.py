@@ -20,3 +20,9 @@ def iambuttbot(bot, input):
     data = urllib.urlencode({"status": status.encode('utf8')})
     url = 'http://iambuttbot:%s@twitter.com/statuses/update.xml' % password
     response = urllib.urlopen(url, data)
+
+try:
+    open('iambuttbot_password')
+except IOError:
+    print 'iambuttbot twitter password not found: module disabled'
+    del iambuttbot
