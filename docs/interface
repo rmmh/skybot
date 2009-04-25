@@ -1,8 +1,9 @@
+GOALS:
+simplicity
+as little boilerplate and magic as possible
+multithreaded dispatch
+
 plugins are located in plugins/
-
-focus: as little boilerplate as possible, without being arcane
-
-TODO: documentation :3
 
 input:
 nick -- string, the nickname of whoever sent the message
