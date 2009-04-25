@@ -2,38 +2,7 @@ plugins are located in plugins/
 
 focus: as little boilerplate as possible, without being arcane
 
-commandprefix = '^(?:\.|$nick[:,\s]*)'
-
-when the bot starts, it imports each plugin and tries to run setup, passing along an object that lets the plugin identify itself and expose functionality.
-
-the objects' methods are:
-
-register(name, function, hook, prefix=True, events=['PRIVMSG'], acl=['all'], private=0,
-		 doc="", example="")
-
-e.g.:
-setup(bot):
-	bot.register("dice", dice, r'dice (.*)', doc="rolls a set of virtual dice", example="dice 3d5-4+d20")
-
-name: the name of the command
-function: the function to call, must have two arguments
-hook: the regex to match
-prefix: True: hook = commandprefix + hook
-		False: hook is unchanged
-events: what IRC events to filter on. possible things are 'JOIN'
-acl: access control list, elements are either 'all', or 'admin' (plan on extending this later)
-private: whether the command works in /query. -1: no, only public. 0: either 1: only private
-doc: documentation on how to use the command
-example: an example usage
-
-When a message is received, it is filtered against all registered commands, checking in the following order:
-
-events
-private
-acl
-hook
-
-When it matches, function is called, passing along two objects, bot and input
+TODO: documentation :3
 
 input:
 nick -- string, the nickname of whoever sent the message
