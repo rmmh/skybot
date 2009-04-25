@@ -12,7 +12,7 @@ def iambuttbot(bot, input):
     if input.nick.lower() != 'buttbot':
         return
 
-    if '@' in input or '#' in input:
+    if '@' in input.inp or '#' in input.inp:
         return #prevent abuse
 
     password = open('iambuttbot_password').readlines()[0].strip()
