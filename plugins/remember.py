@@ -2,8 +2,6 @@
 remember.py: written by Scaevolus 2009
 """
 
-from __future__ import with_statement
-
 import os
 import thread
 import codecs
