@@ -6,6 +6,10 @@ import hook
 
 @hook.command
 def gis(inp):
+    '''.gis <term> -- returns first google image result (safesearch off)'''
+    if not inp:
+        return gis.__doc__
+
     req_url = 'http://ajax.googleapis.com/ajax/services/search/images?' \
             'v=1.0&safe=off&q='
     url = req_url + urllib.quote(inp, safe='')
