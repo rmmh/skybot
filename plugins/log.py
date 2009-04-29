@@ -6,6 +6,7 @@ import os
 import thread
 import codecs
 import time
+import re
 
 import hook
 
@@ -24,6 +25,8 @@ formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
        }
 
 ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
+
+irc_color_re = re.compile(r'(\x03(\d+,\d+|\d)|[\x0f\x02\x16\x1f])')
 
 
 def get_log_filename(dir, network, chan):
@@ -44,6 +47,7 @@ def beautify(input):
         args['param_' + str(abs(n - leng))] = p
 
     args['param_tail'] = ' '.join(args['paraml'][1:])
+    args['msg'] = irc_color_re.sub('', args['msg'])
     
     if input.command == 'PRIVMSG' and input.msg.count('\x01') >= 2:
         #ctcp
