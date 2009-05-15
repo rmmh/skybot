@@ -9,7 +9,7 @@ import hook
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=False)
 def iambuttbot(bot, input):
-    if input.nick.lower() != 'buttbot':
+    if input.nick.lower() not in ('buttbot', 'buttsbot'):
         return
 
     if '@' in input.inp or '#' in input.inp:

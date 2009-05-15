@@ -20,7 +20,7 @@ def twitter(bot, input):
     try:
         tweet = etree.parse(url)
     except IOError:
-        return 'RoR: XTREME scalability (twitter gave an error)'
+        return 'error'
 
     if tweet.find('error') is not None:
         return "can't find that username"

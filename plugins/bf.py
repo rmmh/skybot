@@ -75,4 +75,9 @@ def bf(input):
             output += "Maximum number of steps exceeded"
             break
 
-    return unicode(re.sub('[\r\n\x00]', '/', output), 'iso-8859-1')[:430]
+    output = '/'.join(output.splitlines())
+    
+    if output == '':
+        return 'no output'
+    
+    return unicode(output, 'iso-8859-1')[:430]
