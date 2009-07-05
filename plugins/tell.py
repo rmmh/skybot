@@ -57,8 +57,8 @@ def tell(bot, input):
         dbpath = os.path.join(bot.persist_dir, dbname)
         conn = dbconnect(dbpath)
 
-        command = "select count(*) from tell_probation where name=?"
-        if conn.execute(command, (input.nick,)).fetchone()[0] > 0:
+        command = "select count(*) from tell_probation where name=? and chan=?"
+        if conn.execute(command, (input.nick,input.chan)).fetchone()[0] > 0:
             return "No."
 
         command = "select count(*) from tell where name=? and user_from=?"
@@ -91,7 +91,7 @@ def dbconnect(db):
     results = conn.execute("select count(*) from sqlite_master where name=?", ("tell_probation" ,)).fetchone()
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
-                     "tell_probation(name varchar(50),"+ \
+                     "tell_probation(name varchar(50), chan varchar(50),"+ \
                      "primary key(name));")
         conn.commit()
 
