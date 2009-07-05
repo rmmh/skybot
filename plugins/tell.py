@@ -38,7 +38,7 @@ def tell(bot, input):
     if len(input.msg) < 6:
         return tell.__doc__
 
-    query = input.msg[6:].partition(" ")
+    query = input.msg[6:].strip().partition(" ")
 
     if query[0] == input.nick:
         return "No."

@@ -41,7 +41,7 @@ def seen(bot, input):
         return seen.__doc__
 
 
-    query = input.msg[6:]
+    query = input.msg[6:].strip()
 
     if query == input.nick:
         return "Have you looked in a mirror lately?"
