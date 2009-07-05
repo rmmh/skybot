@@ -83,16 +83,16 @@ def dbconnect(db):
 
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
-                     "tell(id integer primary key autoincrement, name varchar(50) not null, "+ \
-                     "user_from varchar(50) not null, quote varchar(250) not null, "+ \
-                     "chan varchar(50) not null, date datetime not null);")
+                     "tell(id integer primary key autoincrement, name varchar(30) not null, "+ \
+                     "user_from varchar(30) not null, quote varchar(250) not null, "+ \
+                     "chan varchar(32) not null, date datetime not null);")
 
         conn.commit()
 
     results = conn.execute("select count(*) from sqlite_master where name=?", ("tell_probation" ,)).fetchone()
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
-                     "tell_probation(name varchar(50), chan varchar(50),"+ \
+                     "tell_probation(name varchar(30), chan varchar(32),"+ \
                      "primary key(name, chan));")
         conn.commit()
 
