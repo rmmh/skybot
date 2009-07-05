@@ -9,6 +9,7 @@ import os
 import Queue
 
 sys.path += ['plugins'] # so 'import hook' works without duplication
+sys.path += ['lib']
 os.chdir(sys.path[0])   # do stuff relative to the installation directory
 
 import irc

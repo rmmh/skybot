@@ -4,6 +4,7 @@ import sqlite3
 import datetime, time
 import hook
 import os
+from timesince import timesince
 
 dbname = "skydb"
 
@@ -32,14 +33,12 @@ def seeninput(bot,input):
     conn.commit()
     conn.close()
 
-
 @hook.command
 def seen(bot, input):
     ".seen <nick> - Tell when a nickname was last in active in irc"
 
     if len(input.msg) < 6:
         return seen.__doc__
-
 
     query = input.msg[6:].strip()
 
@@ -57,11 +56,11 @@ def seen(bot, input):
     conn.close()
 
     if(results != None):
-        date = time.gmtime(results[0])
-        quote = results[1]
-        return time.strftime(query+" was last seen %a %Y-%m-%d %I:%M:%S %p GMT saying: \"<"+query+"> "+quote+"\"", date)
+        reltime = timesince(datetime.datetime.fromtimestamp(results[0]))
+        return '%(name)s was last seen %(timespan)s ago saying: <%(name)s> %(quote)s' % \
+                    {'name': query, 'timespan': reltime, 'quote': results[1]}
     else:
-        return "I've never seen "+query
+        return "I've never seen %(name)s" % {'name':query}
 
 
 # check to see that our db has the the seen table, and return a connection.
