@@ -2,3 +2,4 @@ syntax: glob
 .*.swp
 *.pyc
 iambuttbot_password
+persist
