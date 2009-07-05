@@ -83,8 +83,9 @@ def dbconnect(db):
 
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
-                     "tell(id integer primary key autoincrement, name varchar(50), user_from varchar(50), "+ \
-                     " quote varchar(250), chan varchar(50), date datetime);")
+                     "tell(id integer primary key autoincrement, name varchar(50) not null, "+ \
+                     "user_from varchar(50) not null, quote varchar(250) not null, "+ \
+                     "chan varchar(50) not null, date datetime not null);")
 
         conn.commit()
 
@@ -92,7 +93,7 @@ def dbconnect(db):
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
                      "tell_probation(name varchar(50), chan varchar(50),"+ \
-                     "primary key(name));")
+                     "primary key(name, chan));")
         conn.commit()
 
     return conn

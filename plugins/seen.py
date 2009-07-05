@@ -70,7 +70,8 @@ def dbconnect(db):
 
     if(results[0] == 0):
         conn.execute("create table if not exists "+ \
-                     "seen(name varchar(50), date datetime, quote varchar(250), chan varchar(50),"+ \
+                     "seen(name varchar(50) not null, date datetime not null, "+ \
+                     "quote varchar(250) not null, chan varchar(50) not null, "+ \
                      "primary key(name, chan));")
         conn.commit()
 
