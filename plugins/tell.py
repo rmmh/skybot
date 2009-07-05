@@ -56,10 +56,14 @@ def tell(bot, input):
     if query[2] != "":
         dbpath = os.path.join(bot.persist_dir, dbname)
         conn = dbconnect(dbpath)
-        filterUser = conn.execute("select count(*) from tell_probation where name=?", (input.nick,)).fetchone()
 
-        if filterUser[0] > 0:
+        command = "select count(*) from tell_probation where name=?"
+        if conn.execute(command, (input.nick,)).fetchone()[0] > 0:
             return "No."
+
+        command = "select count(*) from tell where name=? and user_from=?"
+        if conn.execute(command, (query[0], input.nick)).fetchone()[0] >= 3:
+            return "You've told that person too many things."
 
         cursor = conn.cursor()
         command = "insert into tell(name, user_from, quote, chan, date) values(?,?,?,?,?)"
