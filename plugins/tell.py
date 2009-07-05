@@ -1,10 +1,17 @@
 " tell.py: written by sklnd in July 2009"
 
+import datetime, time
 import sqlite3
 import hook
 import os
+from timesince import timesince
 
 dbname = "skydb"
+
+def adapt_datetime(ts):
+    return time.mktime(ts.timetuple())
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=True)
 def tellinput(bot,input):
@@ -17,11 +24,13 @@ def tellinput(bot,input):
 
 
     if results[0] > 0:
-        command = "select id, user_from, quote from tell where name = ? and chan = ?"
+        command = "select id, user_from, quote, date from tell where name = ? and chan = ?"
         tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
 
         for tell in tells:
-            bot.reply("{0} says '{1}'".format(tell[1], tell[2]))
+            reltime = timesince(datetime.datetime.fromtimestamp(tell[3]))
+            bot.reply('%(teller)s said %(reltime)s ago: %(quote)s' % \
+                    {'teller': tell[1], 'quote': tell[2], 'reltime': reltime})
             command = "delete from tell where id = ?"
             cursor.execute(command, (tell[0],))
 
@@ -53,8 +62,8 @@ def tell(bot, input):
             return "No."
 
         cursor = conn.cursor()
-        command = "insert into tell(name, user_from, quote, chan) values(?,?,?,?)"
-        cursor.execute(command, (query[0], input.nick, query[2], input.chan))
+        command = "insert into tell(name, user_from, quote, chan, date) values(?,?,?,?,?)"
+        cursor.execute(command, (query[0], input.nick, query[2], input.chan, datetime.datetime.now()))
             
         conn.commit()
         conn.close()
@@ -70,7 +79,8 @@ def dbconnect(db):
 
     if results[0] == 0:
         conn.execute("create table if not exists "+ \
-                     "tell(id integer primary key autoincrement, name varchar(50), user_from varchar(50), quote varchar(250), chan varchar(50));")
+                     "tell(id integer primary key autoincrement, name varchar(50), user_from varchar(50), "+ \
+                     " quote varchar(250), chan varchar(50), date datetime);")
 
         conn.commit()
 
