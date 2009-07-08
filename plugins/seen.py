@@ -14,7 +14,7 @@ dbname = "seen.db"
 def adapt_datetime(ts):
     return time.mktime(ts.timetuple())
 
-sqlite3.register_adapter(datetime.datetime, adapt_datetime)
+sqlite3.register_adapter(datetime, adapt_datetime)
 
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=False)
@@ -24,7 +24,7 @@ def seeninput(bot, input):
     conn = dbconnect(dbpath)
     cursor = conn.cursor()
     cursor.execute("insert or replace into seen(name, date, quote, chan)"
-        "values(?,?,?,?)", (input.nick, datetime.datetime.now(),
+        "values(?,?,?,?)", (input.nick, datetime.now(),
         input.msg, input.chan))
     conn.commit()
     conn.close()
@@ -53,7 +53,7 @@ def seen(bot, input):
     conn.close()
 
     if(results != None):
-        reltime = timesince(datetime.datetime.fromtimestamp(results[0]))
+        reltime = timesince.timesince(datetime.fromtimestamp(results[0]))
         return '%s was last seen %s ago saying: <%s> %s' % \
                     (query, reltime, results[1])
     else:

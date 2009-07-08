@@ -2,7 +2,7 @@
 
 import os
 import time
-import datetime
+from datetime import datetime
 import sqlite3
 
 from util import hook, timesince
@@ -14,7 +14,7 @@ dbname = "skydb"
 def adapt_datetime(ts):
     return time.mktime(ts.timetuple())
 
-sqlite3.register_adapter(datetime.datetime, adapt_datetime)
+sqlite3.register_adapter(datetime, adapt_datetime)
 
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=True)
@@ -33,7 +33,7 @@ def tellinput(bot, input):
         tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
 
         for tell in tells:
-            reltime = timesince(datetime.datetime.fromtimestamp(tell[3]))
+            reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
             bot.reply('%(teller)s said %(reltime)s ago: %(quote)s' %
                     {'teller': tell[1], 'quote': tell[2], 'reltime': reltime})
             command = "delete from tell where id = ?"
@@ -72,11 +72,11 @@ def tell(bot, input):
         command = "insert into tell(name, user_from, quote, chan, date) " \
                     "values(?,?,?,?,?)"
         cursor.execute(command, (query[0], input.nick, query[2], input.chan,
-            datetime.datetime.now()))
+            datetime.now()))
 
         conn.commit()
         conn.close()
-        return "I'll let (him|her|it) know."
+        return "I'll pass that along."
 
     else:
         return tell.__doc__
