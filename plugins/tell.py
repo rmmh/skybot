@@ -8,7 +8,7 @@ import sqlite3
 from util import hook, timesince
 
 
-dbname = "skydb"
+dbname = "skybot.db"
 
 
 def adapt_datetime(ts):
