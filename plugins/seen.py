@@ -24,7 +24,7 @@ def seeninput(bot, input):
     conn = dbconnect(dbpath)
     cursor = conn.cursor()
     cursor.execute("insert or replace into seen(name, date, quote, chan)"
-        "values(?,?,?,?)", command, (input.nick, datetime.datetime.now(),
+        "values(?,?,?,?)", (input.nick, datetime.datetime.now(),
         input.msg, input.chan))
     conn.commit()
     conn.close()
