@@ -2,7 +2,7 @@
 
 import os
 import time
-from datetime import datetime
+import datetime
 import sqlite3
 
 from util import hook, timesince
@@ -14,7 +14,7 @@ dbname = "skybot.db"
 def adapt_datetime(ts):
     return time.mktime(ts.timetuple())
 
-sqlite3.register_adapter(datetime, adapt_datetime)
+sqlite3.register_adapter(datetime.datetime, adapt_datetime)
 
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=False)
