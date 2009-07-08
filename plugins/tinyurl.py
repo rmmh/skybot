@@ -4,7 +4,8 @@ import urllib2
 from util import hook
 
 
-tinyurl_re = re.compile(r'http://(?:www\.)?tinyurl.com/([A-Za-z0-9\-]+)', flags=re.IGNORECASE)
+tinyurl_re = re.compile(r'http://(?:www\.)?tinyurl.com/([A-Za-z0-9\-]+)',
+                flags=re.IGNORECASE)
 
 
 @hook.command(hook=r'(.*)', prefix=False)

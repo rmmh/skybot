@@ -15,7 +15,7 @@ rbot http://linuxbrit.co.uk/rbot/
 
 pyirc http://www.k-pdt.net/pyirc/
  - very simple, not multithreaded
- - poor use of regexes, skybot has much better parsing, but it implements many more irc control godes
+ - poor use of regexes, skybot has much better parsing, but it implements many more irc control codes
  - can convert irc colors to vt100 escape codes -- should implement this
  - autoreconnect
 

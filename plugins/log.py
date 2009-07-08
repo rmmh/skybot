@@ -23,7 +23,7 @@ formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
     'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
     'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',
     'QUIT': '-!- %(nick)s has quit [%(msg)s]'
-       }
+}
 
 ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
 
@@ -49,7 +49,7 @@ def beautify(input):
 
     args['param_tail'] = ' '.join(args['paraml'][1:])
     args['msg'] = irc_color_re.sub('', args['msg'])
-    
+
     if input.command == 'PRIVMSG' and input.msg.count('\x01') >= 2:
         #ctcp
         ctcp = input.msg.split('\x01', 2)[1].split(' ', 1)
@@ -85,14 +85,14 @@ def get_log_fd(dir, network, chan):
 def log(bot, input):
     with lock:
         timestamp = gmtime(timestamp_format)
-        
+
         fd = get_log_fd(bot.persist_dir, bot.network, 'raw')
         fd.write(timestamp + ' ' + input.raw + '\n')
 
         if input.command == 'QUIT': # these are temporary fixes until proper
             input.chan = 'quit'     # presence tracking is implemented
         if input.command == 'NICK':
-            input.chan = 'nick' 
+            input.chan = 'nick'
 
         beau = beautify(input)
 

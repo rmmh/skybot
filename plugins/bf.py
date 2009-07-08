@@ -77,8 +77,8 @@ def bf(input):
             break
 
     output = '/'.join(output.splitlines())
-    
+
     if output == '':
         return 'no output'
-    
+
     return unicode(output, 'iso-8859-1')[:430]

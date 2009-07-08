@@ -13,12 +13,13 @@ def unescape_xml(string):
     # unescape the 5 chars that might be escaped in xml
 
     # gratuitously functional
-    # return reduce(lambda x, y: x.replace(*y), (string, 
+    # return reduce(lambda x, y: x.replace(*y), (string,
     #     zip('&gt; &lt; &apos; &quote; &amp'.split(), '> < \' " &'.split()))
 
     # boring, normal
-    return string.replace('&gt;', '>').replace('&lt;', '<'). \
-            replace('&apos;', "'").replace('&quote;', '"').replace('&amp;', '&')
+    return string.replace('&gt;', '>').replace('&lt;', '<').replace('&apos;',
+                    "'").replace('&quote;', '"').replace('&amp;', '&')
+
 
 @hook.command
 def twitter(input):

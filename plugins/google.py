@@ -26,6 +26,7 @@ def gis(inp):
         return 'no images found'
     return parsed['responseData']['results'][0]['unescapedUrl']
 
+
 @hook.command
 @hook.command('g')
 @hook.command('goog')
@@ -45,7 +46,7 @@ def google(inp):
 
     title, content = map(lambda x: html.fromstring(x).text_content(),
             (result['titleNoFormatting'], result['content']))
-    
+
     out = '%s -- \x02%s\x02: "%s"' % (result['unescapedUrl'], title, content)
     out = ' '.join(out.split())
 

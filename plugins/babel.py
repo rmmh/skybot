@@ -6,7 +6,6 @@ from util import hook, yaml
 
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 
-
 def unescape(text):
 
     def fixup(m):
