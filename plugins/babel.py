@@ -1,10 +1,8 @@
-import yaml
 import urllib
 import htmlentitydefs
 import re
 
-import hook
-
+from util import hook, yaml
 
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 

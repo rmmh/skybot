@@ -2,7 +2,9 @@ import re
 from lxml import etree
 import locale
 
-from util import hook
+import hook
+
+locale.setlocale(locale.LC_ALL, "")
 
 
 def ytdata(id):
@@ -31,7 +33,7 @@ def ytdata(id):
 youtube_re = re.compile(r'.*youtube.*v=([-_a-z0-9]+)', flags=re.IGNORECASE)
 
 
-#@hook.command(hook=r'(.*)', prefix=False)
+@hook.command(hook=r'(.*)', prefix=False, ignore='chan:#cobol chan:#yospos')
 def youtube(inp):
     m = youtube_re.match(inp)
     if m:

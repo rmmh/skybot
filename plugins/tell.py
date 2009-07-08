@@ -1,10 +1,12 @@
 " tell.py: written by sklnd in July 2009"
 
-import datetime, time
-import sqlite3
-import hook
 import os
-from timesince import timesince
+import time
+import datetime
+import sqlite3
+
+from util import hook, timesince
+
 
 dbname = "skydb"
 

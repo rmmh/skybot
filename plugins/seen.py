@@ -2,11 +2,11 @@
 
 import sqlite3
 import datetime, time
-import hook
 import os
-from timesince import timesince
 
-dbname = "skydb"
+from util import hook, timesince
+
+dbname = "seen.db"
 
 def adapt_datetime(ts):
     return time.mktime(ts.timetuple())
@@ -18,18 +18,9 @@ def seeninput(bot,input):
     dbpath = os.path.join(bot.persist_dir, dbname)
 
     conn = dbconnect(dbpath)
-
     cursor = conn.cursor()
-    command = "select count(name) from seen where name = ? and chan = ?"
-    cursor.execute(command, (input.nick,input.chan))
-
-    if(cursor.fetchone()[0] == 0):
-        command = "insert into seen(name, date, quote, chan) values(?,?,?,?)"
-        cursor.execute(command, (input.nick, datetime.datetime.now(), input.msg, input.chan))
-    else:
-        command = "update seen set date=?, quote=? where name = ? and chan = ?"
-        cursor.execute(command, (datetime.datetime.now(), input.msg, input.nick, input.chan))
-
+    cursor.execute("insert or replace into seen(name, date, quote, chan) values(?,?,?,?)"
+            command, (input.nick, datetime.datetime.now(), input.msg, input.chan))
     conn.commit()
     conn.close()
 
@@ -66,7 +57,7 @@ def seen(bot, input):
 # check to see that our db has the the seen table, and return a connection.
 def dbconnect(db):
     conn = sqlite3.connect(db)
-    results = conn.execute("select count(*) from sqlite_master where name=?", ("seen" ,)).fetchone()
+    results = conn.execute("select count(*) from sqlite_master where name=?", ("seen",)).fetchone()
 
     if(results[0] == 0):
         conn.execute("create table if not exists "+ \

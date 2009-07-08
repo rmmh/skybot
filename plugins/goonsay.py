@@ -1,4 +1,4 @@
-import hook
+from util import hook
 
 
 #@hook.command

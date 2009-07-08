@@ -8,7 +8,8 @@ import codecs
 import time
 import re
 
-import hook
+from util import hook
+
 
 lock = thread.allocate_lock()
 log_fds = {} # '%(net)s %(chan)s' : (filename, fd)

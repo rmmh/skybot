@@ -5,7 +5,8 @@ import urllib
 from lxml import etree
 import re
 
-import hook
+from util import hook
+
 
 api_prefix = "http://en.wikipedia.org/w/api.php"
 search_url = api_prefix + "?action=opensearch&search=%s&format=xml"

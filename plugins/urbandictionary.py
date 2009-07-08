@@ -1,7 +1,7 @@
 from lxml import html
 import urllib
 
-import hook
+from util import hook
 
 
 @hook.command('u')

@@ -1,7 +1,8 @@
 import urllib
 import re
 
-import hook
+from util import hook
+
 
 re_lineends = re.compile(r'[\r\n]*')
 

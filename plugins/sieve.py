@@ -1,6 +1,6 @@
 import re
 
-import hook
+from util import hook
 
 
 @hook.sieve

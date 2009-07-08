@@ -1,8 +1,7 @@
-import yaml
 import urllib
 from lxml import html
 
-import hook
+from util import hook, yaml
 
 
 def api_get(kind, query):

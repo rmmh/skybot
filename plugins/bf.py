@@ -4,7 +4,8 @@ http://brainfuck.sourceforge.net/brain.py'''
 import re
 import random
 
-import hook
+from util import hook
+
 
 BUFFER_SIZE = 5000
 MAX_STEPS = 1000000

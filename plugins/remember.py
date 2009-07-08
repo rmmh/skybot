@@ -6,7 +6,8 @@ import os
 import thread
 import codecs
 
-import hook
+from util import hook
+
 
 lock = thread.allocate_lock()
 memory = {}

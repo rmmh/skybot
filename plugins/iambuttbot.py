@@ -4,7 +4,8 @@ posts everything buttbot says to the iambuttbot twitter account
 """
 
 import urllib
-import hook
+
+from util import hook
 
 
 @hook.command(hook=r'(.*)', prefix=False, ignorebots=False)

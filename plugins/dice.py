@@ -5,7 +5,8 @@ simulates dicerolls
 import re
 import random
 
-import hook
+from util import hook
+
 
 whitespace_re = re.compile(r'\s+')
 valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$')

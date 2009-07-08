@@ -1,6 +1,6 @@
 # for crusty old rotor
 
-import hook
+from util import hook
 
 
 @hook.command

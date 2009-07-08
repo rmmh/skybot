@@ -6,7 +6,7 @@ retrieves most recent tweets
 import urllib
 from lxml import etree
 
-import hook
+from util import hook
 
 
 def unescape_xml(string):
