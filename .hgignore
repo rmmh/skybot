@@ -1,6 +1,7 @@
 syntax: glob
 .*.swp
 *.pyc
+*.orig
 iambuttbot_password
 persist
 pep8.py
