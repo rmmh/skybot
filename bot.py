@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 network = "irc.synirc.net"
-nick = "skybot"
-channel = "#cobol"
+nick = "skybot_debug"
+channel = "#test"
 
 import sys
 import os
