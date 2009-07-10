@@ -1,4 +1,5 @@
 import urllib2
+import urlparse
 
 from util import hook
 
@@ -13,12 +14,14 @@ def down(inp):
     if 'http://' not in inp:
         inp = 'http://' + inp
 
+    inp = 'http://' + urlparse.urlparse(inp).netloc
+
     # http://mail.python.org/pipermail/python-list/2006-December/589854.html
     try:
         request = urllib2.Request(inp)
         request.get_method = lambda: "HEAD"
-        http_file = urllib2.urlopen(request, timeout=10)
-        head = http_file.headers
-        return 'it seems to be up'
+        http_file = urllib2.urlopen(request)
+        head = http_file.read()
+        return inp + ' seems to be up'
     except urllib2.URLError:
-        return 'it seems to be down'
+        return inp + ' seems to be down'
