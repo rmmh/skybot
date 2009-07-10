@@ -38,5 +38,5 @@ def twitter(input):
         return "can't find that username"
 
     tweet = tweet.find('status')
-    return unescape_xml(': '.join(tweet.find(x).text for x in
+    return unescape_xml(': '.join(tweet.find(x).text.replace('\n','') for x in
         'created_at user/screen_name text'.split()))
