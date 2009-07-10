@@ -16,5 +16,5 @@ def suggest(inp):
     suggestions = yaml.load(json)[1]
     if not suggestions:
         return 'no suggestions found'
-    suggestion = random.choice(suggestions)
-    return '#%d: %s (%s)' % tuple([int(suggestion[2]) + 1] + suggestion[0:2])
+    out = random.choice(suggestions)
+    return '#%d: %s (%s)' % (int(out[2][0]) + 1, out[0], out[1])

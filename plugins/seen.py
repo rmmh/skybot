@@ -54,7 +54,7 @@ def seen(bot, input):
 
     if(results != None):
         reltime = timesince.timesince(datetime.fromtimestamp(results[0]))
-        return '%s was last seen %s ago saying: <%s> %s' % \
+        return '%s was last seen %s ago saying: %s' % \
                     (query, reltime, results[1])
     else:
         return "I've never seen %s" % query
