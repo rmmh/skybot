@@ -1,4 +1,5 @@
 import urllib
+import random
 from lxml import html
 
 from util import hook, yaml
@@ -24,7 +25,8 @@ def gis(inp):
                 parsed['responseStatus'], ''))
     if not parsed['responseData']['results']:
         return 'no images found'
-    return parsed['responseData']['results'][0]['unescapedUrl']
+    return random.choice(parsed['responseData']['results'][:10]
+            )['unescapedUrl'] # squares is dumb
 
 
 @hook.command
