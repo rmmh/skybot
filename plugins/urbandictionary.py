@@ -20,7 +20,7 @@ def urban(inp):
     if not defs:
         return 'no definitions found'
 
-    out = words[0].text_content().strip() + ' '.join(
+    out = words[0].text_content().strip() + ': ' + ' '.join(
             defs[0].text_content().split())
 
     if len(out) > 400:
