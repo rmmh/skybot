@@ -30,6 +30,14 @@ def sieve(func):
     return func
 
 
+def init(func):
+    if func.func_code.co_argcount != 1:
+        raise ValueError(
+                'initializers must take 1 argument: bot')
+    _hook_add(func, ['init', (_make_sig(func), func)])
+    return func
+
+
 def command(func=None, hook=None, **kwargs):
     args = {}
 

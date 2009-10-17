@@ -8,11 +8,9 @@ if 'mtimes' not in globals():
 if 'lastfiles' not in globals():
     lastfiles = set()
 
-def reload():
-    init = False
-    if not hasattr(bot, 'plugs'):
+def reload(init=False):
+    if init:
         bot.plugs = collections.defaultdict(lambda: [])
-        init = True
 
     for filename in glob.glob("core/*.py"):
         mtime = os.stat(filename).st_mtime
@@ -26,7 +24,7 @@ def reload():
                 continue
 
             if filename == 'core/reload.py':
-                reload()
+                reload(init=init)
                 return
 
     fileset = set(glob.glob("plugins/*py"))
@@ -53,6 +51,12 @@ def reload():
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
+                        
+                        if type == 'init':
+                            try:
+                                obj(bot)
+                            except Exception:
+                                traceback.print_exc(Exception)
 
     if init:
         print '  plugin listing:'

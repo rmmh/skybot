@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-network = "irc.synirc.net"
+network = "localhost"
 nick = "skybot"
-channel = "#cobol"
+channel = "#test"
 
 import sys
 import os
@@ -12,11 +12,10 @@ sys.path += ['plugins'] # so 'import hook' works without duplication
 sys.path += ['lib']
 os.chdir(sys.path[0])   # do stuff relative to the installation directory
 
-import irc
-
 
 class Bot(object):
     pass
+
 
 bot = Bot()
 
@@ -24,13 +23,14 @@ print 'Loading plugins'
 
 # bootstrap the reloader
 eval(compile(open('core/reload.py', 'U').read(), 'core/reload.py', 'exec'))
+reload(init=True)
 
 print 'Connecting to IRC'
 
 bot.nick = nick
 bot.channel = channel
 bot.network = network
-bot.irc = irc.irc(network, nick)
+bot.irc = irc(network, nick)
 bot.irc.join(channel)
 bot.persist_dir = os.path.abspath('persist')
 
