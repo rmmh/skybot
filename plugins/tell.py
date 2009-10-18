@@ -29,17 +29,48 @@ def tellinput(bot, input):
 
     if results[0] > 0:
         command = "select id, user_from, quote, date from tell " \
-                    "where name = ? and chan = ?"
-        tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
+                    "where name = ? and chan = ? limit 1"
+        tell = cursor.execute(command, (input.nick, input.chan)).fetchall()[0]
+        more = results[0] - 1;
+        reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
 
+        reply = "%(teller)s said %(reltime)s ago: %(quote)s" %
+                {"teller": tell[1], "quote": tell[2], "reltime": reltime}
+        if more:
+            reply += " (+%(more)d more, to view say .showtells.)" % more
+
+        bot.reply(reply)
+        command = "delete from tell where id = ?"
+        cursor.execute(command, (tell[0], ))
+       
+        conn.commit()
+    conn.close()
+
+@hook.command
+def showtells(bot, input):
+    ".showtells - View all pending tell messages (sent in PM)."
+    
+    dbpath = os.path.join(bot.persist_dir, dbname)
+    conn = dbconnect(dbpath)
+
+    cursor = conn.cursor()
+    command = "select id, user_from, quote, date from tell " \
+                "where name = ? and chan = ?"
+    tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
+    
+    if(len(tells) > 0):
         for tell in tells:
             reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
-            bot.reply('%(teller)s said %(reltime)s ago: %(quote)s' %
+            bot.irc.msg(input.nick, '%(teller)s said %(reltime)s ago: %(quote)s' %
                     {'teller': tell[1], 'quote': tell[2], 'reltime': reltime})
+            
             command = "delete from tell where id = ?"
             cursor.execute(command, (tell[0], ))
-
+        
         conn.commit()
+    else:
+         bot.irc.msg(input.nick, "You have no pending tells.")
+    
     conn.close()
 
 
