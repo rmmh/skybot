@@ -37,7 +37,7 @@ def tellinput(bot, input):
         reply = "%(teller)s said %(reltime)s ago: %(quote)s" %
                 {"teller": tell[1], "quote": tell[2], "reltime": reltime}
         if more:
-            reply += " (+%(more)d more, to view say .showtells.)" % more
+            reply += " (+%(more)d more, to view say .showtells)" % {"more": more}
 
         bot.reply(reply)
         command = "delete from tell where id = ?"
@@ -61,7 +61,7 @@ def showtells(bot, input):
     if(len(tells) > 0):
         for tell in tells:
             reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
-            bot.irc.msg(input.nick, '%(teller)s said %(reltime)s ago: %(quote)s' %
+            bot.msg(input.nick, '%(teller)s said %(reltime)s ago: %(quote)s' %
                     {'teller': tell[1], 'quote': tell[2], 'reltime': reltime})
             
             command = "delete from tell where id = ?"
@@ -69,7 +69,7 @@ def showtells(bot, input):
         
         conn.commit()
     else:
-         bot.irc.msg(input.nick, "You have no pending tells.")
+         bot.msg(input.nick, "You have no pending tells.")
     
     conn.close()
 
