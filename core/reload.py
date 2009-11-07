@@ -8,11 +8,15 @@ if 'mtimes' not in globals():
 if 'lastfiles' not in globals():
     lastfiles = set()
 
-def reload():
-    init = False
-    if not hasattr(bot, 'plugs'):
+def format_plug(plug, lpad=0, width=40):
+    out = ' ' * lpad + '%s:%s:%s' % (plug[0])
+    if len(plug) == 3 and 'hook' in plug[2]:
+        out += '%s%s' % (' ' * (width - len(out)), plug[2]['hook'])
+    return out
+
+def reload(init=False):
+    if init:
         bot.plugs = collections.defaultdict(lambda: [])
-        init = True
 
     for filename in glob.glob("core/*.py"):
         mtime = os.stat(filename).st_mtime
@@ -26,7 +30,7 @@ def reload():
                 continue
 
             if filename == 'core/reload.py':
-                reload()
+                reload(init=init)
                 return
 
     fileset = set(glob.glob("plugins/*py"))
@@ -54,15 +58,20 @@ def reload():
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
 
+                        if not init:
+                            print '### new plugin (type: %s) loaded:' % type, format_plug(data)
+                        
+                        if type == 'init': # run-once functions
+                            try:
+                                obj(bot) # not thread-safe!
+                            except Exception:
+                                traceback.print_exc(Exception)
+
     if init:
         print '  plugin listing:'
         for type, plugs in sorted(bot.plugs.iteritems()):
             print '    %s:' % type
             for plug in plugs:
                 out = '      %s:%s:%s' % (plug[0])
-                print out,
-                if len(plug) == 3 and 'hook' in plug[2]:
-                    print '%s%s' % (' ' * (40 - len(out)), plug[2]['hook'])
-                else:
-                    print
+                print format_plug(plug, lpad=6)
         print
