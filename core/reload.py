@@ -8,6 +8,12 @@ if 'mtimes' not in globals():
 if 'lastfiles' not in globals():
     lastfiles = set()
 
+def format_plug(plug, lpad=0, width=40):
+    out = ' ' * lpad + '%s:%s:%s' % (plug[0])
+    if len(plug) == 3 and 'hook' in plug[2]:
+        out += '%s%s' % (' ' * (width - len(out)), plug[2]['hook'])
+    return out
+
 def reload(init=False):
     if init:
         bot.plugs = collections.defaultdict(lambda: [])
@@ -51,10 +57,13 @@ def reload(init=False):
                 if hasattr(obj, '_skybot_hook'): #check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
+
+                        if not init:
+                            print '### new plugin (type: %s) loaded:' % type, format_plug(data)
                         
-                        if type == 'init':
+                        if type == 'init': # run-once functions
                             try:
-                                obj(bot)
+                                obj(bot) # not thread-safe!
                             except Exception:
                                 traceback.print_exc(Exception)
 
@@ -64,9 +73,5 @@ def reload(init=False):
             print '    %s:' % type
             for plug in plugs:
                 out = '      %s:%s:%s' % (plug[0])
-                print out,
-                if len(plug) == 3 and 'hook' in plug[2]:
-                    print '%s%s' % (' ' * (40 - len(out)), plug[2]['hook'])
-                else:
-                    print
+                print format_plug(plug, lpad=6)
         print
