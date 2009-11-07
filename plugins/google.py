@@ -31,9 +31,9 @@ def gis(inp):
 
 @hook.command
 @hook.command('g')
-@hook.command('goog')
+@hook.command('google')
 def google(inp):
-    '''.g/.goog/.google <query> -- returns first google search result'''
+    '''.g/.google <query> -- returns first google search result'''
     if not inp:
         return google.__doc__
 
