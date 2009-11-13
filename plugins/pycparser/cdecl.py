@@ -34,14 +34,11 @@ def explain_c_declaration(c_decl):
     """
     parser = c_parser.CParser()
     
-    try:
-        node = parser.parse(c_decl, filename='<stdin>')
-    except c_parser.ParseError, e:
-        return None
+    node = parser.parse(c_decl, filename='<stdin>')
 
     if (    not isinstance(node, c_ast.FileAST) or 
             not isinstance(node.ext[-1], c_ast.Decl)):
-        return None
+        return "Last external node is invalid type"
 
     return _explain_decl_node(node.ext[-1])
 

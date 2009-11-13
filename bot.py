@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-network = "localhost"
-nick = "skybot"
-channel = "#test"
+network = "irc.synirc.net"
+nick = "skybotisgay"
+channel = "#cobol"
 
 import sys
 import os
