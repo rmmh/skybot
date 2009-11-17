@@ -34,7 +34,7 @@ def tellinput(bot, input):
         more = results[0] - 1;
         reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
 
-        reply = "%(teller)s said %(reltime)s ago: %(quote)s" %
+        reply = "%(teller)s said %(reltime)s ago: %(quote)s" % \
                 {"teller": tell[1], "quote": tell[2], "reltime": reltime}
         if more:
             reply += " (+%(more)d more, to view say .showtells)" % {"more": more}
