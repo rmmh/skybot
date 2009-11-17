@@ -8,7 +8,7 @@ from nodes import *
 from loader import *
 from dumper import *
 
-__version__ = '3.08'
+__version__ = '3.09'
 
 try:
     from cyaml import *
@@ -43,7 +43,7 @@ def compose(stream, Loader=Loader):
 def compose_all(stream, Loader=Loader):
     """
     Parse all YAML documents in a stream
-    and produce corresponsing representation trees.
+    and produce corresponding representation trees.
     """
     loader = Loader(stream)
     while loader.check_node():

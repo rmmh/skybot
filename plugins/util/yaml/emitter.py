@@ -581,7 +581,9 @@ class Emitter(object):
             return tag
         handle = None
         suffix = tag
-        for prefix in self.tag_prefixes:
+        prefixes = self.tag_prefixes.keys()
+        prefixes.sort()
+        for prefix in prefixes:
             if tag.startswith(prefix)   \
                     and (prefix == u'!' or len(prefix) < len(tag)):
                 handle = self.tag_prefixes[prefix]
@@ -787,7 +789,7 @@ class Emitter(object):
     def write_stream_start(self):
         # Write BOM if needed.
         if self.encoding and self.encoding.startswith('utf-16'):
-            self.stream.write(u'\xFF\xFE'.encode(self.encoding))
+            self.stream.write(u'\uFEFF'.encode(self.encoding))
 
     def write_stream_end(self):
         self.flush_stream()
@@ -1025,6 +1027,7 @@ class Emitter(object):
             else:
                 if ch is None or ch in u' \n\x85\u2028\u2029':
                     data = text[start:end]
+                    self.column += len(data)
                     if self.encoding:
                         data = data.encode(self.encoding)
                     self.stream.write(data)
