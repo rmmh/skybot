@@ -62,9 +62,10 @@ class irc(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
 
-    def __init__(self, server, nick, port=6667):
+    def __init__(self, server, nick, port=6667, channels=[]):
         self.server = server
         self.conn = crlf_tcp(server, port)
+        self.channels = channels
         thread.start_new_thread(self.conn.run, ())
         self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
