@@ -6,6 +6,7 @@ retrieves most recent tweets
 import re
 import urllib2
 from lxml import etree
+from time import strptime, strftime
 
 from util import hook
 
@@ -24,19 +25,29 @@ def unescape_xml(string):
 
 @hook.command
 def twitter(inp):
-    ".twitter <user>/<id> - gets last tweet from <user>/gets tweet <id>"
+    ".twitter <user>/<user> <n>/<id> - gets last/<n>th tweet from <user>/gets tweet <id>"
     inp = inp.strip()
     if not inp:
         return twitter.__doc__
 
+
+    getting_nth = False
     getting_id = False
     if re.match('^\d+$', inp):
         getting_id = True
-        url = 'http://twitter.com/statuses/show/%s.xml' % inp
+        url = 'statuses/show/%s.xml' % inp
     elif re.match('^\w{,15}$', inp):
-        url = 'http://twitter.com/statuses/user_timeline/%s.xml?count=1' % inp
+        url = 'statuses/user_timeline/%s.xml?count=1' % inp
+    elif re.match('^\w{,15}\s+\d+$', inp):
+        getting_nth = True
+        name, num = inp.split()
+        if int(num) > 3200:
+            return 'error: only supports up to the 3200th tweet'
+        url = 'statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
     else:
         return 'error: invalid username'
+    
+    url = 'http://twitter.com/' + url
 
     try:
         xml = urllib2.urlopen(url).read()
@@ -58,7 +69,15 @@ def twitter(inp):
     if not getting_id:
         tweet = tweet.find('status')
         if tweet is None:
-            return 'error: user has no tweets'
+            if getting_nth:
+                return 'error: user does not have that many tweets'
+            else:
+                return 'error: user has no tweets'
 
-    return unescape_xml(': '.join(tweet.find(x).text.replace('\n', '') for x in
-        'created_at user/screen_name text'.split()))
+    time = strftime('%Y-%m-%d %H:%M:%S', 
+             strptime(tweet.find('created_at').text,
+               '%a %b %d %H:%M:%S +0000 %Y'))
+    screen_name = tweet.find('user/screen_name').text
+    text = unescape_xml(tweet.find('text').text.replace('\n', ''))
+
+    return "%s %s: %s" % (time, screen_name, text)
