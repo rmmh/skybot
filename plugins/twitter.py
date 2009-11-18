@@ -4,6 +4,7 @@ retrieves most recent tweets
 """
 
 import re
+import random
 import urllib2
 from lxml import etree
 from time import strptime, strftime
@@ -31,23 +32,26 @@ def twitter(inp):
         return twitter.__doc__
 
 
+    url = 'http://twitter.com'
     getting_nth = False
     getting_id = False
-    if re.match('^\d+$', inp):
+    searching_hashtag = False
+    if re.match(r'^\d+$', inp):
         getting_id = True
-        url = 'statuses/show/%s.xml' % inp
-    elif re.match('^\w{,15}$', inp):
-        url = 'statuses/user_timeline/%s.xml?count=1' % inp
-    elif re.match('^\w{,15}\s+\d+$', inp):
+        url += '/statuses/show/%s.xml' % inp
+    elif re.match(r'^\w{1,15}$', inp):
+        url += '/statuses/user_timeline/%s.xml?count=1' % inp
+    elif re.match(r'^\w{1,15}\s+\d+$', inp):
         getting_nth = True
         name, num = inp.split()
         if int(num) > 3200:
             return 'error: only supports up to the 3200th tweet'
-        url = 'statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
+        url += '/statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
+    elif re.match(r'^#\w{1,15}$', inp):
+        url = 'http://search.twitter.com/search.atom?q=%23' + inp[1:]
+        searching_hashtag = True
     else:
         return 'error: invalid username'
-    
-    url = 'http://twitter.com/' + url
 
     try:
         xml = urllib2.urlopen(url).read()
@@ -65,6 +69,12 @@ def twitter(inp):
         return 'error: unknown'
 
     tweet = etree.fromstring(xml)
+
+    if searching_hashtag:
+        ns = '{http://www.w3.org/2005/Atom}'
+        id = random.choice(tweet.findall(ns + 'entry/' + ns + 'id')).text
+        id = id[id.rfind(':') + 1:]
+        return twitter(id)
 
     if not getting_id:
         tweet = tweet.find('status')
