@@ -2,7 +2,6 @@ syntax: glob
 .*.swp
 *.pyc
 *.orig
-iambuttbot_password
 persist
 config
 pep8.py
