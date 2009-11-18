@@ -62,13 +62,15 @@ class irc(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
 
-    def __init__(self, network, nick, port=6667):
-        self.conn = crlf_tcp(network, port)
+    def __init__(self, server, nick, port=6667):
+        self.server = server
+        self.conn = crlf_tcp(server, port)
         thread.start_new_thread(self.conn.run, ())
         self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
         # nick, user, host, paramlist, msg]
-        self.nick(nick)
+        self.nick = nick
+        self.set_nick(nick)
         self.cmd("USER", ["skybot v0.01", "0", "bot"])
         thread.start_new_thread(self.parse_loop, ())
 
@@ -89,7 +91,7 @@ class irc(object):
             if command == "PING":
                 self.cmd("PONG", [params])
 
-    def nick(self, nick):
+    def set_nick(self, nick):
         self.cmd("NICK", [nick])
 
     def join(self, channel):

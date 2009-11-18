@@ -3,8 +3,9 @@ import traceback
 
 class Input(object):
 
-    def __init__(self, raw, prefix, command,
+    def __init__(self, conn, raw, prefix, command,
             params, nick, user, host, paraml, msg):
+        self.conn = conn
         self.raw = raw
         self.prefix = prefix
         self.command = command
@@ -15,7 +16,7 @@ class Input(object):
         self.paraml = paraml
         self.msg = msg
         self.chan = paraml[0]
-        if self.chan == bot.nick:
+        if self.chan == conn.nick:
             self.chan = nick
         elif command =='JOIN':
             self.chan = msg
@@ -23,20 +24,21 @@ class Input(object):
 
 class FakeBot(object):
 
-    def __init__(self, bot, input, func):
+    def __init__(self, bot, conn, input, func):
         self.bot = bot
+        self.conn = conn
         self.persist_dir = bot.persist_dir
-        self.network = bot.network
+        self.server = conn.server
         self.input = input
-        self.msg = bot.irc.msg
-        self.cmd = bot.irc.cmd
-        self.join = bot.irc.join
+        self.msg = conn.msg
+        self.cmd = conn.cmd
+        self.join = conn.join
         self.func = func
         self.doreply = True
         self.chan = input.chan
-
+    
     def say(self, msg):
-        self.bot.irc.msg(self.chan, msg)
+        self.conn.msg(self.chan, msg)
 
     def reply(self, msg):
         self.say(self.input.nick + ': ' + msg)
@@ -53,9 +55,9 @@ class FakeBot(object):
             else:
                 self.say(unicode(out))
 
-def main(out):
+def main(conn, out):
     for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
-        input = Input(*out)
+        input = Input(conn, *out)
         for fsig, sieve in bot.plugs['sieve']:
             try:
                 input = sieve(bot, input, func, args)
@@ -67,4 +69,4 @@ def main(out):
                 break
         if input == None:
             continue
-        thread.start_new_thread(FakeBot(bot, input, func).run, ())
+        thread.start_new_thread(FakeBot(bot, conn, input, func).run, ())

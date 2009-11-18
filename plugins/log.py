@@ -30,8 +30,8 @@ ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
 irc_color_re = re.compile(r'(\x03(\d+,\d+|\d)|[\x0f\x02\x16\x1f])')
 
 
-def get_log_filename(dir, network, chan):
-    return os.path.join(dir, 'log', gmtime('%Y'), network,
+def get_log_filename(dir, server, chan):
+    return os.path.join(dir, 'log', gmtime('%Y'), server,
             gmtime('%%s.%m-%d.log') % chan).lower()
 
 
@@ -63,9 +63,9 @@ def beautify(input):
     return format % args
 
 
-def get_log_fd(dir, network, chan):
-    fn = get_log_filename(dir, network, chan)
-    cache_key = '%s %s' % (network, chan)
+def get_log_fd(dir, server, chan):
+    fn = get_log_filename(dir, server, chan)
+    cache_key = '%s %s' % (server, chan)
     filename, fd = log_fds.get(cache_key, ('', 0))
 
     if fn != filename: # we need to open a file for writing
@@ -86,7 +86,7 @@ def log(bot, input):
     with lock:
         timestamp = gmtime(timestamp_format)
 
-        fd = get_log_fd(bot.persist_dir, bot.network, 'raw')
+        fd = get_log_fd(bot.persist_dir, bot.server, 'raw')
         fd.write(timestamp + ' ' + input.raw + '\n')
 
         if input.command == 'QUIT': # these are temporary fixes until proper
@@ -99,5 +99,5 @@ def log(bot, input):
         print '%s %s %s' % (timestamp, input.chan, beau)
 
         if input.chan:
-            fd = get_log_fd(bot.persist_dir, bot.network, input.chan)
+            fd = get_log_fd(bot.persist_dir, bot.server, input.chan)
             fd.write(timestamp + ' ' + beau + '\n')
