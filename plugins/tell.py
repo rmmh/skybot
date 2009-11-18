@@ -31,7 +31,7 @@ def tellinput(bot, input):
         command = "select id, user_from, quote, date from tell " \
                     "where name = ? and chan = ? limit 1"
         tell = cursor.execute(command, (input.nick, input.chan)).fetchall()[0]
-        more = results[0] - 1;
+        more = results[0] - 1
         reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
 
         reply = "%(teller)s said %(reltime)s ago: %(quote)s" % \
@@ -69,7 +69,7 @@ def showtells(bot, input):
         
         conn.commit()
     else:
-         bot.msg(input.nick, "You have no pending tells.")
+        bot.msg(input.nick, "You have no pending tells.")
     
     conn.close()
 

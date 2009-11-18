@@ -61,7 +61,6 @@ irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 class irc(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
-
     def __init__(self, server, nick, port=6667, channels=[]):
         self.server = server
         self.conn = crlf_tcp(server, port)

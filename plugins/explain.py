@@ -3,10 +3,7 @@ from pycparser.cdecl import explain_c_declaration
 
 @hook.command('explain')
 def explain(inp):
-    '''.explain char *(*(**foo[][8])())[]; -- returns :
-foo is a array of array[8] of pointer to pointer to function() returning pointer
- to array of pointer to char
-'''
+    ".explain <c expression> -- gives an explanation of x expression"
     if not inp:
         return ""
 
@@ -16,4 +13,3 @@ foo is a array of array[8] of pointer to pointer to function() returning pointer
         result = str(e)
 
     return result
-
