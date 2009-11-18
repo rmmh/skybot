@@ -47,11 +47,11 @@ def twitter(inp):
         if int(num) > 3200:
             return 'error: only supports up to the 3200th tweet'
         url += '/statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
-    elif re.match(r'^#\w{1,15}$', inp):
+    elif re.match(r'^#\w+$', inp):
         url = 'http://search.twitter.com/search.atom?q=%23' + inp[1:]
         searching_hashtag = True
     else:
-        return 'error: invalid username'
+        return 'error: invalid request'
 
     try:
         xml = urllib2.urlopen(url).read()
@@ -72,8 +72,12 @@ def twitter(inp):
 
     if searching_hashtag:
         ns = '{http://www.w3.org/2005/Atom}'
-        id = random.choice(tweet.findall(ns + 'entry/' + ns + 'id')).text
+        tweets = tweet.findall(ns + 'entry/' + ns + 'id')
+        if not tweets:
+            return 'error: hashtag not found'
+        id = random.choice(tweets).text
         id = id[id.rfind(':') + 1:]
+        print id
         return twitter(id)
 
     if not getting_id:
