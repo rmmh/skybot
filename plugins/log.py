@@ -22,7 +22,9 @@ formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
     'MODE': '-!- mode/%(chan)s [%(param_tail)s] by %(nick)s',
     'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
     'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',
-    'QUIT': '-!- %(nick)s has quit [%(msg)s]'
+    'QUIT': '-!- %(nick)s has quit [%(msg)s]',
+    'PING': '',
+    'NOTICE': ''
 }
 
 ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
@@ -95,6 +97,9 @@ def log(bot, input):
             input.chan = 'nick'
 
         beau = beautify(input)
+
+        if beau == '': # don't log this
+            return
 
         print '%s %s %s' % (timestamp, input.chan, beau)
 
