@@ -101,7 +101,10 @@ def log(bot, input):
         if beau == '': # don't log this
             return
 
-        print '%s %s %s' % (timestamp, input.chan, beau)
+        try:
+            print '%s %s %s' % (timestamp, input.chan, beau)
+        except Exception, e:
+            print e, timestamp, input.chan, beau
 
         if input.chan:
             fd = get_log_fd(bot.persist_dir, input.server, input.chan)
