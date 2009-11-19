@@ -51,6 +51,12 @@ def reload(init=False):
 
             # remove plugins already loaded from this filename
             for name, data in bot.plugs.iteritems():
+
+                if name == 'tee': # signal tee trampolines to stop
+                    for csig, func, args in data:
+                        if csig[0] == filename:
+                            func._iqueue.put(StopIteration)
+
                 bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
 
             for obj in namespace.itervalues():
@@ -61,12 +67,6 @@ def reload(init=False):
                         if not init:
                             print '### new plugin (type: %s) loaded:' % \
                                     type, format_plug(data)
-                        
-                        if type == 'init': # run-once functions
-                            try:
-                                obj(bot) # not thread-safe!
-                            except Exception:
-                                traceback.print_exc(Exception)
 
     if init:
         print '  plugin listing:'

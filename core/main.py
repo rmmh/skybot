@@ -6,6 +6,7 @@ class Input(object):
     def __init__(self, conn, raw, prefix, command,
             params, nick, user, host, paraml, msg):
         self.conn = conn
+        self.server = conn.server
         self.raw = raw
         self.prefix = prefix
         self.command = command
@@ -28,7 +29,6 @@ class FakeBot(object):
         self.bot = bot
         self.conn = conn
         self.persist_dir = bot.persist_dir
-        self.server = conn.server
         self.input = input
         self.msg = conn.msg
         self.cmd = conn.cmd
@@ -56,6 +56,9 @@ class FakeBot(object):
                 self.say(unicode(out))
 
 def main(conn, out):
+    for csig, func, args in bot.plugs['tee']:
+        input = Input(conn, *out)
+        func._iqueue.put((bot, input))
     for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
         input = Input(conn, *out)
         for fsig, sieve in bot.plugs['sieve']:

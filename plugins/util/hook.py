@@ -1,10 +1,6 @@
 import Queue
+import thread
 
-class queue(Queue.Queue):
-
-    def __init__(self, maxsize=0):
-        Queue.Queue.__init__(self, maxsize)
-        self._skybot_hook = [['queue', self]]
 
 def _isfunc(x):
     if type(x) == type(_isfunc):
@@ -27,14 +23,6 @@ def sieve(func):
         raise ValueError(
                 'sieves must take 4 arguments: (bot, input, func, args)')
     _hook_add(func, ['sieve', (_make_sig(func), func)])
-    return func
-
-
-def init(func):
-    if func.func_code.co_argcount != 1:
-        raise ValueError(
-                'initializers must take 1 argument: bot')
-    _hook_add(func, ['init', (_make_sig(func), func)])
     return func
 
 
@@ -79,3 +67,25 @@ def event(arg=None, **kwargs):
         if arg is not None:
             args['events'] = arg.split()
         return event_wrapper
+
+
+def tee(func, **kwargs):
+    "passes _all_ input lines to function, in order (skips sieves)"
+
+    if func.func_code.co_argcount != 2:
+        raise ValueError('tees must take 2 arguments: (bot, input)')
+    
+    _hook_add(func, ['tee', (_make_sig(func), func, kwargs)])
+    func._iqueue = Queue.Queue()
+
+    def trampoline(func):
+        input = None
+        while True:
+            input = func._iqueue.get()
+            if input == StopIteration:
+                return
+            func(*input)
+
+    thread.start_new_thread(trampoline, (func,))
+
+    return func

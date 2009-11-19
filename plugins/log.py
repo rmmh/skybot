@@ -83,12 +83,12 @@ def get_log_fd(dir, server, chan):
     return fd
 
 
-@hook.event(ignorebots=False)
+@hook.tee
 def log(bot, input):
     with lock:
         timestamp = gmtime(timestamp_format)
 
-        fd = get_log_fd(bot.persist_dir, bot.server, 'raw')
+        fd = get_log_fd(bot.persist_dir, input.server, 'raw')
         fd.write(timestamp + ' ' + input.raw + '\n')
 
         if input.command == 'QUIT': # these are temporary fixes until proper
@@ -104,5 +104,5 @@ def log(bot, input):
         print '%s %s %s' % (timestamp, input.chan, beau)
 
         if input.chan:
-            fd = get_log_fd(bot.persist_dir, bot.server, input.chan)
+            fd = get_log_fd(bot.persist_dir, input.server, input.chan)
             fd.write(timestamp + ' ' + beau + '\n')
