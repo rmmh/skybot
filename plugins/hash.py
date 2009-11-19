@@ -15,5 +15,6 @@ def sha1(inp):
 
 @hook.command
 def hash(inp):
+    ".hash <text> -- returns hashes of <text>"
     return ', '.join(x + ": " + getattr(hashlib, x)(inp).hexdigest()
             for x in 'md5 sha1 sha256'.split())

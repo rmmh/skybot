@@ -26,7 +26,8 @@ def unescape_xml(string):
 
 @hook.command
 def twitter(inp):
-    ".twitter <user>/<user> <n>/<id> - gets last/<n>th tweet from <user>/gets tweet <id>"
+    ".twitter <user>/<user> <n>/<id>/#<hashtag> -- gets last/<n>th tweet from"\
+    "<user>/gets tweet <id>/gets random tweet with #<hashtag>"
     inp = inp.strip()
     if not inp:
         return twitter.__doc__

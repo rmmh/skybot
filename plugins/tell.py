@@ -48,7 +48,7 @@ def tellinput(bot, input):
 
 @hook.command
 def showtells(bot, input):
-    ".showtells - View all pending tell messages (sent in PM)."
+    ".showtells -- view all pending tell messages (sent in PM)."
     
     dbpath = os.path.join(bot.persist_dir, dbname)
     conn = dbconnect(dbpath)
@@ -69,14 +69,14 @@ def showtells(bot, input):
         
         conn.commit()
     else:
-        input.msg(input.nick, "You have no pending tells.")
+        input.pm("You have no pending tells.")
     
     conn.close()
 
 
 @hook.command
 def tell(bot, input):
-    ".tell <nick> <message> - Relay <message> to <nick> the next time he talks"
+    ".tell <nick> <message> -- relay <message> to <nick> when <nick> is around"
 
     if len(input.msg) < 6:
         return tell.__doc__

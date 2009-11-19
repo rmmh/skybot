@@ -6,6 +6,11 @@ from util import hook
 @hook.command('god')
 @hook.command
 def bible(inp):
+    ".bible <passage> -- gets <passage> from the Bible (ESV)"
+
+    if not inp:
+        return bible.__doc__
+
     base_url = 'http://www.esvapi.org/v2/rest/passageQuery?key=IP&' \
         'output-format=plain-text&include-heading-horizontal-lines&' \
         'include-headings=false&include-passage-horizontal-lines=false&' \

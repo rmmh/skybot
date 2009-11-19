@@ -3,9 +3,9 @@ from pycparser.cdecl import explain_c_declaration
 
 @hook.command('explain')
 def explain(inp):
-    ".explain <c expression> -- gives an explanation of x expression"
+    ".explain <c expression> -- gives an explanation of C expression"
     if not inp:
-        return ""
+        return explain.__doc__
 
     try:    
         result = explain_c_declaration(inp.rstrip())

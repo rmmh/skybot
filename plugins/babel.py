@@ -57,6 +57,11 @@ def babel_gen(inp):
 
 @hook.command
 def babel(inp):
+    ".babel <sentence> -- translates <sentence> through multiple languages"
+
+    if not inp:
+        return babel.__doc__
+
     try:
         return list(babel_gen(inp))[-1][2]
     except IOError, e:
@@ -65,6 +70,11 @@ def babel(inp):
 
 @hook.command
 def babelext(inp):
+    ".babelext <sentence> -- like .babel, but with more detailed output"
+
+    if not inp:
+        return babelext.__doc__
+
     try:
         babels = list(babel_gen(inp))
     except IOError, e:

@@ -32,7 +32,7 @@ def seeninput(bot, input):
 
 @hook.command
 def seen(bot, input):
-    ".seen <nick> - Tell when a nickname was last in active in irc"
+    ".seen <nick> -- Tell when a nickname was last in active in irc"
 
     if len(input.msg) < 6:
         return seen.__doc__

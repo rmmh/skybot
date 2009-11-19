@@ -26,6 +26,9 @@ class Input(object):
     def reply(self, msg):
         self.say(self.nick + ': ' + msg)
 
+    def pm(self, msg):
+        self.conn.msg(self.nick, msg)
+
 
 def run(func, input):
     ac = func.func_code.co_argcount

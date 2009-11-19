@@ -31,7 +31,7 @@ def nrolls(count, n):
 
 @hook.command
 def dice(inp):
-    ".dice <diceroll> - simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
+    ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
     if not inp.strip():
         return dice.__doc__
