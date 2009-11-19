@@ -1,6 +1,6 @@
 import Queue
 import thread
-
+import traceback
 
 def _isfunc(x):
     if type(x) == type(_isfunc):
@@ -84,7 +84,10 @@ def tee(func, **kwargs):
             input = func._iqueue.get()
             if input == StopIteration:
                 return
-            func(*input)
+            try:
+                func(*input)
+            except Exception:
+                traceback.print_exc(Exception)
 
     thread.start_new_thread(trampoline, (func,))
 
