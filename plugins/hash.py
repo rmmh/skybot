@@ -4,16 +4,16 @@ from util import hook
 
 
 @hook.command
-def md5(input):
-    return hashlib.md5(input).hexdigest()
+def md5(inp):
+    return hashlib.md5(inp).hexdigest()
 
 
 @hook.command
-def sha1(input):
-    return hashlib.sha1(input).hexdigest()
+def sha1(inp):
+    return hashlib.sha1(inp).hexdigest()
 
 
 @hook.command
-def hash(input):
-    return ', '.join(x + ": " + getattr(hashlib, x)(input).hexdigest()
+def hash(inp):
+    return ', '.join(x + ": " + getattr(hashlib, x)(inp).hexdigest()
             for x in 'md5 sha1 sha256'.split())

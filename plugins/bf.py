@@ -12,10 +12,10 @@ MAX_STEPS = 1000000
 
 
 @hook.command
-def bf(input):
+def bf(inp):
     """Runs a Brainfuck program."""
 
-    program = re.sub('[^][<>+-.,]', '', input)
+    program = re.sub('[^][<>+-.,]', '', inp)
 
     # create a dict of brackets pairs, for speed later on
     brackets={}

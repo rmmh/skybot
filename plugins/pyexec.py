@@ -8,9 +8,9 @@ re_lineends = re.compile(r'[\r\n]*')
 
 
 @hook.command
-def py(input):
+def py(inp):
     res = urllib.urlopen("http://eval.appspot.com/eval?statement=%s" %
-                          urllib.quote(input.strip(), safe='')).readlines()
+                          urllib.quote(inp.strip(), safe='')).readlines()
     if len(res) == 0:
         return
     res[0] = re_lineends.split(res[0])[0]
