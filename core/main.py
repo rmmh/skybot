@@ -19,41 +19,23 @@ class Input(object):
         self.chan = paraml[0]
         if self.chan == conn.nick:
             self.chan = nick
-        elif command =='JOIN':
-            self.chan = msg
 
-
-class FakeBot(object):
-
-    def __init__(self, bot, conn, input, func):
-        self.bot = bot
-        self.conn = conn
-        self.persist_dir = bot.persist_dir
-        self.input = input
-        self.msg = conn.msg
-        self.cmd = conn.cmd
-        self.join = conn.join
-        self.func = func
-        self.doreply = True
-        self.chan = input.chan
-    
     def say(self, msg):
         self.conn.msg(self.chan, msg)
 
     def reply(self, msg):
-        self.say(self.input.nick + ': ' + msg)
+        self.say(self.nick + ': ' + msg)
 
-    def run(self):
-        ac = self.func.func_code.co_argcount
-        if ac == 2:
-            out = self.func(self, self.input)
-        elif ac == 1:
-            out = self.func(self.input.inp)
-        if out is not None:
-            if self.doreply:
-                self.reply(unicode(out))
-            else:
-                self.say(unicode(out))
+
+def run(func, input):
+    ac = func.func_code.co_argcount
+    if ac == 2:
+        out = func(bot, input)
+    elif ac == 1:
+        out = func(input.inp)
+    if out is not None:
+        input.reply(unicode(out))
+
 
 def main(conn, out):
     for csig, func, args in bot.plugs['tee']:
@@ -72,4 +54,4 @@ def main(conn, out):
                 break
         if input == None:
             continue
-        thread.start_new_thread(FakeBot(bot, conn, input, func).run, ())
+        thread.start_new_thread(run, (func, input))

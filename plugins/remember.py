@@ -49,9 +49,9 @@ def remember(bot, input):
         tail = tail.strip()
         low = head.lower()
         if low not in memory[filename]:
-            bot.reply("done.")
+            input.reply("done.")
         else:
-            bot.reply('forgetting that "%s", remembering this instead.' %
+            input.reply('forgetting that "%s", remembering this instead.' %
                     memory[filename][low])
         memory[filename][low] = input.inp.strip()
         save_memory(filename, memory[filename])
@@ -72,7 +72,7 @@ def forget(bot, input):
             return "I don't know about that."
         if not hasattr(input, 'chan'):
             return "I won't forget anything in private."
-        bot.say("Forgot that %s" % memory[filename][low])
+        input.say("Forgot that %s" % memory[filename][low])
         del memory[filename][low]
         save_memory(filename, memory[filename])
 
@@ -86,4 +86,4 @@ def question(bot, input):
 
         word = input.inp.split()[0].lower()
         if word in memory[filename]:
-            bot.say("%s" % memory[filename][word])
+            input.say("%s" % memory[filename][word])

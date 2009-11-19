@@ -18,7 +18,7 @@ timestamp_format = '%H:%M:%S'
 
 formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
     'PART': '-!- %(nick)s [%(user)s@%(host)s] has left %(chan)s',
-    'JOIN': '-!- %(nick)s [%(user)s@%(host)s] has joined %(chan)s',
+    'JOIN': '-!- %(nick)s [%(user)s@%(host)s] has joined %(param0)s',
     'MODE': '-!- mode/%(chan)s [%(param_tail)s] by %(nick)s',
     'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
     'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',

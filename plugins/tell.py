@@ -39,7 +39,7 @@ def tellinput(bot, input):
         if more:
             reply += " (+%(more)d more, to view say .showtells)" % {"more": more}
 
-        bot.reply(reply)
+        input.reply(reply)
         command = "delete from tell where id = ?"
         cursor.execute(command, (tell[0], ))
        
@@ -61,15 +61,15 @@ def showtells(bot, input):
     if(len(tells) > 0):
         for tell in tells:
             reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
-            bot.msg(input.nick, '%(teller)s said %(reltime)s ago: %(quote)s' %
-                    {'teller': tell[1], 'quote': tell[2], 'reltime': reltime})
+            input.msg(input.nick, '%(teller)s said %(time)s ago: %(quote)s' %
+                    {'teller': tell[1], 'quote': tell[2], 'time': reltime})
             
             command = "delete from tell where id = ?"
             cursor.execute(command, (tell[0], ))
         
         conn.commit()
     else:
-        bot.msg(input.nick, "You have no pending tells.")
+        input.msg(input.nick, "You have no pending tells.")
     
     conn.close()
 

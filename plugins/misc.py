@@ -6,7 +6,7 @@ def rejoin(bot, input):
     if input.command == 'KICK':
         if input.paraml[1] == input.conn.nick:
             if input.paraml[0] in input.conn.channels:
-                bot.join(input.paraml[0])
+                input.conn.join(input.paraml[0])
 
     if input.command == 'INVITE':
-        bot.join(input.inp)
+        input.conn.join(input.inp)
