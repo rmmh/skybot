@@ -61,17 +61,20 @@ irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 class irc(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
-    def __init__(self, server, nick, port=6667, channels=[]):
-        self.server = server
-        self.conn = crlf_tcp(server, port)
+    def __init__(self, server, nick, port=6667, channels=[], conf={}):
         self.channels = channels
+        self.conf = conf
+        self.server = server
+
+        self.conn = crlf_tcp(server, port)
         thread.start_new_thread(self.conn.run, ())
         self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
         # nick, user, host, paramlist, msg]
         self.nick = nick
         self.set_nick(nick)
-        self.cmd("USER", ["skybot v0.01", "0", "bot"])
+        self.cmd("USER", ["skybot", "3", "*", 
+            ":Python bot - http://bitbucket.org/Scaevolus/skybot/"])
         thread.start_new_thread(self.parse_loop, ())
 
     def parse_loop(self):

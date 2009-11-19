@@ -32,9 +32,7 @@ try:
                 print 'ERROR: more than one connection named "%s"' % name
                 raise ValueError
             bot.conns[name] = irc(conf['server'], conf['nick'],
-                    channels=conf['channels'])
-            for channel in conf['channels']:
-                bot.conns[name].join(channel)
+                    channels=conf['channels'], conf=conf)
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
