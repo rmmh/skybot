@@ -2,8 +2,6 @@ import sys
 import re
 import socket
 import thread
-import asyncore
-import asynchat
 import Queue
 
 
@@ -16,41 +14,38 @@ def decode(txt):
     return txt.decode('utf-8', 'ignore')
 
 
-class crlf_tcp(asynchat.async_chat):
+class crlf_tcp(object):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
 
     def __init__(self, host, port):
-        asynchat.async_chat.__init__(self)
-        self.set_terminator('\r\n')
-        self.buffer = ""
+        self.ibuffer = ""
         self.obuffer = ""
-        self.oqueue = Queue.Queue() #where we stick things that need to be sent
-        self.iqueue = Queue.Queue() #where we stick things that were received
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 0)
+        self.oqueue = Queue.Queue() # lines to be sent out
+        self.iqueue = Queue.Queue() # lines that were received
+        self.socket = socket.socket(socket.AF_INET, socket.TCP_NODELAY)
         self.host = host
         self.port = port
 
     def run(self):
-        self.connect((self.host, self.port))
-        asyncore.loop()
+        self.socket.connect((self.host, self.port))
+        thread.start_new_thread(self.recv_loop, ())
+        thread.start_new_thread(self.send_loop, ())
 
-    def handle_connect(self):
-        thread.start_new_thread(self.queue_read_loop, ())
+    def recv_loop(self):
+        while True:
+            self.ibuffer += self.socket.recv(4096)
+            while '\r\n' in self.ibuffer:
+                line, self.ibuffer = self.ibuffer.split('\r\n', 1)
+                self.iqueue.put(decode(line))
 
-    def queue_read_loop(self):
+    def send_loop(self):
         while True:
             line = self.oqueue.get().splitlines()[0][:500]
             print ">>> %r" % line
-            self.push(line.encode('utf-8', 'replace') + '\r\n')
-
-    def collect_incoming_data(self, data):
-        self.buffer += data
-
-    def found_terminator(self):
-        line = self.buffer
-        self.iqueue.put(decode(line))
-        self.buffer = ''
+            self.obuffer += line.encode('utf-8', 'replace') + '\r\n'
+            while self.obuffer:
+                sent = self.socket.send(self.obuffer)
+                self.obuffer = self.obuffer[sent:]
 
 irc_prefix_rem = re.compile(r'(.*?) (.*?) (.*)').match
 irc_noprefix_rem = re.compile(r'()(.*?) (.*)').match
