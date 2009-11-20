@@ -1,16 +1,17 @@
 import urllib
 import random
 from lxml import html
+import json
 
-from util import hook, yaml
+from util import hook
 
 
 def api_get(kind, query):
     req_url = 'http://ajax.googleapis.com/ajax/services/search/%s?' \
             'v=1.0&safe=off&q=%s'
     url = req_url % (kind, urllib.quote(query, safe=''))
-    json = urllib.urlopen(url).read()
-    return yaml.load(json)
+    page = urllib.urlopen(url).read()
+    return json.loads(page)
 
 
 @hook.command

@@ -2,8 +2,9 @@ import random
 import urllib
 import urllib2
 import re
+import json
 
-from util import hook, yaml
+from util import hook
 
 @hook.command
 def suggest(inp):
@@ -21,9 +22,9 @@ def suggest(inp):
         num = 0
 
     url = 'http://google.com/complete/search?q=' + urllib.quote(inp, safe='')
-    json = urllib2.urlopen(url).read()
-    json = json[json.find('(') + 1: -1]
-    suggestions = yaml.load(json)[1]
+    page = urllib2.urlopen(url).read()
+    page_json = page.split('(', 1)[1][:-1]
+    suggestions = json.loads(page_json)[1]
     if not suggestions:
         return 'no suggestions found'
     if num:

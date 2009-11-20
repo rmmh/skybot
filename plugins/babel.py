@@ -1,8 +1,9 @@
 import urllib
 import htmlentitydefs
 import re
+import json
 
-from util import hook, yaml
+from util import hook
 
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 
@@ -39,8 +40,8 @@ def goog_trans(text, slang, tlang):
     req_url = 'http://ajax.googleapis.com/ajax/services/language/translate' \
             '?v=1.0&q=%s&langpair=%s'
     url = req_url % (urllib.quote(text, safe=''), slang + '%7C' + tlang)
-    json = urllib.urlopen(url).read()
-    parsed = yaml.load(json)
+    page = urllib.urlopen(url).read()
+    parsed = json.loads(page)
     if not 200 <= parsed['responseStatus'] < 300:
         raise IOError('error with the translation server: %d: %s' % (
                 parsed['responseStatus'], ''))
