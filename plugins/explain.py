@@ -10,8 +10,6 @@ def explain(inp):
     inp = inp.encode('utf8', 'ignore')
 
     try:    
-        result = explain_c_declaration(inp.rstrip())
-    except e:
-        result = str(e)
-
-    return result
+        return explain_c_declaration(inp.rstrip())
+    except Exception, e:
+        return 'error: %s' % e
