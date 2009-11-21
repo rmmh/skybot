@@ -7,6 +7,8 @@ def explain(inp):
     if not inp:
         return explain.__doc__
 
+    inp = inp.encode('utf8', 'ignore')
+
     try:    
         result = explain_c_declaration(inp.rstrip())
     except e:
