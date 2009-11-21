@@ -117,7 +117,7 @@ def dbconnect(db):
     "check to see that our db has the tell table and return a connection."
     conn = sqlite3.connect(db)
 
-    conn.execute("CREATE TABLE IF NOT EXISTS tell(id integer primary key"
+    conn.execute("CREATE TABLE IF NOT EXISTS tell(id integer primary key "
                  "autoincrement, name text not null, user_from text not null,"
                  "quote text not null, chan text not null, "
                  "date datetime not null);")
