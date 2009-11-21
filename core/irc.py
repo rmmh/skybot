@@ -33,7 +33,10 @@ class crlf_tcp(object):
 
     def recv_loop(self):
         while True:
-            self.ibuffer += self.socket.recv(4096)
+            try:
+                self.ibuffer += self.socket.recv(4096)
+            except socket.timeout:
+                continue
             while '\r\n' in self.ibuffer:
                 line, self.ibuffer = self.ibuffer.split('\r\n', 1)
                 self.iqueue.put(decode(line))
