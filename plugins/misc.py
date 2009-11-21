@@ -1,4 +1,7 @@
 from util import hook
+import socket
+
+socket.setdefaulttimeout(5) # global setting
 
 
 #autorejoin channels
