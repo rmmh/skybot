@@ -17,14 +17,17 @@ def adapt_datetime(ts):
 sqlite3.register_adapter(datetime, adapt_datetime)
 
 
-@hook.command(hook=r'(.*)', prefix=False, ignorebots=False)
+@hook.tee
 def seeninput(bot, input):
+    if input.command != 'PRIVMSG':
+        return
+
     dbpath = os.path.join(bot.persist_dir, dbname)
 
     conn = dbconnect(dbpath)
     cursor = conn.cursor()
-    cursor.execute("insert or replace into seen(name, date, quote, chan)"
-        "values(?,?,?,?)", (input.nick, datetime.now(),
+    cursor.execute("INSERT OR REPLACE INTO seen(name, date, quote, chan)"
+        "values(?,?,?,?)", (input.nick.lower(), datetime.now(),
         input.msg, input.chan))
     conn.commit()
     conn.close()
@@ -37,16 +40,17 @@ def seen(bot, input):
     if len(input.msg) < 6:
         return seen.__doc__
 
-    query = input.msg[6:].strip()
+    query = input.inp.strip()
 
-    if query == input.nick:
+    if query.lower() == input.nick.lower():
         return "Have you looked in a mirror lately?"
 
     dbpath = os.path.join(bot.persist_dir, dbname)
     conn = dbconnect(dbpath)
     cursor = conn.cursor()
 
-    command = "select date, quote from seen where name = ? and chan = ?"
+    command = "SELECT date, quote FROM seen WHERE name LIKE ? AND chan = ?" \
+              "ORDER BY date DESC"
     cursor.execute(command, (query, input.chan))
     results = cursor.fetchone()
 
@@ -63,14 +67,11 @@ def seen(bot, input):
 def dbconnect(db):
     "check to see that our db has the the seen table and return a connection."
     conn = sqlite3.connect(db)
-    results = conn.execute("select count(*) from sqlite_master where name=?",
-            ("seen", )).fetchone()
-
-    if(results[0] == 0):
-        conn.execute("create table if not exists "
-                     "seen(name varchar(30) not null, date datetime not null, "
-                     "quote varchar(250) not null, chan varchar(32) not null, "
-                     "primary key(name, chan));")
-        conn.commit()
+    
+    conn.execute("CREATE TABLE IF NOT EXISTS "
+                 "seen(name varchar(30) not null, date datetime not null, "
+                 "quote varchar(250) not null, chan varchar(32) not null, "
+                 "primary key(name, chan));")
+    conn.commit()
 
     return conn

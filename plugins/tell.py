@@ -23,13 +23,13 @@ def tellinput(bot, input):
     conn = dbconnect(dbpath)
 
     cursor = conn.cursor()
-    command = "select count(name) from tell where name = ? and chan = ?"
+    command = "select count(name) from tell where name LIKE ? and chan = ?"
     results = cursor.execute(command, (input.nick, input.chan)).fetchone()
 
 
     if results[0] > 0:
         command = "select id, user_from, quote, date from tell " \
-                    "where name = ? and chan = ? limit 1"
+                    "where name LIKE ? and chan = ? limit 1"
         tell = cursor.execute(command, (input.nick, input.chan)).fetchall()[0]
         more = results[0] - 1
         reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
@@ -54,8 +54,8 @@ def showtells(bot, input):
     conn = dbconnect(dbpath)
 
     cursor = conn.cursor()
-    command = "select id, user_from, quote, date from tell " \
-                "where name = ? and chan = ?"
+    command = "SELECT id, user_from, quote, date FROM tell " \
+                "WHERE name LIKE ? and chan = ?"
     tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
     
     if(len(tells) > 0):
@@ -114,25 +114,18 @@ def tell(bot, input):
 
 
 def dbconnect(db):
-    "check to see that our db has the the seen table and return a connection."
+    "check to see that our db has the tell table and return a connection."
     conn = sqlite3.connect(db)
-    results = conn.execute("select count(*) from sqlite_master where name=?",
-                ("tell", )).fetchone()
 
-    if results[0] == 0:
-        conn.execute("create table if not exists tell(id integer primary key "
-                     "autoincrement, name varchar(30) not null, user_from "
-                     "varchar(30) not null, quote varchar(250) not null, "
-                     "chan varchar(32) not null, date datetime not null);")
+    conn.execute("CREATE TABLE IF NOT EXISTS tell(id integer primary key"
+                 "autoincrement, name text not null, user_from text not null,"
+                 "quote text not null, chan text not null, "
+                 "date datetime not null);")
 
-        conn.commit()
+    conn.execute("CREATE TABLE IF NOT EXISTS "
+                 "tell_probation(name text, chan text,"
+                 "primary key(name, chan));")
 
-    results = conn.execute("select count(*) from sqlite_master where name=?",
-                ("tell_probation", )).fetchone()
-    if results[0] == 0:
-        conn.execute("create table if not exists "+ \
-                     "tell_probation(name varchar(30), chan varchar(32),"
-                     "primary key(name, chan));")
-        conn.commit()
+    conn.commit()
 
     return conn
