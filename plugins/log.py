@@ -105,4 +105,4 @@ def log(bot, input):
             fd = get_log_fd(bot.persist_dir, input.server, input.chan)
             fd.write(timestamp + ' ' + beau + '\n')
 
-        print u'%s %s %s' % (timestamp, input.chan, beau)
+        print timestamp, input.chan, beau
