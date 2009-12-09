@@ -63,7 +63,7 @@ def weather(bot, input):
     info['high'] = w.find('forecast_conditions/high').get('data')
     info['low'] = w.find('forecast_conditions/low').get('data')
 
-    bot.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
+    input.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
             ', L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
 
     if not dontsave and loc != stalk.get(nick, ''):
