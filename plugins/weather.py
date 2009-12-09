@@ -32,7 +32,7 @@ def save_stalk(filename, houses):
 
 @hook.command
 def weather(bot, input):
-    ".weather <location> -- queries the google weather API for weather data"
+    ".weather <location> [dontsave] -- queries the google weather API for weather data"
     global stalk
 
     filename = os.path.join(bot.persist_dir, 'weather')
@@ -41,7 +41,10 @@ def weather(bot, input):
             stalk = load_stalk(filename)
 
     nick = input.nick.lower()
-    loc = input.inp.strip().lower()
+    loc = input.inp.strip()
+    dontsave = loc.endswith(" dontsave")
+    if dontsave:
+        loc = loc[:-9].strip().lower()
     if not loc: # blank line
         loc = stalk.get(nick, '')
         if not loc:
@@ -60,10 +63,10 @@ def weather(bot, input):
     info['high'] = w.find('forecast_conditions/high').get('data')
     info['low'] = w.find('forecast_conditions/low').get('data')
 
-    input.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)s'\
-            'F, L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
+    bot.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
+            ', L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
 
-    if loc != stalk.get(nick, ''):
+    if not dontsave and loc != stalk.get(nick, ''):
         with lock:
             stalk[nick] = loc
             save_stalk(filename, stalk)
