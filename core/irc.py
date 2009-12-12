@@ -1,9 +1,9 @@
 import sys
 import re
 import socket
+import time
 import thread
 import Queue
-
 
 def decode(txt):
     for codec in ('utf-8', 'iso-8859-1', 'shift_jis', 'cp1252'):
@@ -17,7 +17,7 @@ def decode(txt):
 class crlf_tcp(object):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, timeout=300):
         self.ibuffer = ""
         self.obuffer = ""
         self.oqueue = Queue.Queue() # lines to be sent out
@@ -25,6 +25,7 @@ class crlf_tcp(object):
         self.socket = socket.socket(socket.AF_INET, socket.TCP_NODELAY)
         self.host = host
         self.port = port
+        self.timeout = timeout
 
     def run(self):
         self.socket.connect((self.host, self.port))
@@ -32,11 +33,26 @@ class crlf_tcp(object):
         thread.start_new_thread(self.send_loop, ())
 
     def recv_loop(self):
+        last_timestamp = time.time()
         while True:
             try:
-                self.ibuffer += self.socket.recv(4096)
-            except socket.timeout:
+                data = self.socket.recv(4096)
+                self.ibuffer += data
+                if data:
+                    last_timestamp = time.time()
+                else:
+                    if time.time() - last_timestamp > self.timeout:
+                        self.iqueue.put(StopIteration)
+                        self.socket.close()
+                        return
+                    time.sleep(1)
+            except socket.timeout, e:
+                if time.time() - last_timestamp > self.timeout:
+                    self.iqueue.put(StopIteration)
+                    self.socket.close()
+                    return
                 continue
+            
             while '\r\n' in self.ibuffer:
                 line, self.ibuffer = self.ibuffer.split('\r\n', 1)
                 self.iqueue.put(decode(line))
@@ -63,21 +79,31 @@ class irc(object):
         self.channels = channels
         self.conf = conf
         self.server = server
+        self.port = port
+        self.nick = nick
 
-        self.conn = crlf_tcp(server, port)
-        thread.start_new_thread(self.conn.run, ())
         self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
         # nick, user, host, paramlist, msg]
-        self.nick = nick
-        self.set_nick(nick)
+        self.connect()
+
+        thread.start_new_thread(self.parse_loop, ())
+
+    def connect(self):
+        self.conn = crlf_tcp(self.server, self.port)
+        thread.start_new_thread(self.conn.run, ())
+        self.set_nick(self.nick)
         self.cmd("USER", ["skybot", "3", "*", 
             ":Python bot - http://bitbucket.org/Scaevolus/skybot/"])
-        thread.start_new_thread(self.parse_loop, ())
 
     def parse_loop(self):
         while True:
             msg = self.conn.iqueue.get()
+
+            if msg == StopIteration:
+                self.connect()
+                continue
+
             if msg.startswith(":"): #has a prefix
                 prefix, command, params = irc_prefix_rem(msg).groups()
             else:

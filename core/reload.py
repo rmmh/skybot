@@ -1,6 +1,7 @@
 import glob
 import collections
 import traceback
+import sys
 
 if 'mtimes' not in globals():
     mtimes = {}
@@ -27,6 +28,8 @@ def reload(init=False):
                         globals())
             except Exception:
                 traceback.print_exc(Exception)
+                if init:        # stop if there's a syntax error in a core
+                    sys.exit()  #   script on startup
                 continue
 
             if filename == 'core/reload.py':
