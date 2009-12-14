@@ -37,17 +37,25 @@ def twitter(inp):
     getting_nth = False
     getting_id = False
     searching_hashtag = False
+    
+    time = 'status/created_at'
+    text = 'status/text'
     if re.match(r'^\d+$', inp):
         getting_id = True
         url += '/statuses/show/%s.xml' % inp
+        screen_name = 'user/screen_name'
+        time = 'created_at'
+        text = 'text'
     elif re.match(r'^\w{1,15}$', inp):
-        url += '/statuses/user_timeline/%s.xml?count=1' % inp
+        url += '/users/show/%s.xml' % inp
+        screen_name = 'screen_name'
     elif re.match(r'^\w{1,15}\s+\d+$', inp):
         getting_nth = True
         name, num = inp.split()
         if int(num) > 3200:
             return 'error: only supports up to the 3200th tweet'
         url += '/statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
+        screen_name = 'status/user/screen_name'
     elif re.match(r'^#\w+$', inp):
         url = 'http://search.twitter.com/search.atom?q=%23' + inp[1:]
         searching_hashtag = True
@@ -68,6 +76,8 @@ def twitter(inp):
         if e.code in errors:
             return 'error: ' + errors[e.code]
         return 'error: unknown'
+    except urllib2.URLerror, e:
+        return 'error: timeout'
 
     tweet = etree.fromstring(xml)
 
@@ -81,18 +91,18 @@ def twitter(inp):
         print id
         return twitter(id)
 
-    if not getting_id:
-        tweet = tweet.find('status')
-        if tweet is None:
-            if getting_nth:
-                return 'error: user does not have that many tweets'
-            else:
-                return 'error: user has no tweets'
+    if getting_nth:
+        if tweet.find('status') is None:
+            return 'error: user does not have that many tweets'
+
+    time = tweet.find(time)
+    if time is None:
+        return 'error: user has no tweets'
 
     time = strftime('%Y-%m-%d %H:%M:%S', 
-             strptime(tweet.find('created_at').text,
+             strptime(time.text,
                '%a %b %d %H:%M:%S +0000 %Y'))
-    screen_name = tweet.find('user/screen_name').text
-    text = unescape_xml(tweet.find('text').text.replace('\n', ''))
+    text = unescape_xml(tweet.find(text).text.replace('\n', ''))
+    screen_name = tweet.find(screen_name).text
 
     return "%s %s: %s" % (time, screen_name, text)
