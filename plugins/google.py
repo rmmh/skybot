@@ -9,6 +9,7 @@ from util import hook
 def api_get(kind, query):
     req_url = 'http://ajax.googleapis.com/ajax/services/search/%s?' \
             'v=1.0&safe=off&q=%s'
+    query = query.encode('utf8')
     url = req_url % (kind, urllib.quote(query, safe=''))
     page = urllib.urlopen(url).read()
     return json.loads(page)
