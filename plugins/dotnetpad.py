@@ -11,6 +11,7 @@ from util import hook
 def dotnetpad(lang, code):
     "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
 
+    code = code.encode('utf8')
     params = urllib.urlencode({'language': lang, 'code': code})
 
     headers = {"Content-type": "application/x-www-form-urlencoded",
