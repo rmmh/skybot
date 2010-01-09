@@ -18,15 +18,13 @@ def mtg(inp):
     text = card.find('p')
 
     type = text.text
-    global t
-    t=text.find('b')
     text = text.find('b').text_content()
     text = re.sub(r'\(.*?\)', '', text) # strip parenthetical explanations
     text = re.sub(r'\.(\S)', r'. \1', text) # fix spacing
 
-    global printing
     printings = card.find('table/tr/td/img').getparent().text_content()
-    printings = re.findall(r'\s*(.*?) \((.*?)\)', ' '.join(printings.split()))
+    printings = re.findall(r'\s*(.+?(?: \([^)]+\))*) \((.*?)\)', 
+                           ' '.join(printings.split()))
     printing_out = ', '.join('%s (%s)' % (set_abbrevs.get(x[0], x[0]),
                                           rarity_abbrevs.get(x[1], x[1]))
                                           for x in printings)
