@@ -122,7 +122,7 @@ def twitter(inp, history = list()):
 
     reply_name = tweet.find(reply_name)
     reply_id = tweet.find(reply_id)
-    if reply_name, reply_id:
+    if reply_name and reply_id:
         add_reply(reply_name, reply_id)
 
     time = strftime('%Y-%m-%d %H:%M:%S', 
