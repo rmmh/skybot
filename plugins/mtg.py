@@ -8,6 +8,7 @@ from util import hook
 
 @hook.command
 def mtg(inp):
+    ".mtg <card> -- gets information about Magic the Gathering card <card name>"
     url = 'http://magiccards.info/query.php?cardname='
     url += urllib2.quote(inp, safe='')
     h = html.parse(url)
