@@ -33,6 +33,8 @@ irc_color_re = re.compile(r'(\x03(\d+,\d+|\d)|[\x0f\x02\x16\x1f])')
 
 
 def get_log_filename(dir, server, chan):
+    if chan.startswith(':'):
+        chan = chan[1:]
     return os.path.join(dir, 'log', gmtime('%Y'), server,
             gmtime('%%s.%m-%d.log') % chan).lower()
 
@@ -53,7 +55,6 @@ def beautify(input):
     args['msg'] = irc_color_re.sub('', args['msg'])
 
     if input.command == 'PRIVMSG' and input.msg.count('\x01') >= 2:
-        #ctcp
         ctcp = input.msg.split('\x01', 2)[1].split(' ', 1)
         if len(ctcp) == 1:
             ctcp += ['']

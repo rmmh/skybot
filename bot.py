@@ -18,7 +18,8 @@ bot = Bot()
 print 'Loading plugins'
 
 # bootstrap the reloader
-eval(compile(open('core/reload.py', 'U').read(), 'core/reload.py', 'exec'))
+eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(), 
+    os.path.join('core', 'reload.py'), 'exec'))
 reload(init=True)
 
 print 'Connecting to IRC'
