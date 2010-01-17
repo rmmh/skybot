@@ -134,4 +134,3 @@ def twitter(inp):
     screen_name = tweet.find(screen_name).text
 
     return "%s %s: %s" % (time, screen_name, text)
-
