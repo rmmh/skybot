@@ -43,13 +43,13 @@ def twitter(inp):
     def find_reply(reply_name):
         for name, id in history:
             if name == reply_name:
-                return id
+                return id if id != -1 else name
 
     if inp[0] == '@':
-        reply_id = find_reply(inp[1:])
-        if reply_id == None:
+        reply_inp = find_reply(inp[1:])
+        if reply_inp == None:
             return 'error: no replies to %s found' % inp
-        inp = reply_id
+        inp = reply_inp
 
     url = 'http://twitter.com'
     getting_nth = False
@@ -60,6 +60,7 @@ def twitter(inp):
     text = 'status/text'
     reply_name = 'status/in_reply_to_screen_name'
     reply_id = 'status/in_reply_to_status_id'
+    reply_user = 'status/in_reply_to_user_id'
 
     if re.match(r'^\d+$', inp):
         getting_id = True
@@ -69,6 +70,7 @@ def twitter(inp):
         text = 'text'
         reply_name = 'in_reply_to_screen_name'
         reply_id = 'in_reply_to_status_id'
+        reply_user = 'in_reply_to_user_id'
     elif re.match(r'^\w{1,15}$', inp):
         url += '/users/show/%s.xml' % inp
         screen_name = 'screen_name'
@@ -124,8 +126,9 @@ def twitter(inp):
 
     reply_name = tweet.find(reply_name).text
     reply_id = tweet.find(reply_id).text
-    if reply_name is not None and reply_id is not None:
-        add_reply(reply_name, reply_id)
+    reply_user = tweet.find(reply_user).text
+    if reply_name is not None and (reply_id is not None or reply_user is not None):
+        add_reply(reply_name, reply_id if reply_id else -1)
 
     time = strftime('%Y-%m-%d %H:%M:%S', 
              strptime(time.text,
