@@ -41,7 +41,7 @@ def weather(bot, input):
             stalk = load_stalk(filename)
 
     nick = input.nick.lower()
-    loc = input.inp.strip()
+    loc = input.inp
     dontsave = loc.endswith(" dontsave")
     if dontsave:
         loc = loc[:-9].strip().lower()

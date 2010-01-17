@@ -8,11 +8,11 @@ from util import hook
 @hook.command
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
-    if not inp.strip():
+    if not inp:
         return urban.__doc__
 
     url = 'http://www.urbandictionary.com/define.php?term=' + \
-            urllib.quote(inp.strip(), safe='')
+            urllib.quote(inp, safe='')
     page = html.parse(url)
     words = page.xpath("//td[@class='word']")
     defs = page.xpath("//div[@class='definition']")

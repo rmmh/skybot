@@ -16,14 +16,14 @@ paren_re = re.compile('\s*\(.*\)$')
 
 @hook.command(hook='w(\s+.*|$)')
 @hook.command
-def wiki(query):
+def wiki(inp):
     '''.w/.wiki <phrase> -- gets first sentence of wikipedia ''' \
     '''article on <phrase>'''
 
-    if not query.strip():
+    if not inp:
         return wiki.__doc__
 
-    q = search_url % (urllib.quote(query.strip(), safe=''))
+    q = search_url % (urllib.quote(inp, safe=''))
     x = etree.parse(q)
 
     ns = '{http://opensearch.org/searchsuggest2}'

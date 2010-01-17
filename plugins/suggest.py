@@ -7,11 +7,12 @@ import json
 from util import hook
 
 @hook.command
-def suggest(inp):
+def suggest(bot, input):
     ".suggest [#n] <phrase> -- gets a random/the nth suggested google search"
-    if not inp.strip():
+    if not input.inp:
         return suggest.__doc__
  
+    inp = input.inp_unstripped
     m = re.match('^#(\d+) (.+)$', inp)
     if m:
         num, inp = m.groups()

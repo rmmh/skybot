@@ -6,7 +6,6 @@ from util import hook
 @hook.command
 def down(inp):
     '''.down <url> -- checks to see if the site is down'''
-    inp = inp.strip()
 
     if not inp:
         return down.__doc__

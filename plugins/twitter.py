@@ -31,7 +31,6 @@ def twitter(inp):
     ".twitter <user>/<user> <n>/<id>/#<hashtag>/@<user> -- gets last/<n>th tweet from"\
     "<user>/gets tweet <id>/gets random tweet with #<hashtag>/gets replied tweet from @<user>"
 
-    inp = inp.strip()
     if not inp:
         return twitter.__doc__
 

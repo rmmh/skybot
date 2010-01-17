@@ -10,7 +10,7 @@ def help(bot, input):
             if func.__doc__ is not None:
                 funcs[csig[1]] = func
 
-    if not input.inp.strip():
+    if not input.inp:
         input.pm('available commands: ' + ' '.join(sorted(funcs)))
     else:
         if input.inp in funcs:

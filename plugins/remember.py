@@ -46,14 +46,13 @@ def remember(bot, input):
         except ValueError:
             return remember.__doc__
 
-        tail = tail.strip()
         low = head.lower()
         if low not in memory[filename]:
             input.reply("done.")
         else:
             input.reply('forgetting that "%s", remembering this instead.' %
                     memory[filename][low])
-        memory[filename][low] = input.inp.strip()
+        memory[filename][low] = input.inp
         save_memory(filename, memory[filename])
 
 
@@ -64,10 +63,10 @@ def forget(bot, input):
         filename = make_filename(bot.persist_dir, input.chan)
         memory.setdefault(filename, load_memory(filename))
 
-        if not input.inp.strip():
+        if not input.inp:
             return forget.__doc__
 
-        low = input.inp.strip().lower()
+        low = input.inp.lower()
         if low not in memory[filename]:
             return "I don't know about that."
         if not hasattr(input, 'chan'):

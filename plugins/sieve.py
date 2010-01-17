@@ -24,6 +24,7 @@ def sieve_suite(bot, input, func, args):
     if input.re is None:
         return None
 
-    input.inp = ' '.join(input.re.groups())
+    input.inp_unstripped = ' '.join(input.re.groups())
+    input.inp = input.inp_unstripped.strip()
 
     return input
