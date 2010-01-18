@@ -39,6 +39,8 @@ except Exception, e:
     sys.exit()
 
 bot.persist_dir = os.path.abspath('persist')
+if not os.path.exists(bot.persist_dir):
+    os.mkdir(bot.persist_dir)
 
 print 'Running main loop'
 
