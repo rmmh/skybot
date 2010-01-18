@@ -7,6 +7,8 @@ from datetime import timedelta
 import re
 
 from util import hook, timesince
+from util import urlnorm
+#from util import texttime
 
 url_re = re.compile(r'([a-zA-Z]+://|www\.)[^ ]*')
 
@@ -14,6 +16,8 @@ url_re = re.compile(r'([a-zA-Z]+://|www\.)[^ ]*')
 dbname = "skybot.db"
 
 expiration_period = timedelta(days=1)
+
+ignored_urls = [ urlnorm.normalize("http://google.com") ]
 
 #TODO: Generate expiration_period_text from expiration_period
 expiration_period_text = "24 hours"
@@ -75,13 +79,7 @@ def dbconnect(db):
     return conn
 
 def normalize_url(url):
-    # TODO: do something so that:
-    # - http://www.google.com
-    # - www.google.com
-    # - http://google.com
-    # - http://google.com/ 
-    # etc are all considered to be the same URL
-    return url
+    return urlnorm.normalize(url)
  
 def get_once_twice(count):
    if count == 1:
@@ -98,14 +96,15 @@ def urlinput(bot, input):
     if m:
         # URL detected
         url = normalize_url(m.group(0))
-        conn = dbconnect(dbpath)
-        dupes = select_history_for_url_and_channel(conn, url, input.chan)
-        num_dupes = len(dupes)
-        if num_dupes > 0 and input.nick not in dupes:
-            nicks = get_nicklist(dupes)
-            reply = "That link has been posted " + get_once_twice(num_dupes)
-            reply += " in the past " + expiration_period_text + " by " + nicks
-            input.reply(reply)
-        insert_history(conn, url, input.chan, input.nick)
-        conn.close()
+        if url not in ignored_urls:
+           conn = dbconnect(dbpath)
+           dupes = select_history_for_url_and_channel(conn, url, input.chan)
+           num_dupes = len(dupes)
+           if num_dupes > 0 and input.nick not in dupes:
+               nicks = get_nicklist(dupes)
+               reply = "That link has been posted " + get_once_twice(num_dupes)
+               reply += " in the past " + expiration_period_text + " by " + nicks
+               input.reply(reply)
+           insert_history(conn, url, input.chan, input.nick)
+           conn.close()
 
