@@ -17,7 +17,7 @@ def adapt_datetime(ts):
 sqlite3.register_adapter(datetime, adapt_datetime)
 
 
-@hook.command(hook=r'(.*)', prefix=False, ignorebots=True)
+@hook.command(hook=r'(.*)', prefix=False)
 def tellinput(bot, input):
     dbpath = os.path.join(bot.persist_dir, dbname)
     conn = dbconnect(dbpath)

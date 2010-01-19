@@ -1,7 +1,7 @@
 from util import hook
 from pycparser.cdecl import explain_c_declaration
 
-@hook.command('explain')
+@hook.command
 def explain(inp):
     ".explain <c expression> -- gives an explanation of C expression"
     if not inp:

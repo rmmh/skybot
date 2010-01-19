@@ -14,7 +14,7 @@ search_url = api_prefix + "?action=opensearch&search=%s&format=xml"
 paren_re = re.compile('\s*\(.*\)$')
 
 
-@hook.command(hook='w(\s+.*|$)')
+@hook.command('w')
 @hook.command
 def wiki(inp):
     '''.w/.wiki <phrase> -- gets first sentence of wikipedia ''' \

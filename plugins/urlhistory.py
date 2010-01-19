@@ -37,7 +37,7 @@ def get_history(conn, server, chan, url):
     return [x[0] for x in nicks]
     
 def get_nicklist(nicks):
-    nicks = sorted(set(nicks))
+    nicks = sorted(set(nicks), key=unicode.lower)
     if len(nicks) <= 2:
         return ' and '.join(nicks)
     else:
