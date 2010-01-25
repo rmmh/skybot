@@ -21,7 +21,7 @@ if not os.path.exists('config'):
     del conf
 
 bot.config = yaml.load(open('config'))
-bot._config_dirty = False
+bot._config_dirty = True # force a rewrite on start
 bot._config_mtime = os.stat('config').st_mtime
 
 def config_dirty(self): 
