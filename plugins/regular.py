@@ -13,13 +13,13 @@ from util import hook
 
 
 
-@hook.command
+@hook.command('re')
 def reg(bot, input):
-	".reg <regex>  <string> -- matches regular expression in given <string> (seperate regex and string by 2 spaces)"
+	".re <regex>  <string> -- matches regular expression in given <string> (seperate regex and string by 2 spaces)"
 
 	m = ""
 	
-	if len(input.msg) < 4:
+	if len(input.msg) < 3:
 		return reg.__doc__
 		
 	query = input.inp.partition("  ")
