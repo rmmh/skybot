@@ -17,7 +17,7 @@ def adapt_datetime(ts):
 sqlite3.register_adapter(datetime, adapt_datetime)
 
 
-@hook.command(hook=r'(.*)', prefix=False, ignorebots=True)
+@hook.command(hook=r'^(?!\.showtells)(.*)', prefix=False, ignorebots=True)
 def tellinput(bot, input):
     dbpath = os.path.join(bot.persist_dir, dbname)
     conn = dbconnect(dbpath)
@@ -37,7 +37,7 @@ def tellinput(bot, input):
         reply = "%(teller)s said %(reltime)s ago: %(quote)s" % \
                 {"teller": tell[1], "quote": tell[2], "reltime": reltime}
         if more:
-            reply += " (+%(more)d more, to view say .showtells)" % {"more": more}
+            reply += " (+%(more)d more, to view use .showtells)" % {"more": more}
 
         input.reply(reply)
         command = "delete from tell where id = ?"
@@ -61,8 +61,8 @@ def showtells(bot, input):
     if(len(tells) > 0):
         for tell in tells:
             reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
-            input.msg(input.nick, '%(teller)s said %(time)s ago: %(quote)s' %
-                    {'teller': tell[1], 'quote': tell[2], 'time': reltime})
+            input.pm('%(teller)s said %(time)s ago: %(quote)s' % \
+                     {'teller': tell[1], 'quote': tell[2], 'time': reltime})
             
             command = "delete from tell where id = ?"
             cursor.execute(command, (tell[0], ))
