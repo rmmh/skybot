@@ -18,7 +18,8 @@ bot = Bot()
 print 'Loading plugins'
 
 # bootstrap the reloader
-eval(compile(open('core/reload.py', 'U').read(), 'core/reload.py', 'exec'))
+eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(), 
+    os.path.join('core', 'reload.py'), 'exec'))
 reload(init=True)
 
 print 'Connecting to IRC'
@@ -32,12 +33,14 @@ try:
                 print 'ERROR: more than one connection named "%s"' % name
                 raise ValueError
             bot.conns[name] = irc(conf['server'], conf['nick'],
-                    channels=conf['channels'], conf=conf)
+                    port=conf.get('port', 6667), channels=conf['channels'], conf=conf)
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
 
 bot.persist_dir = os.path.abspath('persist')
+if not os.path.exists(bot.persist_dir):
+    os.mkdir(bot.persist_dir)
 
 print 'Running main loop'
 

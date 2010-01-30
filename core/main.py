@@ -5,19 +5,19 @@ class Input(object):
 
     def __init__(self, conn, raw, prefix, command,
             params, nick, user, host, paraml, msg):
-        self.conn = conn
-        self.server = conn.server
-        self.raw = raw
-        self.prefix = prefix
-        self.command = command
-        self.params = params
+        self.conn = conn            # irc object
+        self.server = conn.server   # hostname of server
+        self.raw = raw              # unprocessed line of text
+        self.prefix = prefix        # usually hostmask
+        self.command = command      # PRIVMSG, JOIN, etc.
+        self.params = params        
         self.nick = nick
-        self.user = user
+        self.user = user            # user@host
         self.host = host
-        self.paraml = paraml
+        self.paraml = paraml        # params[-1] without the :
         self.msg = msg
         self.chan = paraml[0]
-        if self.chan == conn.nick:
+        if self.chan == conn.nick:  # is a PM
             self.chan = nick
 
     def say(self, msg):

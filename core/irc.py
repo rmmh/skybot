@@ -93,8 +93,9 @@ class irc(object):
         self.conn = crlf_tcp(self.server, self.port)
         thread.start_new_thread(self.conn.run, ())
         self.set_nick(self.nick)
-        self.cmd("USER", ["skybot", "3", "*", 
-            ":Python bot - http://bitbucket.org/Scaevolus/skybot/"])
+        self.cmd("USER",
+            [conf.get('user', 'skybot'), "3", "*", ':' + conf.get('realname',
+             'Python bot - http://bitbucket.org/Scaevolus/skybot/')])
 
     def parse_loop(self):
         while True:

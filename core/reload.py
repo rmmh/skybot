@@ -1,7 +1,8 @@
-import glob
 import collections
-import traceback
+import glob
+import os
 import sys
+import traceback
 
 if 'mtimes' not in globals():
     mtimes = {}
@@ -19,7 +20,7 @@ def reload(init=False):
     if init:
         bot.plugs = collections.defaultdict(lambda: [])
 
-    for filename in glob.glob("core/*.py"):
+    for filename in glob.glob(os.path.join("core", "*.py")):
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
             mtimes[filename] = mtime
@@ -32,11 +33,11 @@ def reload(init=False):
                     sys.exit()  #   script on startup
                 continue
 
-            if filename == 'core/reload.py':
+            if filename == os.path.join('core', 'reload.py'):
                 reload(init=init)
                 return
 
-    fileset = set(glob.glob("plugins/*py"))
+    fileset = set(glob.glob(os.path.join('plugins', '*py')))
     for name, data in bot.plugs.iteritems(): # remove deleted/moved plugins
         bot.plugs[name] = filter(lambda x: x[0][0] in fileset, data)
 

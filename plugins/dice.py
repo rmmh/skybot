@@ -33,7 +33,7 @@ def nrolls(count, n):
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
-    if not inp.strip():
+    if not inp:
         return dice.__doc__
 
     spec = whitespace_re.sub('', inp)
