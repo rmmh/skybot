@@ -16,7 +16,7 @@ class Input(object):
         self.host = host
         self.paraml = paraml        # params[-1] without the :
         self.msg = msg
-        self.chan = paraml[0]
+        self.chan = paraml[0].lower()
         if self.chan == conn.nick:  # is a PM
             self.chan = nick
 
