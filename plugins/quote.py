@@ -8,18 +8,18 @@ from util import hook
 
 def add_quote(conn, chan, nick, add_nick, msg):
     now = time.time()
-    conn.execute('''insert or fail into quotes (chan, nick, add_nick,
+    conn.execute('''insert or fail into quote (chan, nick, add_nick,
                     msg, time) values(?,?,?,?,?)''', 
                     (chan, nick, add_nick, msg, now))
     conn.commit()
 
 def get_quotes_by_nick(conn, chan, nick):
-    return conn.execute("select time, nick, msg from quotes where deleted!=1 "
+    return conn.execute("select time, nick, msg from quote where deleted!=1 "
             "and chan=? and lower(nick)=lower(?) order by time",
             (chan, nick)).fetchall()
 
 def get_quotes_by_chan(conn, chan):
-    return conn.execute("select time, nick, msg from quotes where deleted!=1 "
+    return conn.execute("select time, nick, msg from quote where deleted!=1 "
            "and chan=? order by time", (chan,)).fetchall()
 
 
