@@ -12,7 +12,7 @@ def wolframalpha(inp):
             "results for <query>"
 
     if not inp:
-        return wolframalpha.__query__
+        return wolframalpha.__help__
 
     url = "http://www.wolframalpha.com/input/?i=%s&asynchronous=false"
 
