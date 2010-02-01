@@ -12,7 +12,7 @@ def seeninput(bot, input):
 
     conn = db_connect(bot, input.server)
     cursor = conn.cursor()
-    cursor.execute("INSERT OR REPLACE INTO seen(name, date, quote, chan)"
+    cursor.execute("insert or replace into seen(name, time, quote, chan)"
         "values(?,?,?,?)", (input.nick.lower(), time.time(),
         input.msg, input.chan))
     conn.commit()
@@ -22,7 +22,7 @@ def seeninput(bot, input):
 def seen(bot, input):
     ".seen <nick> -- Tell when a nickname was last in active in irc"
 
-    if len(input.msg) < 6:
+    if not input.inp:
         return seen.__doc__
 
     query = input.inp
@@ -33,8 +33,7 @@ def seen(bot, input):
     conn = db_connect(bot, input.server)
     cursor = conn.cursor()
 
-    command = "SELECT date, quote FROM seen WHERE name LIKE ? AND chan = ?" \
-              "ORDER BY date DESC"
+    command = "select time, quote FROM seen WHERE name LIKE ? AND chan = ?"
     cursor.execute(command, (query, input.chan))
     results = cursor.fetchone()
 
@@ -50,10 +49,8 @@ def db_connect(bot, server):
     "check to see that our db has the the seen table and return a connection."
     conn = bot.get_db_connection(server)
     
-    conn.execute("CREATE TABLE IF NOT EXISTS "
-                 "seen(name varchar(30) not null, date datetime not null, "
-                 "quote varchar(250) not null, chan varchar(32) not null, "
-                 "primary key(name, chan));")
+    conn.execute("create table if not exists seen(name, time, quote, chan, "
+                 "primary key(name, chan))")
     conn.commit()
 
     return conn
