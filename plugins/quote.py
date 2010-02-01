@@ -35,9 +35,9 @@ def quote(bot, input):
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
     conn = bot.get_db_connection(bot, input.server)
-    conn.execute('''create table if not exists quote
-        (chan, nick, add_nick, msg, time real, deleted default 0, 
-        primary key (chan, nick, msg))''')
+    conn.execute("create table if not exists quote"
+        "(chan, nick, add_nick, msg, time real, deleted default 0, "
+        "primary key (chan, nick, msg))")
     conn.commit()
 
     try:
