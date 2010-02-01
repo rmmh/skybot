@@ -112,7 +112,6 @@ def twitter(inp):
             return 'error: hashtag not found'
         id = random.choice(tweets).text
         id = id[id.rfind(':') + 1:]
-        print id
         return twitter(id)
 
     if getting_nth:

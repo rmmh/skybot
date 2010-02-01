@@ -8,7 +8,6 @@ from util import hook
 
 def add_quote(conn, chan, nick, add_nick, msg):
     now = time.time()
-    print repr((conn, add_nick, nick, msg, time))
     conn.execute('''insert or fail into quotes (chan, nick, add_nick,
                     msg, time) values(?,?,?,?,?)''', 
                     (chan, nick, add_nick, msg, now))
