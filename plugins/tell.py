@@ -1,7 +1,6 @@
 " tell.py: written by sklnd in July 2009"
 "       2010.01.25 - modified by Scaevolus"
 
-import sqlite3
 import time
 
 from util import hook, timesince
@@ -82,7 +81,7 @@ def tell(bot, input):
                      "time) values(?,?,?,?,?)", (user_to, user_from, message,
                      input.chan, time.time()))
         conn.commit()
-    except sqlite3.IntegrityError:
+    except conn.IntegrityError:
         return "Message has already been queued."
 
     return "I'll pass that along."

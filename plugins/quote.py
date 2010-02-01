@@ -1,6 +1,5 @@
 import random
 import re
-import sqlite3
 import time
 
 from util import hook
@@ -49,7 +48,7 @@ def quote(bot, input):
             nick, msg = add.groups()
             try:
                 add_quote(conn, chan, nick, input.nick, msg)
-            except sqlite3.IntegrityError: 
+            except conn.IntegrityError: 
                 return "message already stored, doing nothing."
             return "quote added."
         elif retrieve:

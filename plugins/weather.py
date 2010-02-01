@@ -1,54 +1,29 @@
 "weather, thanks to google"
 
-import os
-import codecs
-import thread
-import urllib
 from lxml import etree
+import urllib
 
 from util import hook
-
-
-lock = thread.allocate_lock()
-stalk = {}
-
-
-def load_stalk(filename, mtimes={}):
-    if not os.path.exists(filename):
-        return {}
-    mtime = os.stat(filename).st_mtime
-    if mtimes.get(filename, 0) != mtime:
-        mtimes[filename] = mtime
-        return dict(x.strip().split(None, 1) for x in
-                codecs.open(filename, 'r', 'utf-8'))
-
-
-def save_stalk(filename, houses):
-    out = codecs.open(filename, 'w', 'utf-8')
-    out.write('\n'.join('%s %s' % x for x in sorted(houses.iteritems()))) #heh
-    out.flush()
-    out.close()
 
 
 @hook.command
 def weather(bot, input):
     ".weather <location> [dontsave] -- queries the google weather API for weather data"
-    global stalk
-
-    filename = os.path.join(bot.persist_dir, 'weather')
-    if not stalk:
-        with lock:
-            stalk = load_stalk(filename)
-
-    nick = input.nick.lower()
     loc = input.inp
+
     dontsave = loc.endswith(" dontsave")
     if dontsave:
         loc = loc[:-9].strip().lower()
+
+    conn = bot.get_db_connection(input.server)
+    conn.execute("create table if not exists weather(nick primary key, loc)")
+
     if not loc: # blank line
-        loc = stalk.get(nick, '')
+        loc = conn.execute("select loc from weather where nick=lower(?)",
+                            (input.nick,)).fetchone()
         if not loc:
             return weather.__doc__
+        loc = loc[0]
 
     data = urllib.urlencode({'weather': loc.encode('utf-8')})
     url = 'http://www.google.com/ig/api?' + data
@@ -66,7 +41,7 @@ def weather(bot, input):
     input.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
             ', L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
 
-    if not dontsave and loc != stalk.get(nick, ''):
-        with lock:
-            stalk[nick] = loc
-            save_stalk(filename, stalk)
+    if input.inp and not dontsave:
+        conn.execute("insert or replace into weather(nick, loc) values (?,?)",
+                     (input.nick.lower(), loc))
+        conn.commit()
