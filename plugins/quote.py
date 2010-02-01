@@ -34,7 +34,7 @@ def quote(bot, input):
     ".q/.quote <nick/#chan> [#n]/.quote add <nick> <msg> -- gets " \
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
-    conn = bot.get_db_connection(bot, input.server)
+    conn = bot.get_db_connection(input.server)
     conn.execute("create table if not exists quote"
         "(chan, nick, add_nick, msg, time real, deleted default 0, "
         "primary key (chan, nick, msg))")
