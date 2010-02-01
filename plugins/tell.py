@@ -1,131 +1,100 @@
 " tell.py: written by sklnd in July 2009"
+"       2010.01.25 - modified by Scaevolus"
 
-import os
-import time
-from datetime import datetime
 import sqlite3
+import time
 
 from util import hook, timesince
 
-
-dbname = "skybot.db"
-
-
-def adapt_datetime(ts):
-    return time.mktime(ts.timetuple())
-
-sqlite3.register_adapter(datetime, adapt_datetime)
+def get_tells(conn, user_to, chan):
+    return conn.execute("select user_from, message, time from tell where"
+                         " user_to=lower(?) and chan=? order by time", 
+                         (user_to.lower(), chan)).fetchall()
 
 
-@hook.command(hook=r'^(?!\.showtells)(.*)', prefix=False, ignorebots=True)
+@hook.command(hook=r'(.*)', prefix=False)
 def tellinput(bot, input):
-    dbpath = os.path.join(bot.persist_dir, dbname)
-    conn = dbconnect(dbpath)
+    if 'showtells' in input.inp.lower():
+        return
+    
+    conn = db_connect(bot, input.server)
 
-    cursor = conn.cursor()
-    command = "select count(name) from tell where name LIKE ? and chan = ?"
-    results = cursor.execute(command, (input.nick, input.chan)).fetchone()
+    tells = get_tells(conn, input.nick, input.chan)
 
+    if tells:
+        user_from, message, time = tells[0]
+        reltime = timesince.timesince(time)
 
-    if results[0] > 0:
-        command = "select id, user_from, quote, date from tell " \
-                    "where name LIKE ? and chan = ? limit 1"
-        tell = cursor.execute(command, (input.nick, input.chan)).fetchall()[0]
-        more = results[0] - 1
-        reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
+        reply = "%s said %s ago: %s" % (user_from, reltime, message)
+        if len(tells) > 1:
+            reply += " (+%d more, .showtells to view)" % (len(tells) - 1)
 
-        reply = "%(teller)s said %(reltime)s ago: %(quote)s" % \
-                {"teller": tell[1], "quote": tell[2], "reltime": reltime}
-        if more:
-            reply += " (+%(more)d more, to view use .showtells)" % {"more": more}
-
-        input.reply(reply)
-        command = "delete from tell where id = ?"
-        cursor.execute(command, (tell[0], ))
-       
+        conn.execute("delete from tell where user_to=lower(?) and message=?",
+                     (input.nick, message))
         conn.commit()
-    conn.close()
+        return reply
 
 @hook.command
 def showtells(bot, input):
     ".showtells -- view all pending tell messages (sent in PM)."
     
-    dbpath = os.path.join(bot.persist_dir, dbname)
-    conn = dbconnect(dbpath)
+    conn = db_connect(bot, input.server)
 
-    cursor = conn.cursor()
-    command = "SELECT id, user_from, quote, date FROM tell " \
-                "WHERE name LIKE ? and chan = ?"
-    tells = cursor.execute(command, (input.nick, input.chan)).fetchall()
+    tells = get_tells(conn, input.nick, input.chan)
     
-    if(len(tells) > 0):
-        for tell in tells:
-            reltime = timesince.timesince(datetime.fromtimestamp(tell[3]))
-            input.pm('%(teller)s said %(time)s ago: %(quote)s' % \
-                     {'teller': tell[1], 'quote': tell[2], 'time': reltime})
-            
-            command = "delete from tell where id = ?"
-            cursor.execute(command, (tell[0], ))
-        
-        conn.commit()
-    else:
+    if not tells:
         input.pm("You have no pending tells.")
-    
-    conn.close()
+        return
 
+    for tell in tells:
+        user_from, message, time = tell
+        reltime = timesince.timesince(time)
+        input.pm("%s said %s ago: %s" % (user_from, reltime, message))
+    
+    conn.execute("delete from tell where user_to=lower(?) and chan=?",
+                  (input.nick, input.chan))
+    conn.commit()
 
 @hook.command
 def tell(bot, input):
     ".tell <nick> <message> -- relay <message> to <nick> when <nick> is around"
 
-    if len(input.msg) < 6:
+    query = input.inp.split(' ', 1)
+
+    if len(query) != 2 or not input.inp:
         return tell.__doc__
 
-    query = input.inp.partition(" ")
-
-    if query[0] == input.nick:
+    user_to = query[0].lower()
+    message = query[1].strip()
+    user_from = input.nick
+    
+    if user_to == user_from.lower():
         return "No."
 
+    conn = db_connect(bot, input.server)
 
-    if query[2] != "":
-        dbpath = os.path.join(bot.persist_dir, dbname)
-        conn = dbconnect(dbpath)
+    if conn.execute("select count() from tell where user_to=?",
+                    (user_to,)).fetchone()[0] >= 5:
+        return "That person has too many things queued."
 
-        command = "select count(*) from tell_probation where name=? and chan=?"
-        if conn.execute(command, (input.nick, input.chan)).fetchone()[0] > 0:
-            return "No."
-
-        command = "select count(*) from tell where name=? and user_from=?"
-        if conn.execute(command, (query[0], input.nick)).fetchone()[0] >= 3:
-            return "You've told that person too many things."
-
-        cursor = conn.cursor()
-        command = "insert into tell(name, user_from, quote, chan, date) " \
-                    "values(?,?,?,?,?)"
-        cursor.execute(command, (query[0], input.nick, query[2], input.chan,
-            datetime.now()))
-
+    try:
+        conn.execute("insert into tell(user_to, user_from, message, chan,"
+                     "time) values(?,?,?,?,?)", (user_to, user_from, message,
+                     input.chan, time.time()))
         conn.commit()
-        conn.close()
-        return "I'll pass that along."
+    except sqlite3.IntegrityError:
+        return "Message has already been queued."
 
-    else:
-        return tell.__doc__
+    return "I'll pass that along."
 
 
-def dbconnect(db):
+def db_connect(bot, server):
     "check to see that our db has the tell table and return a connection."
-    conn = sqlite3.connect(db)
+    conn = bot.get_db_connection(server)
 
-    conn.execute("CREATE TABLE IF NOT EXISTS tell(id integer primary key "
-                 "autoincrement, name text not null, user_from text not null,"
-                 "quote text not null, chan text not null, "
-                 "date datetime not null);")
-
-    conn.execute("CREATE TABLE IF NOT EXISTS "
-                 "tell_probation(name text, chan text,"
-                 "primary key(name, chan));")
-
+    conn.execute("create table if not exists tell"
+                "(user_to, user_from, message, chan, time,"
+                "primary key(user_to, message))")
     conn.commit()
-
+    
     return conn

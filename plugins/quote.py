@@ -1,37 +1,27 @@
-import os
-import sqlite3
 import random
 import re
+import sqlite3
 import time
 
 from util import hook
 
-dbname = "skybot.db"
 
-def db_connect(db):
-    conn = sqlite3.connect(db)
-    conn.execute('''create table if not exists quotes
-        (server, chan, nick, add_nick, msg, time real, deleted default 0, 
-        primary key (server, chan, nick, msg))''')
-    conn.commit()
-    return conn
-
-def add_quote(conn, server, chan, nick, add_nick, msg):
+def add_quote(conn, chan, nick, add_nick, msg):
     now = time.time()
-    print repr((conn, server, add_nick, nick, msg, time))
-    conn.execute('''insert or fail into quotes (server, chan, nick, add_nick,
-                    msg, time) values(?,?,?,?,?,?)''', 
-                    (server, chan, nick, add_nick, msg, now))
+    print repr((conn, add_nick, nick, msg, time))
+    conn.execute('''insert or fail into quotes (chan, nick, add_nick,
+                    msg, time) values(?,?,?,?,?)''', 
+                    (chan, nick, add_nick, msg, now))
     conn.commit()
 
-def get_quotes_by_nick(conn, server, chan, nick):
+def get_quotes_by_nick(conn, chan, nick):
     return conn.execute("select time, nick, msg from quotes where deleted!=1 "
-            "and server=? and chan=? and lower(nick)=lower(?) order by time",
-            (server, chan, nick)).fetchall()
+            "and chan=? and lower(nick)=lower(?) order by time",
+            (chan, nick)).fetchall()
 
-def get_quotes_by_chan(conn, server, chan):
+def get_quotes_by_chan(conn, chan):
     return conn.execute("select time, nick, msg from quotes where deleted!=1 "
-           "and server=? and chan=? order by time", (server, chan)).fetchall()
+           "and chan=? order by time", (chan,)).fetchall()
 
 
 def format_quote(q, num, n_quotes):
@@ -39,15 +29,17 @@ def format_quote(q, num, n_quotes):
     return "[%d/%d] %s <%s> %s" % (num, n_quotes, 
         time.strftime("%Y-%m-%d", time.gmtime(ctime)), nick, msg)
 
-
 @hook.command('q')
 @hook.command
 def quote(bot, input):
     ".q/.quote <nick/#chan> [#n]/.quote add <nick> <msg> -- gets " \
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
-    dbpath = os.path.join(bot.persist_dir, dbname)
-    conn = db_connect(dbpath)
+    conn = bot.get_db_connection(bot, input.server)
+    conn.execute('''create table if not exists quotes
+        (chan, nick, add_nick, msg, time real, deleted default 0, 
+        primary key (chan, nick, msg))''')
+    conn.commit()
 
     try:
         add = re.match(r"add\s+<?[^\w]?(\S+?)>?\s+(.*)", input.inp, re.I)
@@ -57,7 +49,7 @@ def quote(bot, input):
         if add:
             nick, msg = add.groups()
             try:
-                add_quote(conn, input.server, chan, nick, input.nick, msg)
+                add_quote(conn, chan, nick, input.nick, msg)
             except sqlite3.IntegrityError: 
                 return "message already stored, doing nothing."
             return "quote added."
@@ -67,9 +59,9 @@ def quote(bot, input):
             by_chan = False
             if select.startswith('#'):
                 by_chan = True
-                quotes = get_quotes_by_chan(conn, input.server, select)
+                quotes = get_quotes_by_chan(conn, select)
             else:
-                quotes = get_quotes_by_nick(conn, input.server, chan, select)
+                quotes = get_quotes_by_nick(conn, chan, select)
 
             n_quotes = len(quotes)
 

@@ -1,20 +1,8 @@
 " seen.py: written by sklnd in about two beers July 2009"
 
-import os
 import time
-from datetime import datetime
-import sqlite3
 
 from util import hook, timesince
-
-
-dbname = "skybot.db"
-
-
-def adapt_datetime(ts):
-    return time.mktime(ts.timetuple())
-
-sqlite3.register_adapter(datetime, adapt_datetime)
 
 
 @hook.tee
@@ -22,15 +10,12 @@ def seeninput(bot, input):
     if input.command != 'PRIVMSG':
         return
 
-    dbpath = os.path.join(bot.persist_dir, dbname)
-
-    conn = dbconnect(dbpath)
+    conn = db_connect(bot, input.server)
     cursor = conn.cursor()
     cursor.execute("INSERT OR REPLACE INTO seen(name, date, quote, chan)"
-        "values(?,?,?,?)", (input.nick.lower(), datetime.now(),
+        "values(?,?,?,?)", (input.nick.lower(), time.time(),
         input.msg, input.chan))
     conn.commit()
-    conn.close()
 
 
 @hook.command
@@ -45,8 +30,7 @@ def seen(bot, input):
     if query.lower() == input.nick.lower():
         return "Have you looked in a mirror lately?"
 
-    dbpath = os.path.join(bot.persist_dir, dbname)
-    conn = dbconnect(dbpath)
+    conn = db_connect(bot, input.server)
     cursor = conn.cursor()
 
     command = "SELECT date, quote FROM seen WHERE name LIKE ? AND chan = ?" \
@@ -54,19 +38,17 @@ def seen(bot, input):
     cursor.execute(command, (query, input.chan))
     results = cursor.fetchone()
 
-    conn.close()
-
-    if(results != None):
-        reltime = timesince.timesince(datetime.fromtimestamp(results[0]))
+    if results:
+        reltime = timesince.timesince(results[0])
         return '%s was last seen %s ago saying: %s' % \
                     (query, reltime, results[1])
     else:
         return "I've never seen %s" % query
 
 
-def dbconnect(db):
+def db_connect(bot, server):
     "check to see that our db has the the seen table and return a connection."
-    conn = sqlite3.connect(db)
+    conn = bot.get_db_connection(server)
     
     conn.execute("CREATE TABLE IF NOT EXISTS "
                  "seen(name varchar(30) not null, date datetime not null, "

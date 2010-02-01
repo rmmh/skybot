@@ -50,6 +50,9 @@ def timesince(d, now=None):
       (60 * 60, ('hour', 'hours')),
       (60, ('minute', 'minutes'))
     )
+    if isinstance(d, int) or isinstance(d, float):
+        d = datetime.datetime.fromtimestamp(d)
+
     # Convert datetime.date to datetime.datetime for comparison.
     if not isinstance(d, datetime.datetime):
         d = datetime.datetime(d.year, d.month, d.day)
