@@ -24,7 +24,9 @@ def wolframalpha(inp):
     for pod in pods: 
         heading = pod.find('h1/span')
         if heading is not None:
-            heading = text_content().strip()
+            heading = heading.text_content().strip()
+            if heading.startswith('Input'):
+                continue
         else:
             continue
 
@@ -38,12 +40,10 @@ def wolframalpha(inp):
         if results:
             pod_texts.append(heading + ' ' + '|'.join(results))
 
-    ret = '. '.join(pod_texts[1:]) # first pod is the input
+    ret = '. '.join(pod_texts) # first pod is the input
 
-    if not ret: 
-        if not pod_texts:
-            return 'no results'
-        ret = pod_texts[0] # definite integrals have only the result pod first
+    if not pod_texts:
+        return 'no results'
 
     if len(ret) > 430:        
         ret = ret[:ret.rfind(' ', 0, 430)]

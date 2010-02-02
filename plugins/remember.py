@@ -1,88 +1,66 @@
 """
-remember.py: written by Scaevolus 2009
+remember.py: written by Scaevolus 2010
 """
-
-import os
-import thread
-import codecs
 
 from util import hook
 
+def db_init(db):
+    db.execute("create table if not exists memory(chan, word, data, nick,"
+               " primary key(chan, word))")
+    db.commit()
 
-lock = thread.allocate_lock()
-memory = {}
-
-
-def load_memory(filename, mtimes={}):
-    if not os.path.exists(filename):
-        return {}
-    mtime = os.stat(filename).st_mtime
-    if mtimes.get(filename, 0) != mtime:
-        mtimes[filename] = mtime
-        return dict((x.split(None, 1)[0].lower(), x.strip()) for x in
-                codecs.open(filename, 'r', 'utf-8'))
-
-
-def save_memory(filename, memory):
-    out = codecs.open(filename, 'w', 'utf-8')
-    out.write('\n'.join(sorted(memory.itervalues())))
-    out.flush()
-    out.close()
-
-
-def make_filename(dir, chan):
-    return os.path.join(dir, 'memory')
-
+def get_memory(db, chan, word):
+    row = db.execute("select data from memory where chan=? and word=lower(?)",
+                      (chan, word)).fetchone()
+    if row:
+        return row[0].encode('utf8')
+    else:
+        return None
 
 @hook.command
-def remember(bot, input):
+def remember(inp, nick='', chan='', db=None):
     ".remember <word> <data> -- maps word to data in the memory"
-    with lock:
-        filename = make_filename(bot.persist_dir, input.chan)
-        memory.setdefault(filename, load_memory(filename))
+    db_init(db)
 
-        try:
-            head, tail = input.inp.split(None, 1)
-        except ValueError:
-            return remember.__doc__
+    try:
+        head, tail = inp.split(None, 1)
+    except ValueError:
+        return remember.__doc__
 
-        low = head.lower()
-        if low not in memory[filename]:
-            input.reply("done.")
-        else:
-            input.reply('forgetting that "%s", remembering this instead.' %
-                    memory[filename][low])
-        memory[filename][low] = input.inp
-        save_memory(filename, memory[filename])
-
+    data = get_memory(db, chan, head)
+    db.execute("replace into memory(chan, word, data, nick) values"
+               " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
+    db.commit()
+    if data:
+        return 'forgetting that %r, remembering this instead.' % data
+    else:
+        return 'done.'
 
 @hook.command
-def forget(bot, input):
+def forget(inp, chan='', db=None):
     ".forget <word> -- forgets the mapping that word had"
-    with lock:
-        filename = make_filename(bot.persist_dir, input.chan)
-        memory.setdefault(filename, load_memory(filename))
+    if not inp:
+        return forget.__doc__
 
-        if not input.inp:
-            return forget.__doc__
+    db_init(db)
+    data = get_memory(db, chan, inp)
 
-        low = input.inp.lower()
-        if low not in memory[filename]:
-            return "I don't know about that."
-        if not hasattr(input, 'chan'):
-            return "I won't forget anything in private."
-        input.say("Forgot that %s" % memory[filename][low])
-        del memory[filename][low]
-        save_memory(filename, memory[filename])
+    if not chan.startswith('#'):
+        return "I won't forget anything in private."
 
+    if data:
+        db.execute("delete from memory where chan=? and word=lower(?)",
+                   (chan, inp))
+        db.commit()
+        return 'forgot that %r' % data
+    else:
+        return "I don't know about that."
 
 @hook.command(hook='\?(.+)', prefix=False)
-def question(bot, input):
+def question(inp, chan='', say=None, db=None):
     "?<word> -- shows what data is associated with word"
-    with lock:
-        filename = make_filename(bot.persist_dir, input.chan)
-        memory.setdefault(filename, load_memory(filename))
+    db_init(db)
 
-        word = input.inp.split()[0].lower()
-        if word in memory[filename]:
-            input.say("%s" % memory[filename][word])
+    data = get_memory(db, chan, inp)
+    if data:
+        say(data)
