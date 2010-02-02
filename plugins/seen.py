@@ -10,47 +10,41 @@ def seeninput(bot, input):
     if input.command != 'PRIVMSG':
         return
 
-    conn = db_connect(bot, input.server)
-    cursor = conn.cursor()
-    cursor.execute("insert or replace into seen(name, time, quote, chan)"
-        "values(?,?,?,?)", (input.nick.lower(), time.time(),
-        input.msg, input.chan))
-    conn.commit()
+    db = bot.get_db_connection(input.server)
+    db_init(db)
+    db.execute("insert or replace into seen(name, time, quote, chan)"
+        "values(?,?,?,?)", (input.nick.lower(), time.time(), input.msg, 
+            input.chan))
+    db.commit()
 
 
 @hook.command
-def seen(bot, input):
+def seen(inp, nick='', chan='', db=None):
     ".seen <nick> -- Tell when a nickname was last in active in irc"
 
-    if not input.inp:
+    if not inp:
         return seen.__doc__
 
-    query = input.inp
-
-    if query.lower() == input.nick.lower():
+    if inp.lower() == nick.lower():
         return "Have you looked in a mirror lately?"
 
-    conn = db_connect(bot, input.server)
-    cursor = conn.cursor()
+    db_init(db)
 
-    command = "select time, quote FROM seen WHERE name LIKE ? AND chan = ?"
-    cursor.execute(command, (query, input.chan))
-    results = cursor.fetchone()
+    last_seen = db.execute("select name, time, quote from seen where name"
+                           " like ? and chan = ?", (inp, chan)).fetchone()
 
-    if results:
-        reltime = timesince.timesince(results[0])
+    if last_seen:
+        reltime = timesince.timesince(last_seen[1])
+        if last_seen[0] != inp.lower(): # for glob matching
+            inp = last_seen[0]
         return '%s was last seen %s ago saying: %s' % \
-                    (query, reltime, results[1])
+                    (inp, reltime, last_seen[2])
     else:
-        return "I've never seen %s" % query
+        return "I've never seen %s" % inp
 
 
-def db_connect(bot, server):
+def db_init(db):
     "check to see that our db has the the seen table and return a connection."
-    conn = bot.get_db_connection(server)
-    
-    conn.execute("create table if not exists seen(name, time, quote, chan, "
+    db.execute("create table if not exists seen(name, time, quote, chan, "
                  "primary key(name, chan))")
-    conn.commit()
-
-    return conn
+    db.commit()

@@ -7,20 +7,20 @@ from util import hook
 
 
 @hook.command
-def weather(bot, input):
+def weather(inp, nick='', server='', reply=None, db=None):
     ".weather <location> [dontsave] -- queries the google weather API for weather data"
-    loc = input.inp
+
+    loc = inp
 
     dontsave = loc.endswith(" dontsave")
     if dontsave:
         loc = loc[:-9].strip().lower()
 
-    conn = bot.get_db_connection(input.server)
-    conn.execute("create table if not exists weather(nick primary key, loc)")
+    db.execute("create table if not exists weather(nick primary key, loc)")
 
     if not loc: # blank line
-        loc = conn.execute("select loc from weather where nick=lower(?)",
-                            (input.nick,)).fetchone()
+        loc = db.execute("select loc from weather where nick=lower(?)",
+                            (nick,)).fetchone()
         if not loc:
             return weather.__doc__
         loc = loc[0]
@@ -31,17 +31,17 @@ def weather(bot, input):
 
     if w.find('problem_cause') is not None:
         return "Couldn't fetch weather data for '%s', try using a zip or " \
-                "postal code." % input.inp
+                "postal code." % inp
 
     info = dict((e.tag, e.get('data')) for e in w.find('current_conditions'))
     info['city'] = w.find('forecast_information/city').get('data')
     info['high'] = w.find('forecast_conditions/high').get('data')
     info['low'] = w.find('forecast_conditions/low').get('data')
 
-    input.reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
+    reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
             ', L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
 
-    if input.inp and not dontsave:
-        conn.execute("insert or replace into weather(nick, loc) values (?,?)",
-                     (input.nick.lower(), loc))
-        conn.commit()
+    if inp and not dontsave:
+        db.execute("insert or replace into weather(nick, loc) values (?,?)",
+                     (nick.lower(), loc))
+        db.commit()

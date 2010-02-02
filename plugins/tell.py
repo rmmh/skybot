@@ -5,20 +5,24 @@ import time
 
 from util import hook, timesince
 
-def get_tells(conn, user_to, chan):
-    return conn.execute("select user_from, message, time from tell where"
+def get_tells(db, user_to, chan):
+    return db.execute("select user_from, message, time from tell where"
                          " user_to=lower(?) and chan=? order by time", 
                          (user_to.lower(), chan)).fetchall()
 
 
-@hook.command(hook=r'(.*)', prefix=False)
+@hook.tee
 def tellinput(bot, input):
-    if 'showtells' in input.inp.lower():
+    if input.command != 'PRIVMSG':
+        return
+
+    if 'showtells' in input.msg.lower():
         return
     
-    conn = db_connect(bot, input.server)
+    db = bot.get_db_connection(input.server)
+    db = db_init(db)
 
-    tells = get_tells(conn, input.nick, input.chan)
+    tells = get_tells(db, input.nick, input.chan)
 
     if tells:
         user_from, message, time = tells[0]
@@ -28,72 +32,70 @@ def tellinput(bot, input):
         if len(tells) > 1:
             reply += " (+%d more, .showtells to view)" % (len(tells) - 1)
 
-        conn.execute("delete from tell where user_to=lower(?) and message=?",
+        db.execute("delete from tell where user_to=lower(?) and message=?",
                      (input.nick, message))
-        conn.commit()
-        return reply
+        db.commit()
+        input.reply(reply)
 
 @hook.command
-def showtells(bot, input):
+def showtells(inp, nick='', chan='', pm=None, db=None):
     ".showtells -- view all pending tell messages (sent in PM)."
     
-    conn = db_connect(bot, input.server)
+    db_init(db)
 
-    tells = get_tells(conn, input.nick, input.chan)
+    tells = get_tells(db, nick, chan)
     
     if not tells:
-        input.pm("You have no pending tells.")
+        pm("You have no pending tells.")
         return
 
     for tell in tells:
         user_from, message, time = tell
         reltime = timesince.timesince(time)
-        input.pm("%s said %s ago: %s" % (user_from, reltime, message))
+        pm("%s said %s ago: %s" % (user_from, reltime, message))
     
-    conn.execute("delete from tell where user_to=lower(?) and chan=?",
-                  (input.nick, input.chan))
-    conn.commit()
+    db.execute("delete from tell where user_to=lower(?) and chan=?",
+                  (nick, chan))
+    db.commit()
 
 @hook.command
-def tell(bot, input):
+def tell(inp, nick='', chan='', db=None):
     ".tell <nick> <message> -- relay <message> to <nick> when <nick> is around"
 
-    query = input.inp.split(' ', 1)
+    query = inp.split(' ', 1)
 
-    if len(query) != 2 or not input.inp:
+    if not inp or len(query) != 2:
         return tell.__doc__
 
     user_to = query[0].lower()
     message = query[1].strip()
-    user_from = input.nick
+    user_from = nick
     
     if user_to == user_from.lower():
         return "No."
 
-    conn = db_connect(bot, input.server)
+    db_init(db)
 
-    if conn.execute("select count() from tell where user_to=?",
+    if db.execute("select count() from tell where user_to=?",
                     (user_to,)).fetchone()[0] >= 5:
         return "That person has too many things queued."
 
     try:
-        conn.execute("insert into tell(user_to, user_from, message, chan,"
+        db.execute("insert into tell(user_to, user_from, message, chan,"
                      "time) values(?,?,?,?,?)", (user_to, user_from, message,
-                     input.chan, time.time()))
-        conn.commit()
-    except conn.IntegrityError:
+                     chan, time.time()))
+        db.commit()
+    except db.IntegrityError:
         return "Message has already been queued."
 
     return "I'll pass that along."
 
 
-def db_connect(bot, server):
-    "check to see that our db has the tell table and return a connection."
-    conn = bot.get_db_connection(server)
-
-    conn.execute("create table if not exists tell"
+def db_init(db):
+    "check to see that our db has the tell table and return a dbection."
+    db.execute("create table if not exists tell"
                 "(user_to, user_from, message, chan, time,"
                 "primary key(user_to, message))")
-    conn.commit()
+    db.commit()
     
-    return conn
+    return db

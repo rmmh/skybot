@@ -5,20 +5,20 @@ import time
 from util import hook
 
 
-def add_quote(conn, chan, nick, add_nick, msg):
+def add_quote(db, chan, nick, add_nick, msg):
     now = time.time()
-    conn.execute('''insert or fail into quote (chan, nick, add_nick,
+    db.execute('''insert or fail into quote (chan, nick, add_nick,
                     msg, time) values(?,?,?,?,?)''', 
                     (chan, nick, add_nick, msg, now))
-    conn.commit()
+    db.commit()
 
-def get_quotes_by_nick(conn, chan, nick):
-    return conn.execute("select time, nick, msg from quote where deleted!=1 "
+def get_quotes_by_nick(db, chan, nick):
+    return db.execute("select time, nick, msg from quote where deleted!=1 "
             "and chan=? and lower(nick)=lower(?) order by time",
             (chan, nick)).fetchall()
 
-def get_quotes_by_chan(conn, chan):
-    return conn.execute("select time, nick, msg from quote where deleted!=1 "
+def get_quotes_by_chan(db, chan):
+    return db.execute("select time, nick, msg from quote where deleted!=1 "
            "and chan=? order by time", (chan,)).fetchall()
 
 
@@ -29,26 +29,24 @@ def format_quote(q, num, n_quotes):
 
 @hook.command('q')
 @hook.command
-def quote(bot, input):
+def quote(inp, nick='', chan='', db=None):
     ".q/.quote <nick/#chan> [#n]/.quote add <nick> <msg> -- gets " \
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
-    conn = bot.get_db_connection(input.server)
-    conn.execute("create table if not exists quote"
+    db.execute("create table if not exists quote"
         "(chan, nick, add_nick, msg, time real, deleted default 0, "
         "primary key (chan, nick, msg))")
-    conn.commit()
+    db.commit()
 
     try:
-        add = re.match(r"add\s+<?[^\w]?(\S+?)>?\s+(.*)", input.inp, re.I)
-        retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?", input.inp)
-        chan = input.chan
+        add = re.match(r"add\s+<?[^\w]?(\S+?)>?\s+(.*)", inp, re.I)
+        retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?", inp)
 
         if add:
-            nick, msg = add.groups()
+            quoted_nick, msg = add.groups()
             try:
-                add_quote(conn, chan, nick, input.nick, msg)
-            except conn.IntegrityError: 
+                add_quote(db, chan, quoted_nick, nick, msg)
+            except db.IntegrityError: 
                 return "message already stored, doing nothing."
             return "quote added."
         elif retrieve:
@@ -57,9 +55,9 @@ def quote(bot, input):
             by_chan = False
             if select.startswith('#'):
                 by_chan = True
-                quotes = get_quotes_by_chan(conn, select)
+                quotes = get_quotes_by_chan(db, select)
             else:
-                quotes = get_quotes_by_nick(conn, chan, select)
+                quotes = get_quotes_by_nick(db, chan, select)
 
             n_quotes = len(quotes)
 
@@ -83,5 +81,5 @@ def quote(bot, input):
         else:
             return quote.__doc__
     finally:
-        conn.commit()
-        conn.close()
+        db.commit()
+        db.close()

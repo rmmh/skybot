@@ -1,7 +1,7 @@
 from util import hook
 
 @hook.command
-def help(bot, input):
+def help(inp, bot=None, pm=None):
     ".help [command] -- gives a list of commands/help for a command"
     
     funcs = {}
@@ -10,8 +10,8 @@ def help(bot, input):
             if func.__doc__ is not None:
                 funcs[csig[1]] = func
 
-    if not input.inp:
-        input.pm('available commands: ' + ' '.join(sorted(funcs)))
+    if not inp:
+        pm('available commands: ' + ' '.join(sorted(funcs)))
     else:
-        if input.inp in funcs:
-            input.pm(funcs[input.inp].__doc__)
+        if inp in funcs:
+            pm(funcs[inp].__doc__)

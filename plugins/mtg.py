@@ -164,6 +164,7 @@ set_abbrevs = {
     'Zendikar': 'ZEN'}
 
 rarity_abbrevs = {
+    'Land': 'L',
     'Common': 'C',
     'Uncommon': 'UC',
     'Rare': 'R',

@@ -1,6 +1,7 @@
-import Queue
+import inspect
 import thread
 import traceback
+import Queue
 
 def _isfunc(x):
     if type(x) == type(_isfunc):
@@ -8,11 +9,33 @@ def _isfunc(x):
     return False
 
 
-def _hook_add(func, add):
+def _hook_add(func, add, name=''):
     if not hasattr(func, '_skybot_hook'):
         func._skybot_hook = []
     func._skybot_hook.append(add)
+    if not hasattr(func, '_skybot_args'):
+        argspec = inspect.getargspec(func)
+        if name:
+            n_args = len(argspec.args)
+            if argspec.defaults:
+                n_args -= len(argspec.defaults)
+            if argspec.keywords:
+                n_args -= 1
+            if argspec.varargs:
+                n_args -= 1
+            if n_args != 1:
+                err = '%ss must take 1 non-keyword argument (%s)' % (name, 
+                            func.__name__)
+                raise ValueError(err)
 
+        args = []
+        if argspec.defaults:
+            end = bool(argspec.keywords) + bool(argspec.varargs)
+            args.extend(argspec.args[-len(argspec.defaults):
+                        end if end else None])
+        if argspec.keywords:
+            args.append(0) # means kwargs present
+        func._skybot_args = args
 
 def _make_sig(f):
     return f.func_code.co_filename, f.func_name, f.func_code.co_firstlineno
@@ -30,12 +53,9 @@ def command(func=None, hook=None, **kwargs):
     args = {}
 
     def command_wrapper(func):
-        if func.func_code.co_argcount not in (1, 2):
-            raise ValueError(
-                'commands must take 1 or 2 arguments: (inp) or (bot, input)')
         args.setdefault('name', func.func_name)
         args.setdefault('hook', args['name'] + r'(?:\s+|$)(.*)')
-        _hook_add(func, ['command', (_make_sig(func), func, args)])
+        _hook_add(func, ['command', (_make_sig(func), func, args)], 'command')
         return func
 
     if hook is not None or kwargs or not _isfunc(func):
@@ -53,12 +73,10 @@ def event(arg=None, **kwargs):
     args = kwargs
 
     def event_wrapper(func):
-        if func.func_code.co_argcount != 2:
-            raise ValueError('events must take 2 arguments: (bot, input)')
         args['name'] = func.func_name
         args['prefix'] = False
         args.setdefault('events', '*')
-        _hook_add(func, ['event', (_make_sig(func), func, args)])
+        _hook_add(func, ['event', (_make_sig(func), func, args)], 'event')
         return func
 
     if _isfunc(arg):
@@ -74,7 +92,7 @@ def tee(func, **kwargs):
 
     if func.func_code.co_argcount != 2:
         raise ValueError('tees must take 2 arguments: (bot, input)')
-    
+
     _hook_add(func, ['tee', (_make_sig(func), func, kwargs)])
     func._iqueue = Queue.Queue()
 

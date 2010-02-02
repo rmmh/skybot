@@ -5,34 +5,20 @@ skybot plugin for testing regular expressions
 by Ipsum
 '''
 
-import thread
-import codecs
 import re
 
 from util import hook
 
 
-
 @hook.command('re')
-def reg(bot, input):
-	".re <regex>  <string> -- matches regular expression in given <string> (seperate regex and string by 2 spaces)"
+def reg(inp):
+    ".re <regex>  <string> -- matches regular expression in given <string> "\
+            "(leave 2 spaces between)"
 
-	m = ""
-	
-	if len(input.msg) < 3:
-		return reg.__doc__
-		
-	query = input.inp.partition("  ")
-	
-	
-	if query[2] != "":
-		r = re.compile(query[0])
+    query = inp.split("  ", 1)
 
-		matches = r.findall(query[2])
-		for match in matches:
-			m += match + "|"
-		
-		return m.rstrip('|')
-		
-	else:
-		return reg.__doc__
+    if not inp or len(query) != 2:
+        return reg.__doc__
+
+    return '|'.join(re.findall(query[0], query[1]))
+

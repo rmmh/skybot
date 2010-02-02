@@ -1,43 +1,44 @@
 import thread
 import traceback
 
-class Input(object):
+class Input(dict):
+    def __init__(self, conn, raw, prefix, command, params,
+                    nick, user, host, paraml, msg):
+    
+        chan = paraml[0].lower()
+        if chan == conn.nick: # is a PM
+            chan = nick
 
-    def __init__(self, conn, raw, prefix, command,
-            params, nick, user, host, paraml, msg):
-        self.conn = conn            # irc object
-        self.server = conn.server   # hostname of server
-        self.raw = raw              # unprocessed line of text
-        self.prefix = prefix        # usually hostmask
-        self.command = command      # PRIVMSG, JOIN, etc.
-        self.params = params        
-        self.nick = nick
-        self.user = user            # user@host
-        self.host = host
-        self.paraml = paraml        # params[-1] without the :
-        self.msg = msg
-        self.chan = paraml[0].lower()
-        if self.chan == conn.nick:  # is a PM
-            self.chan = nick
+        def say(msg):
+            conn.msg(chan, msg)
 
-    def say(self, msg):
-        self.conn.msg(self.chan, msg)
+        def reply(msg):
+            conn.msg(chan, nick + ': ' + msg)
 
-    def reply(self, msg):
-        self.say(self.nick + ': ' + msg)
+        def pm(msg):
+            conn.msg(nick, msg)
 
-    def pm(self, msg):
-        self.conn.msg(self.nick, msg)
+        dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
+                    params=params, nick=nick, user=user, host=host,
+                    paraml=paraml, msg=msg, server=conn.server, chan=chan, 
+                    say=say, reply=reply, pm=pm, bot=bot)
+        self.__dict__ = self # permits attribute access to values
 
 
 def run(func, input):
-    ac = func.func_code.co_argcount
-    if ac == 2:
-        out = func(bot, input)
-    elif ac == 1:
-        out = func(input.inp)
+    args = func._skybot_args
+    if args:
+        if 'db' in args:
+            input['db'] = get_db_connection(input['server'])
+        if 0 in args:
+            out = func(input['inp'], **input)
+        else:
+            kw = dict((key, input[key]) for key in args if key in input)
+            out = func(input['inp'], **kw)
+    else:
+        out = func(input['inp'])
     if out is not None:
-        input.reply(unicode(out))
+        input['reply'](unicode(out))
 
 
 def main(conn, out):
