@@ -22,7 +22,12 @@ def wolframalpha(inp):
 
     pod_texts = []
     for pod in pods: 
-        heading = pod.find('h1/span').text_content().strip()
+        heading = pod.find('h1/span')
+        if heading is not None:
+            heading = text_content().strip()
+        else:
+            continue
+
         results = []
         for image in pod.xpath('div/div[@class="output"]/img'):
             alt = image.attrib['alt'].strip()
