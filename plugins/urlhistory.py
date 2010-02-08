@@ -73,5 +73,5 @@ def urlinput(inp, nick='', chan='', server='', reply=None, bot=None):
     if url not in ignored_urls:
         history = get_history(db, chan, url)
         insert_history(db, chan, url, nick)
-        if nick not in dict(history) or True:
+        if nick not in dict(history):
             return format_reply(history)
