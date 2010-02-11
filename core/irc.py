@@ -52,7 +52,7 @@ class crlf_tcp(object):
                     self.socket.close()
                     return
                 continue
-            
+
             while '\r\n' in self.ibuffer:
                 line, self.ibuffer = self.ibuffer.split('\r\n', 1)
                 self.iqueue.put(decode(line))
@@ -72,7 +72,7 @@ irc_netmask_rem = re.compile(r':?([^!@]*)!?([^@]*)@?(.*)').match
 irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 
 
-class irc(object):
+class IRC(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
     def __init__(self, server, nick, port=6667, channels=[], conf={}):
@@ -136,3 +136,47 @@ class irc(object):
 
     def send(self, str):
         self.conn.oqueue.put(str)
+
+class FakeIRC(IRC):
+    "handles the IRC protocol"
+    #see the docs/ folder for more information on the protocol
+    def __init__(self, server, nick, port=6667, channels=[], conf={}, fn=""):
+        self.channels = channels
+        self.conf = conf
+        self.server = server
+        self.port = port
+        self.nick = nick
+
+        self.out = Queue.Queue() #responses from the server are placed here
+        # format: [rawline, prefix, command, params,
+        # nick, user, host, paramlist, msg]
+
+        self.f = open(fn, 'rb')
+
+        thread.start_new_thread(self.parse_loop, ())
+
+    def parse_loop(self):
+        while True:
+            msg = decode(self.f.readline()[9:])
+
+            if msg == '':
+                print "!!!!DONE READING FILE!!!!"
+                return
+
+            if msg.startswith(":"): #has a prefix
+                prefix, command, params = irc_prefix_rem(msg).groups()
+            else:
+                prefix, command, params = irc_noprefix_rem(msg).groups()
+            nick, user, host = irc_netmask_rem(prefix).groups()
+            paramlist = irc_param_ref(params)
+            lastparam = ""
+            if paramlist and paramlist[-1].startswith(':'):
+                    lastparam = paramlist[-1][1:]
+            self.out.put([msg, prefix, command, params, nick, user, host,
+                    paramlist, lastparam])
+            while self.out.qsize() > 5: time.sleep(.1)
+            if command == "PING":
+                self.cmd("PONG", [params])
+
+    def cmd(self, command, params=None):
+        pass

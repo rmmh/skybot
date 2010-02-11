@@ -14,16 +14,21 @@ def sieve_suite(bot, input, func, args):
     if input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
         return None
 
-    hook = args.get('hook', r'(.*)')
+    regex = args.get('re')
+    if not regex:
+        hook = args.get('hook', r'(.*)')
 
-    if args.get('prefix', True):
-        if input.chan == input.nick: # private message, prefix not required
-            prefix = r'^(?:[.!]?|'
-        else:
-            prefix = r'^(?:[.!]|'
-        hook = prefix + input.conn.nick + r'[:,]*\s)' + hook
+        if args.get('prefix', True):
+            if input.chan == input.nick: # private message, prefix not required
+                prefix = r'^(?:[.!]?|'
+            else:
+                prefix = r'^(?:[.!]|'
+            hook = prefix + input.conn.nick + r'[:,]*\s)' + hook
 
-    input.re = re.match(hook, input.msg, flags=re.I)
+        regex = re.compile(hook, flags=re.I)
+        args['re'] = regex
+
+    input.re = regex.match(input.msg)
     if input.re is None:
         return None
 
