@@ -45,4 +45,7 @@ def youtube(inp):
         out += ' - \x02%s\x02 on \x02%s\x02' % (j['uploader'],
                     time.strftime("%Y.%m.%d", upload_time))
 
+        if 'contentRating' in j:
+            out += ' - \x034NSFW\x02'
+
         return out
