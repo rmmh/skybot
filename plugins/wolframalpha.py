@@ -45,6 +45,13 @@ def wolframalpha(inp):
     if not pod_texts:
         return 'no results'
 
+    ret = re.sub(r'\\(.)', r'\1', ret)
+
+    def unicode_sub(match):
+        return unichr(int(match.group(1), 16))
+
+    ret = re.sub(r'\\:([0-9a-z]{4})', unicode_sub, ret)
+
     if len(ret) > 430:        
         ret = ret[:ret.rfind(' ', 0, 430)]
         ret = re.sub(r'\W+$', '', ret) + '...'
