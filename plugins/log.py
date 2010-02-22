@@ -33,8 +33,6 @@ irc_color_re = re.compile(r'(\x03(\d+,\d+|\d)|[\x0f\x02\x16\x1f])')
 
 
 def get_log_filename(dir, server, chan):
-    if chan.startswith(':'):
-        chan = chan[1:]
     return os.path.join(dir, 'log', gmtime('%Y'), server,
             gmtime('%%s.%m-%d.log') % chan).lower()
 

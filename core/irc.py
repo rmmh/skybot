@@ -4,6 +4,7 @@ import socket
 import time
 import thread
 import Queue
+
 from ssl import wrap_socket, CERT_NONE, CERT_REQUIRED, SSLError
 
 def decode(txt):
@@ -82,12 +83,13 @@ class crlf_tcp(object):
 
 class crlf_ssl_tcp(crlf_tcp):
     "Handles ssl tcp connetions that consist of utf-8 lines ending with crlf"
-    def __init__(self, host, port, ignoreCertErrors, timeout=300):
-        self.ignoreCertErrors = ignoreCertErrors
+    def __init__(self, host, port, ignore_cert_errors, timeout=300):
+        self.ignore_cert_errors = ignore_cert_errors
         crlf_tcp.__init__(self, host, port, timeout)
     
     def create_socket(self):
-        return wrap_socket(crlf_tcp.create_socket(self), server_side=False, cert_reqs = CERT_NONE if self.ignoreCertErrors else CERT_REQUIRED )
+        return wrap_socket(crlf_tcp.create_socket(self), server_side=False, 
+                cert_reqs = [CERT_NONE, CERT_REQUIRED][self.ignore_cert_errors])
         
     def recv_from_socket(self, nbytes):
         return self.socket.read(nbytes)
@@ -110,13 +112,12 @@ irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 class IRC(object):
     "handles the IRC protocol"
     #see the docs/ folder for more information on the protocol
-    def __init__(self, server, nick, port=6667, channels=[], conf={}, password=None):
+    def __init__(self, server, nick, port=6667, channels=[], conf={}):
         self.channels = channels
         self.conf = conf
         self.server = server
         self.port = port
         self.nick = nick
-        self.password = password
 
         self.out = Queue.Queue() #responses from the server are placed here
         # format: [rawline, prefix, command, params,
@@ -131,10 +132,10 @@ class IRC(object):
     def connect(self):
         self.conn = self.create_connection()
         thread.start_new_thread(self.conn.run, ())
-        self.set_pass(self.password)
+        self.set_pass(self.conf.get('server_password'))
         self.set_nick(self.nick)
         self.cmd("USER",
-            [conf.get('user', 'skybot'), "3", "*", ':' + conf.get('realname',
+            [conf.get('user', 'skybot'), "3", "*", conf.get('realname',
              'Python bot - http://bitbucket.org/Scaevolus/skybot/')])
 
     def parse_loop(self):
@@ -152,8 +153,10 @@ class IRC(object):
             nick, user, host = irc_netmask_rem(prefix).groups()
             paramlist = irc_param_ref(params)
             lastparam = ""
-            if paramlist and paramlist[-1].startswith(':'):
-                    lastparam = paramlist[-1][1:]
+            if paramlist:
+                if paramlist[-1].startswith(':'):
+                    paramlist[-1] = paramlist[-1][1:]
+                lastparam = paramlist[-1]
             self.out.put([msg, prefix, command, params, nick, user, host,
                     paramlist, lastparam])
             if command == "PING":
@@ -167,13 +170,14 @@ class IRC(object):
         self.cmd("NICK", [nick])
 
     def join(self, channel):
-        self.cmd("JOIN", [":"+channel])
+        self.cmd("JOIN", [channel])
 
     def msg(self, target, text):
-        self.cmd("PRIVMSG", [target, ":"+text])
+        self.cmd("PRIVMSG", [target, text])
 
     def cmd(self, command, params=None):
         if params:
+            params[-1] = ':' + params[-1]
             self.send(command+' '+' '.join(params))
         else:
             self.send(command)
@@ -182,8 +186,6 @@ class IRC(object):
         self.conn.oqueue.put(str)
 
 class FakeIRC(IRC):
-    "handles the IRC protocol"
-    #see the docs/ folder for more information on the protocol
     def __init__(self, server, nick, port=6667, channels=[], conf={}, fn=""):
         self.channels = channels
         self.conf = conf
@@ -192,8 +194,6 @@ class FakeIRC(IRC):
         self.nick = nick
 
         self.out = Queue.Queue() #responses from the server are placed here
-        # format: [rawline, prefix, command, params,
-        # nick, user, host, paramlist, msg]
 
         self.f = open(fn, 'rb')
 
@@ -214,11 +214,12 @@ class FakeIRC(IRC):
             nick, user, host = irc_netmask_rem(prefix).groups()
             paramlist = irc_param_ref(params)
             lastparam = ""
-            if paramlist and paramlist[-1].startswith(':'):
-                    lastparam = paramlist[-1][1:]
+            if paramlist:
+                if paramlist[-1].startswith(':'):
+                    paramlist[-1] = paramlist[-1][1:]
+                lastparam = paramlist[-1]
             self.out.put([msg, prefix, command, params, nick, user, host,
                     paramlist, lastparam])
-            while self.out.qsize() > 5: time.sleep(.1)
             if command == "PING":
                 self.cmd("PONG", [params])
 
@@ -226,9 +227,10 @@ class FakeIRC(IRC):
         pass
         
 class SSLIRC(IRC):
-    def __init__(self, server, nick, port=6667, channels=[], conf={}, password=None, ignoreCertificateErrors=True):
-        self.ignoreCertErrors = ignoreCertificateErrors
-        IRC.__init__(self, server, nick, port, channels, conf, password)
+    def __init__(self, server, nick, port=6667, channels=[], conf={}, 
+                 ignore_certificate_errors=True):
+        self.ignore_cert_errors = ignore_cert_errors
+        IRC.__init__(self, server, nick, port, channels, conf)
         
     def create_connection(self):
-        return crlf_ssl_tcp(self.server, self.port, self.ignoreCertErrors)
+        return crlf_ssl_tcp(self.server, self.port, self.ignore_cert_errors)

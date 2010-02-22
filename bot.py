@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
-import sys
 import os
 import Queue
+import sys
+import time
 
 sys.path += ['plugins'] # so 'import hook' works without duplication
 sys.path += ['lib']
@@ -33,16 +34,13 @@ try:
                 print 'ERROR: more than one connection named "%s"' % name
                 raise ValueError
             ssl = conf.get('ssl', False)
-            password = conf.get('password', None)
             if ssl:
                 bot.conns[name] = SSLIRC(conf['server'], conf['nick'],
                         port=conf.get('port', 6667), channels=conf['channels'], conf=conf,
-                        password=password,
-                        ignoreCertificateErrors=conf.get('ignore_cert', True))
+                        ignore_certificate_errors=conf.get('ignore_cert', True))
             else:
                 bot.conns[name] = IRC(conf['server'], conf['nick'],
-                        port=conf.get('port', 6667), channels=conf['channels'], conf=conf,
-                        password=password)
+                        port=conf.get('port', 6667), channels=conf['channels'], conf=conf)
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
@@ -54,12 +52,14 @@ if not os.path.exists(bot.persist_dir):
 print 'Running main loop'
 
 while True:
-    try:
-        reload() # these functions only do things
-        config() #  if changes have occured
+    reload() # these functions only do things
+    config() #  if changes have occured
 
-        for conn in bot.conns.itervalues():
-            out = conn.out.get(timeout=1)
-            main(conn, out)
-    except Queue.Empty:
-        pass
+    for conn in bot.conns.itervalues():
+        try:
+            out = conn.out.get_nowait()
+        except Queue.Empty:
+            pass
+        main(conn, out)
+    while all(conn.out.empty() for conn in bot.conns.itervalues()):
+        time.sleep(.3)
