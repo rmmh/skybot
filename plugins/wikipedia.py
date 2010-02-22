@@ -1,7 +1,7 @@
 '''Searches wikipedia and returns first sentence of article
 Scaevolus 2009'''
 
-import urllib
+import urllib2
 from lxml import etree
 import re
 
@@ -24,7 +24,12 @@ def wiki(inp):
         return wiki.__doc__
 
     q = search_url % (urllib.quote(inp, safe=''))
-    x = etree.parse(q)
+
+    request = urllib2.Request(q)
+    request.add_header('User-Agent', 'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
+    opener = urllib2.build_opener()
+    xml = opener.open(request).read()
+    x = etree.fromstring(xml)
 
     ns = '{http://opensearch.org/searchsuggest2}'
     items = x.findall(ns + 'Section/' + ns + 'Item')
