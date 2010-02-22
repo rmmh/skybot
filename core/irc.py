@@ -89,7 +89,7 @@ class crlf_ssl_tcp(crlf_tcp):
     
     def create_socket(self):
         return wrap_socket(crlf_tcp.create_socket(self), server_side=False, 
-                cert_reqs = [CERT_NONE, CERT_REQUIRED][self.ignore_cert_errors])
+                cert_reqs = [CERT_REQUIRED, CERT_NONE][self.ignore_cert_errors])
         
     def recv_from_socket(self, nbytes):
         return self.socket.read(nbytes)
@@ -229,7 +229,7 @@ class FakeIRC(IRC):
 class SSLIRC(IRC):
     def __init__(self, server, nick, port=6667, channels=[], conf={}, 
                  ignore_certificate_errors=True):
-        self.ignore_cert_errors = ignore_cert_errors
+        self.ignore_cert_errors = ignore_certificate_errors
         IRC.__init__(self, server, nick, port, channels, conf)
         
     def create_connection(self):

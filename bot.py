@@ -58,8 +58,8 @@ while True:
     for conn in bot.conns.itervalues():
         try:
             out = conn.out.get_nowait()
+            main(conn, out)
         except Queue.Empty:
             pass
-        main(conn, out)
     while all(conn.out.empty() for conn in bot.conns.itervalues()):
         time.sleep(.3)
