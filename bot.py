@@ -32,8 +32,17 @@ try:
             if name in bot.conns:
                 print 'ERROR: more than one connection named "%s"' % name
                 raise ValueError
-            bot.conns[name] = IRC(conf['server'], conf['nick'],
-                    port=conf.get('port', 6667), channels=conf['channels'], conf=conf)
+            ssl = conf.get('ssl', False)
+            password = conf.get('password', None)
+            if ssl:
+                bot.conns[name] = SSLIRC(conf['server'], conf['nick'],
+                        port=conf.get('port', 6667), channels=conf['channels'], conf=conf,
+                        password=password,
+                        ignoreCertificateErrors=conf.get('ignore_cert', True))
+            else:
+                bot.conns[name] = IRC(conf['server'], conf['nick'],
+                        port=conf.get('port', 6667), channels=conf['channels'], conf=conf,
+                        password=password)
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
