@@ -23,7 +23,7 @@ def wiki(inp):
     if not inp:
         return wiki.__doc__
 
-    q = search_url % (urllib.quote(inp, safe=''))
+    q = search_url % (urllib2.quote(inp, safe=''))
 
     request = urllib2.Request(q)
     request.add_header('User-Agent', 'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
