@@ -160,7 +160,7 @@ class IRC(object):
             self.out.put([msg, prefix, command, params, nick, user, host,
                     paramlist, lastparam])
             if command == "PING":
-                self.cmd("PONG", [params])
+                self.cmd("PONG", paramlist)
 
     def set_pass(self, password):
         if password:
