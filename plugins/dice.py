@@ -9,9 +9,10 @@ from util import hook
 
 
 whitespace_re = re.compile(r'\s+')
-valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$')
-sign_re = re.compile(r'[+-]?(?:\d*d)?\d+')
-split_re = re.compile(r'([\d+-]*)d?(\d*)')
+valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$', 
+                               re.I)
+sign_re = re.compile(r'[+-]?(?:\d*d)?\d+', re.I)
+split_re = re.compile(r'([\d+-]*)d?(\d*)', re.I)
 
 
 def nrolls(count, n):

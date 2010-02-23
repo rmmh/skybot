@@ -53,7 +53,7 @@ def forget(inp, chan='', db=None):
         db.execute("delete from memory where chan=? and word=lower(?)",
                    (chan, inp))
         db.commit()
-        return 'forgot that %r' % data
+        return 'forgot that "%s"' % data.replace('"', "''")
     else:
         return "I don't know about that."
 
