@@ -13,7 +13,7 @@ def get_memory(db, chan, word):
     row = db.execute("select data from memory where chan=? and word=lower(?)",
                       (chan, word)).fetchone()
     if row:
-        return row[0].encode('utf8')
+        return row[0]
     else:
         return None
 
@@ -32,7 +32,8 @@ def remember(inp, nick='', chan='', db=None):
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
     db.commit()
     if data:
-        return 'forgetting that %r, remembering this instead.' % data
+        return 'forgetting "%s", remembering this instead.' % \
+                data.replace('"', "''")
     else:
         return 'done.'
 
