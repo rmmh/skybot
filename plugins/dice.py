@@ -31,6 +31,7 @@ def nrolls(count, n):
 
 
 @hook.command
+@hook.command('roll')
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
