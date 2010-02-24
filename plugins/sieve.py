@@ -30,11 +30,11 @@ def sieve_suite(bot, input, func, args):
     acl = bot.config.get('acls', {}).get(func.__name__)
     if acl:
         if 'deny-except' in acl:
-            allowed_channels = map(str.lower, acl['deny-except'])
+            allowed_channels = map(unicode.lower, acl['deny-except'])
             if input.chan.lower() not in allowed_channels:
                 return None
         if 'allow-except' in acl:
-            denied_channels = map(str.lower, acl['allow-except'])
+            denied_channels = map(unicode.lower, acl['allow-except'])
             if input.chan.lower() in denied_channels:
                 return None
 
