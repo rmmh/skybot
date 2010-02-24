@@ -8,7 +8,7 @@ import json
 from util import hook
 
 
-def dotnetpad(lang, code):
+def dotnetpad(lang, code, timeout=10):
     "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
 
     code = code.encode('utf8')
@@ -18,7 +18,7 @@ def dotnetpad(lang, code):
                "Accept": "text/plain"}
 
     try:
-        conn = httplib.HTTPConnection("dotnetpad.net:80")
+        conn = httplib.HTTPConnection("dotnetpad.net", 80, timeout=timeout)
         conn.request("POST", "/Skybot", params, headers)
         response = conn.getresponse()
     except httplib.HTTPException:
