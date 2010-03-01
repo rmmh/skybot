@@ -5,6 +5,7 @@ from lxml import html
 
 from util import hook
 
+
 @hook.command
 @hook.command('wa')
 def wolframalpha(inp):
@@ -21,7 +22,7 @@ def wolframalpha(inp):
     pods = h.xpath("//div[@class='pod ']")
 
     pod_texts = []
-    for pod in pods: 
+    for pod in pods:
         heading = pod.find('h1/span')
         if heading is not None:
             heading = heading.text_content().strip()
@@ -40,7 +41,7 @@ def wolframalpha(inp):
         if results:
             pod_texts.append(heading + ' ' + '|'.join(results))
 
-    ret = '. '.join(pod_texts) # first pod is the input
+    ret = '. '.join(pod_texts)
 
     if not pod_texts:
         return 'no results'
@@ -52,7 +53,7 @@ def wolframalpha(inp):
 
     ret = re.sub(r'\\:([0-9a-z]{4})', unicode_sub, ret)
 
-    if len(ret) > 430:        
+    if len(ret) > 430:
         ret = ret[:ret.rfind(' ', 0, 430)]
         ret = re.sub(r'\W+$', '', ret) + '...'
 

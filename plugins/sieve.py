@@ -17,7 +17,7 @@ def sieve_suite(bot, input, func, args):
     hook = args.get('hook', r'(.*)')
 
     if args.get('prefix', True):
-        if input.chan == input.nick: # private message, prefix not required
+        if input.chan == input.nick:  # private message, prefix not required
             prefix = r'^(?:[.!]?|'
         else:
             prefix = r'^(?:[.!]|'

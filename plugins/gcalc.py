@@ -5,6 +5,7 @@ from lxml import html
 
 from util import hook
 
+
 @hook.command
 def calc(inp):
     '''.calc <term> -- returns Google Calculator result'''
@@ -22,7 +23,7 @@ def calc(inp):
     if m is None:
         return "could not calculate " + inp
 
-    result = m.group(1).replace("<font size=-2> </font>",",")
-    result = result.replace(" &#215; 10<sup>","E").replace("</sup>","")
-    result = result.replace("\xa0",",")
+    result = m.group(1).replace("<font size=-2> </font>", ",")
+    result = result.replace(" &#215; 10<sup>", "E").replace("</sup>", "")
+    result = result.replace("\xa0", ",")
     return result

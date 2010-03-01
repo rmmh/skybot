@@ -59,38 +59,39 @@ def cs(snippet):
 
     if not snippet:
         return cs.__doc__
-    
+
     file_template = ('using System; '
                      'using System.Linq; '
                      'using System.Collections.Generic; '
                      'using System.Text; '
-                     '%(class)s')
+                     '%s')
 
     class_template = ('public class Default '
-                      '{ '
-                      '    %(main)s '
+                      '{'
+                      '    %s '
                       '}')
 
     main_template = ('public static void Main(String[] args) '
-                     '{ '
-                     '    %(snippet)s '
+                     '{'
+                     '    %s '
                      '}')
 
     # There are probably better ways to do the following, but I'm feeling lazy
-    # if no main is found in the snippet, then we use the template with Main in it
+    # if no main is found in the snippet, use the template with Main in it
     if 'public static void Main' not in snippet:
-        code = main_template % { 'snippet': snippet }
-        code = class_template % { 'main': code }
-        code = file_template % { 'class' : code }
+        code = main_template % snippet
+        code = class_template % code
+        code = file_template % code
 
-    # if Main is found, check for class and see if we need to use the classed template
+    # if Main is found, check for class and see if we need to use the
+    # classed template
     elif 'class' not in snippet:
-        code = class_template % { 'main': snippet }
-        code = file_template % { 'class' : code }
+        code = class_template % snippet
+        code = file_template % code
 
         return 'Error using dotnetpad'
     # if we found class, then use the barebones template
     else:
-        code = file_template % { 'class' : snippet }
+        code = file_template % snippet
 
     return dotnetpad('csharp', code)

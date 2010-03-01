@@ -7,8 +7,8 @@ from util import hook
 
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 
-def unescape(text):
 
+def unescape(text):
     def fixup(m):
         text = m.group(0)
         if text[:2] == "&#":
@@ -26,7 +26,7 @@ def unescape(text):
                 text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
             except KeyError:
                 pass
-        return text # leave as is
+        return text  # leave as is
 
     return re.sub("&#?\w+;", fixup, text)
 

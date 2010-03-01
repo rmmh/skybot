@@ -1,7 +1,7 @@
 from util import hook
 import socket
 
-socket.setdefaulttimeout(5) # global setting
+socket.setdefaulttimeout(5)  # global setting
 
 
 #autorejoin channels
@@ -11,11 +11,13 @@ def rejoin(inp, paraml=[], conn=None):
         if paraml[0].lower() in conn.channels:
             conn.join(paraml[0])
 
+
 #join channels when invited
 @hook.event('INVITE')
 def invite(inp, command='', conn=None):
     if command == 'INVITE':
         conn.join(inp)
+
 
 #join channels when server says hello & identify bot
 @hook.event('004')

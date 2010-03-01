@@ -13,7 +13,7 @@ def seeninput(bot, input):
     db = bot.get_db_connection(input.server)
     db_init(db)
     db.execute("insert or replace into seen(name, time, quote, chan)"
-        "values(?,?,?,?)", (input.nick.lower(), time.time(), input.msg, 
+        "values(?,?,?,?)", (input.nick.lower(), time.time(), input.msg,
             input.chan))
     db.commit()
 
@@ -35,7 +35,7 @@ def seen(inp, nick='', chan='', db=None):
 
     if last_seen:
         reltime = timesince.timesince(last_seen[1])
-        if last_seen[0] != inp.lower(): # for glob matching
+        if last_seen[0] != inp.lower():  # for glob matching
             inp = last_seen[0]
         return '%s was last seen %s ago saying: %s' % \
                     (inp, reltime, last_seen[2])

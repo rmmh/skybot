@@ -21,4 +21,3 @@ def reg(inp):
         return reg.__doc__
 
     return '|'.join(re.findall(query[0], query[1]))
-

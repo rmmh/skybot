@@ -1,9 +1,10 @@
 from util import hook
 
+
 @hook.command
 def help(inp, bot=None, pm=None):
     ".help [command] -- gives a list of commands/help for a command"
-    
+
     funcs = {}
     for csig, func, args in bot.plugs['command']:
         if args['hook'] != r'(.*)':

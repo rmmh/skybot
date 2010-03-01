@@ -26,10 +26,12 @@ def unescape_xml(string):
 history = []
 history_max_size = 250
 
+
 @hook.command
 def twitter(inp):
-    ".twitter <user>/<user> <n>/<id>/#<hashtag>/@<user> -- gets last/<n>th tweet from"\
-    "<user>/gets tweet <id>/gets random tweet with #<hashtag>/gets replied tweet from @<user>"
+    ".twitter <user>/<user> <n>/<id>/#<hashtag>/@<user> -- gets last/<n>th "\
+    "tweet from <user>/gets tweet <id>/gets random tweet with #<hashtag>/"\
+    "gets replied tweet from @<user>"
 
     if not inp:
         return twitter.__doc__
@@ -89,7 +91,7 @@ def twitter(inp):
     try:
         xml = urllib2.urlopen(url).read()
     except urllib2.HTTPError, e:
-        errors = {400 : 'bad request (ratelimited?)',
+        errors = {400: 'bad request (ratelimited?)',
                 401: 'tweet is private',
                 404: 'invalid user/id',
                 500: 'twitter is broken',
@@ -125,10 +127,11 @@ def twitter(inp):
     reply_name = tweet.find(reply_name).text
     reply_id = tweet.find(reply_id).text
     reply_user = tweet.find(reply_user).text
-    if reply_name is not None and (reply_id is not None or reply_user is not None):
+    if reply_name is not None and (reply_id is Not None or
+            reply_user is not None):
         add_reply(reply_name, reply_id if reply_id else -1)
 
-    time = strftime('%Y-%m-%d %H:%M:%S', 
+    time = strftime('%Y-%m-%d %H:%M:%S',
              strptime(time.text,
              '%a %b %d %H:%M:%S +0000 %Y'))
     text = unescape_xml(tweet.find(text).text.replace('\n', ''))

@@ -3,6 +3,7 @@ import thread
 import traceback
 import Queue
 
+
 def _isfunc(x):
     if type(x) == type(_isfunc):
         return True
@@ -24,7 +25,7 @@ def _hook_add(func, add, name=''):
             if argspec.varargs:
                 n_args -= 1
             if n_args != 1:
-                err = '%ss must take 1 non-keyword argument (%s)' % (name, 
+                err = '%ss must take 1 non-keyword argument (%s)' % (name,
                             func.__name__)
                 raise ValueError(err)
 
@@ -34,8 +35,9 @@ def _hook_add(func, add, name=''):
             args.extend(argspec.args[-len(argspec.defaults):
                         end if end else None])
         if argspec.keywords:
-            args.append(0) # means kwargs present
+            args.append(0)  # means kwargs present
         func._skybot_args = args
+
 
 def _make_sig(f):
     return f.func_code.co_filename, f.func_name, f.func_code.co_firstlineno

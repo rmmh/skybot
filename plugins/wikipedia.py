@@ -26,7 +26,8 @@ def wiki(inp):
     q = search_url % (urllib2.quote(inp, safe=''))
 
     request = urllib2.Request(q)
-    request.add_header('User-Agent', 'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
+    request.add_header('User-Agent',
+                'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
     opener = urllib2.build_opener()
     xml = opener.open(request).read()
     x = etree.fromstring(xml)
@@ -54,7 +55,7 @@ def wiki(inp):
     if title.lower() not in desc.lower():
         desc = title + desc
 
-    desc = re.sub('\s+', ' ', desc).strip() #remove excess spaces
+    desc = re.sub('\s+', ' ', desc).strip()  # remove excess spaces
 
     if len(desc) > 300:
         desc = desc[:300] + '...'

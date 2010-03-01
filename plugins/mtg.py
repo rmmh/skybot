@@ -8,7 +8,7 @@ from util import hook
 
 @hook.command
 def mtg(inp):
-    ".mtg <card> -- gets information about Magic the Gathering card <card name>"
+    ".mtg <name> -- gets information about Magic the Gathering card <name>"
     url = 'http://magiccards.info/query.php?cardname='
     url += urllib2.quote(inp, safe='')
     h = html.parse(url)
@@ -20,11 +20,11 @@ def mtg(inp):
 
     type = text.text
     text = text.find('b').text_content()
-    text = re.sub(r'\(.*?\)', '', text) # strip parenthetical explanations
-    text = re.sub(r'\.(\S)', r'. \1', text) # fix spacing
+    text = re.sub(r'\(.*?\)', '', text)  # strip parenthetical explanations
+    text = re.sub(r'\.(\S)', r'. \1', text)  # fix spacing
 
     printings = card.find('table/tr/td/img').getparent().text_content()
-    printings = re.findall(r'\s*(.+?(?: \([^)]+\))*) \((.*?)\)', 
+    printings = re.findall(r'\s*(.+?(?: \([^)]+\))*) \((.*?)\)',
                            ' '.join(printings.split()))
     printing_out = ', '.join('%s (%s)' % (set_abbrevs.get(x[0], x[0]),
                                           rarity_abbrevs.get(x[1], x[1]))

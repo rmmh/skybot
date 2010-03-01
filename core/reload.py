@@ -10,11 +10,13 @@ if 'mtimes' not in globals():
 if 'lastfiles' not in globals():
     lastfiles = set()
 
+
 def format_plug(plug, lpad=0, width=40):
     out = ' ' * lpad + '%s:%s:%s' % (plug[0])
     if len(plug) == 3 and 'hook' in plug[2]:
         out += '%s%s' % (' ' * (width - len(out)), plug[2]['hook'])
     return out
+
 
 def reload(init=False):
     if init:
@@ -25,12 +27,12 @@ def reload(init=False):
         if mtime != mtimes.get(filename):
             mtimes[filename] = mtime
             try:
-                eval(compile(open(filename, 'U').read(), filename, 'exec'), 
+                eval(compile(open(filename, 'U').read(), filename, 'exec'),
                         globals())
             except Exception:
                 traceback.print_exc(Exception)
                 if init:        # stop if there's a syntax error in a core
-                    sys.exit()  #   script on startup
+                    sys.exit()  # script on startup
                 continue
 
             if filename == os.path.join('core', 'reload.py'):
@@ -38,7 +40,7 @@ def reload(init=False):
                 return
 
     fileset = set(glob.glob(os.path.join('plugins', '*py')))
-    for name, data in bot.plugs.iteritems(): # remove deleted/moved plugins
+    for name, data in bot.plugs.iteritems():  # remove deleted/moved plugins
         bot.plugs[name] = filter(lambda x: x[0][0] in fileset, data)
 
     for filename in fileset:
@@ -56,7 +58,7 @@ def reload(init=False):
             # remove plugins already loaded from this filename
             for name, data in bot.plugs.iteritems():
 
-                if name == 'tee': # signal tee trampolines to stop
+                if name == 'tee':  # signal tee trampolines to stop
                     for csig, func, args in data:
                         if csig[0] == filename:
                             func._iqueue.put(StopIteration)
@@ -64,7 +66,7 @@ def reload(init=False):
                 bot.plugs[name] = filter(lambda x: x[0][0] != filename, data)
 
             for obj in namespace.itervalues():
-                if hasattr(obj, '_skybot_hook'): #check for magic
+                if hasattr(obj, '_skybot_hook'):  # check for magic
                     for type, data in obj._skybot_hook:
                         bot.plugs[type] += [data]
 

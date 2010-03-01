@@ -8,14 +8,16 @@ from util import hook
 def add_quote(db, chan, nick, add_nick, msg):
     now = time.time()
     db.execute('''insert or fail into quote (chan, nick, add_nick,
-                    msg, time) values(?,?,?,?,?)''', 
+                    msg, time) values(?,?,?,?,?)''',
                     (chan, nick, add_nick, msg, now))
     db.commit()
+
 
 def get_quotes_by_nick(db, chan, nick):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
             "and chan=? and lower(nick)=lower(?) order by time",
             (chan, nick)).fetchall()
+
 
 def get_quotes_by_chan(db, chan):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
@@ -24,8 +26,9 @@ def get_quotes_by_chan(db, chan):
 
 def format_quote(q, num, n_quotes):
     ctime, nick, msg = q
-    return "[%d/%d] %s <%s> %s" % (num, n_quotes, 
+    return "[%d/%d] %s <%s> %s" % (num, n_quotes,
         time.strftime("%Y-%m-%d", time.gmtime(ctime)), nick, msg)
+
 
 @hook.command('q')
 @hook.command
@@ -46,12 +49,12 @@ def quote(inp, nick='', chan='', db=None):
             quoted_nick, msg = add.groups()
             try:
                 add_quote(db, chan, quoted_nick, nick, msg)
-            except db.IntegrityError: 
+            except db.IntegrityError:
                 return "message already stored, doing nothing."
             return "quote added."
         elif retrieve:
             select, num = retrieve.groups()
-            
+
             by_chan = False
             if select.startswith('#'):
                 by_chan = True
@@ -69,7 +72,7 @@ def quote(inp, nick='', chan='', db=None):
 
             if num:
                 if num > n_quotes:
-                    return "I only have %d quote%s for %s" % (n_quotes, 
+                    return "I only have %d quote%s for %s" % (n_quotes,
                                 ('s', '')[n_quotes == 1], select)
                 else:
                     selected_quote = quotes[num - 1]

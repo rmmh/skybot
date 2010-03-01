@@ -21,8 +21,8 @@ def bf(inp):
     program = re.sub('[^][<>+-.,]', '', inp)
 
     # create a dict of brackets pairs, for speed later on
-    brackets={}
-    open_brackets=[]
+    brackets = {}
+    open_brackets = []
     for pos in range(len(program)):
         if program[pos] == '[':
             open_brackets.append(pos)
@@ -40,9 +40,9 @@ def bf(inp):
     ip = 0        # instruction pointer
     mp = 0        # memory pointer
     steps = 0
-    memory = [0] * BUFFER_SIZE  #initial memory area
+    memory = [0] * BUFFER_SIZE  # initial memory area
     rightmost = 0
-    output = ""   #we'll save the output here
+    output = ""   # we'll save the output here
 
     # the main program loop:
     while ip < len(program):
@@ -57,7 +57,7 @@ def bf(inp):
                 rightmost = mp
                 if mp >= len(memory):
                     # no restriction on memory growth!
-                    memory.extend([0]*BUFFER_SIZE)
+                    memory.extend([0] * BUFFER_SIZE)
         elif c == '<':
             mp = mp - 1 % len(memory)
         elif c == '.':

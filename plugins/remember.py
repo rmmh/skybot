@@ -4,10 +4,12 @@ remember.py: written by Scaevolus 2010
 
 from util import hook
 
+
 def db_init(db):
     db.execute("create table if not exists memory(chan, word, data, nick,"
                " primary key(chan, word))")
     db.commit()
+
 
 def get_memory(db, chan, word):
     row = db.execute("select data from memory where chan=? and word=lower(?)",
@@ -16,6 +18,7 @@ def get_memory(db, chan, word):
         return row[0]
     else:
         return None
+
 
 @hook.command
 def remember(inp, nick='', chan='', db=None):
@@ -37,6 +40,7 @@ def remember(inp, nick='', chan='', db=None):
     else:
         return 'done.'
 
+
 @hook.command
 def forget(inp, chan='', db=None):
     ".forget <word> -- forgets the mapping that word had"
@@ -56,6 +60,7 @@ def forget(inp, chan='', db=None):
         return 'forgot that "%s"' % data.replace('"', "''")
     else:
         return "I don't know about that."
+
 
 @hook.command(hook='\?(.+)', prefix=False)
 def question(inp, chan='', say=None, db=None):

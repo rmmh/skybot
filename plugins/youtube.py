@@ -17,11 +17,12 @@ url = base_url + 'videos/%s?v=2&alt=jsonc'
 search_api_url = base_url + 'videos?v=2&alt=jsonc&max-results=1&q=%s'
 video_url = "http://youtube.com/watch?v=%s"
 
+
 def get_video_description(vid_id):
     j = json.load(urllib2.urlopen(url % vid_id))
 
     if j.get('error'):
-        return 
+        return
 
     j = j['data']
 
@@ -29,7 +30,7 @@ def get_video_description(vid_id):
 
     out += ' - length \x02'
     length = j['duration']
-    if length / 3600: # > 1 hour
+    if length / 3600:  # > 1 hour
         out += '%dh ' % (length / 3600)
     if length / 60:
         out += '%dm ' % (length / 60 % 60)
@@ -38,12 +39,11 @@ def get_video_description(vid_id):
     if 'rating' in j:
         out += ' - rated \x02%.2f/5.0\x02 (%d)' % (j['rating'],
                 j['ratingCount'])
-       
 
     if 'viewCount' in j:
         out += ' - \x02%s\x02 views' % locale.format('%d',
                                                      j['viewCount'], 1)
-        
+
     upload_time = time.strptime(j['uploaded'], "%Y-%m-%dT%H:%M:%S.000Z")
     out += ' - \x02%s\x02 on \x02%s\x02' % (j['uploader'],
                 time.strftime("%Y.%m.%d", upload_time))
@@ -52,7 +52,7 @@ def get_video_description(vid_id):
         out += ' - \x034NSFW\x02'
 
     return out
-    
+
 
 @hook.command(hook=r'(.*)', prefix=False)
 def youtube_url(inp):

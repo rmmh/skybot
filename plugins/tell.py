@@ -5,9 +5,10 @@ import time
 
 from util import hook, timesince
 
+
 def get_tells(db, user_to, chan):
     return db.execute("select user_from, message, time from tell where"
-                         " user_to=lower(?) and chan=? order by time", 
+                         " user_to=lower(?) and chan=? order by time",
                          (user_to.lower(), chan)).fetchall()
 
 
@@ -18,7 +19,7 @@ def tellinput(bot, input):
 
     if 'showtells' in input.msg.lower():
         return
-    
+
     db = bot.get_db_connection(input.server)
     db = db_init(db)
 
@@ -37,14 +38,15 @@ def tellinput(bot, input):
         db.commit()
         input.reply(reply)
 
+
 @hook.command
 def showtells(inp, nick='', chan='', pm=None, db=None):
     ".showtells -- view all pending tell messages (sent in PM)."
-    
+
     db_init(db)
 
     tells = get_tells(db, nick, chan)
-    
+
     if not tells:
         pm("You have no pending tells.")
         return
@@ -53,10 +55,11 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
         user_from, message, time = tell
         reltime = timesince.timesince(time)
         pm("%s said %s ago: %s" % (user_from, reltime, message))
-    
+
     db.execute("delete from tell where user_to=lower(?) and chan=?",
                   (nick, chan))
     db.commit()
+
 
 @hook.command
 def tell(inp, nick='', chan='', db=None):
@@ -70,7 +73,7 @@ def tell(inp, nick='', chan='', db=None):
     user_to = query[0].lower()
     message = query[1].strip()
     user_from = nick
-    
+
     if user_to == user_from.lower():
         return "No."
 
@@ -97,5 +100,5 @@ def db_init(db):
                 "(user_to, user_from, message, chan, time,"
                 "primary key(user_to, message))")
     db.commit()
-    
+
     return db

@@ -9,7 +9,7 @@ from util import hook
 
 
 whitespace_re = re.compile(r'\s+')
-valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$', 
+valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$',
                                re.I)
 sign_re = re.compile(r'[+-]?(?:\d*d)?\d+', re.I)
 split_re = re.compile(r'([\d+-]*)d?(\d*)', re.I)
@@ -17,15 +17,15 @@ split_re = re.compile(r'([\d+-]*)d?(\d*)', re.I)
 
 def nrolls(count, n):
     "roll an n-sided die count times"
-    if n < 2: #it's a coin
+    if n < 2:  # it's a coin
         if count < 5000:
             return sum(random.randint(0, 1) for x in xrange(count))
-        else: #fake it
+        else:  # fake it
             return int(random.normalvariate(.5*count, (.75*count)**.5))
     else:
         if count < 5000:
             return sum(random.randint(1, n) for x in xrange(count))
-        else: #fake it
+        else:  # fake it
             return int(random.normalvariate(.5*(1+n)*count,
                 (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
 

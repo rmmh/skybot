@@ -8,7 +8,7 @@ from util import hook
 
 @hook.command
 def weather(inp, nick='', server='', reply=None, db=None):
-    ".weather <location> [dontsave] -- queries the google weather API for weather data"
+    ".weather <location> [dontsave] -- gets weather data from Google"
 
     loc = inp
 
@@ -18,7 +18,7 @@ def weather(inp, nick='', server='', reply=None, db=None):
 
     db.execute("create table if not exists weather(nick primary key, loc)")
 
-    if not loc: # blank line
+    if not loc:  # blank line
         loc = db.execute("select loc from weather where nick=lower(?)",
                             (nick,)).fetchone()
         if not loc:

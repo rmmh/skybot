@@ -12,7 +12,7 @@ from util import hook
 
 
 lock = thread.allocate_lock()
-log_fds = {} # '%(net)s %(chan)s' : (filename, fd)
+log_fds = {}  # '%(net)s %(chan)s' : (filename, fd)
 
 timestamp_format = '%H:%M:%S'
 
@@ -69,8 +69,8 @@ def get_log_fd(dir, server, chan):
     cache_key = '%s %s' % (server, chan)
     filename, fd = log_fds.get(cache_key, ('', 0))
 
-    if fn != filename: # we need to open a file for writing
-        if fd != 0: # is a valid fd
+    if fn != filename:  # we need to open a file for writing
+        if fd != 0:     # is a valid fd
             fd.flush()
             fd.close()
         dir = os.path.split(fn)[0]
@@ -90,14 +90,14 @@ def log(bot, input):
         fd = get_log_fd(bot.persist_dir, input.server, 'raw')
         fd.write(timestamp + ' ' + input.raw + '\n')
 
-        if input.command == 'QUIT': # these are temporary fixes until proper
-            input.chan = 'quit'     # presence tracking is implemented
+        if input.command == 'QUIT':  # these are temporary fixes until proper
+            input.chan = 'quit'      # presence tracking is implemented
         if input.command == 'NICK':
             input.chan = 'nick'
 
         beau = beautify(input)
 
-        if beau == '': # don't log this
+        if beau == '':  # don't log this
             return
 
         if input.chan:

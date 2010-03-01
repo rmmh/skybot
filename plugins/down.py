@@ -3,6 +3,7 @@ import urlparse
 
 from util import hook
 
+
 @hook.command
 def down(inp):
     '''.down <url> -- checks to see if the site is down'''

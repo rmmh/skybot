@@ -1,12 +1,13 @@
 import thread
 import traceback
 
+
 class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
                     nick, user, host, paraml, msg):
-    
+
         chan = paraml[0].lower()
-        if chan == conn.nick: # is a PM
+        if chan == conn.nick:  # is a PM
             chan = nick
 
         def say(msg):
@@ -20,9 +21,9 @@ class Input(dict):
 
         dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
                     params=params, nick=nick, user=user, host=host,
-                    paraml=paraml, msg=msg, server=conn.server, chan=chan, 
+                    paraml=paraml, msg=msg, server=conn.server, chan=chan,
                     say=say, reply=reply, pm=pm, bot=bot)
-        self.__dict__ = self # permits attribute access to values
+        self.__dict__ = self  # permits attribute access to values
 
 
 def run(func, input):
