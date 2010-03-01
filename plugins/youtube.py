@@ -55,7 +55,8 @@ def get_video_description(vid):
     
 
 @hook.command(hook=r'(.*)', prefix=False)
-def youtube(inp):
+def youtube_url(inp):
+    print inp
     m = youtube_re.search(inp)
     if m:
         return get_video_description(m.group(1))
