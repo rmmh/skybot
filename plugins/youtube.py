@@ -5,11 +5,16 @@ import time
 import urllib2
 
 from util import hook
+from urllib import quote_plus
+
 
 locale.setlocale(locale.LC_ALL, '')
 
 youtube_re = re.compile(r'youtube.*?v=([-_a-z0-9]+)', flags=re.I)
 url = 'http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=jsonc'
+
+search_api_url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&alt=json"
+video_url = "http://youtube.com/watch?v=%s"
 
 def get_video_description(vid):
     print vid
@@ -54,3 +59,20 @@ def youtube(inp):
     m = youtube_re.search(inp)
     if m:
         return get_video_description(m.group(1))
+
+@hook.command
+@hook.command('y')
+def youtube(inp):
+    '.youtube <query> -- returns the first YouTube search result for <query>'
+    inp = quote_plus(inp)
+    j = json.load(urllib2.urlopen(search_api_url % (inp)))
+    if j.get('error'):
+        return
+    
+    try:
+        vid = j['feed']['entry'][0]['id']['$t']
+        #youtube returns a gdata url for this some reason. The videoid has to be stripped out
+        vid = vid[vid.rfind('/')+1:]
+        return get_video_description(vid) + " " + video_url%vid
+    except:
+        return
