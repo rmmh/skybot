@@ -1,27 +1,28 @@
+import urllib2
+import re
+
+from lxml import html
+
 from util import hook
-import urllib, httplib, sys
-
-def doquery(argv):
-    query=urllib.urlencode({'q':argv})
-
-    start='<h2 class=r style="font-size:138%"><b>'
-    end='</b>'
-
-    google=httplib.HTTPConnection("www.google.com")
-    google.request("GET","/search?"+query)
-    search=google.getresponse()
-    data=search.read()
-
-    if data.find(start)==-1: return "Could not calculate " + argv
-    else:
-        begin=data.index(start)
-        result=data[begin+len(start):begin+data[begin:].index(end)]
-        result = result.replace("<font size=-2> </font>",",").replace(" &#215; 10<sup>","E").replace("</sup>","").replace("\xa0",",")
-        return result
 
 @hook.command
 def calc(inp):
-   '''.calc <term> -- returns Google Calculator result'''
-   if not inp or not inp.strip():
-      return calc.__doc__
-   return doquery(inp)
+    '''.calc <term> -- returns Google Calculator result'''
+    if not inp:
+        return calc.__doc__
+
+    url = "http://www.google.com/search?q="
+    request = urllib2.Request(url + urllib2.quote(inp, ''))
+    request.add_header('User-Agent', 'skybot')
+    page = urllib2.build_opener().open(request).read()
+
+    # ugh, scraping HTML with regexes
+    m = re.search(r'<h2 class=r style="font-size:138%"><b>(.*?)</b>', page)
+
+    if m is None:
+        return "could not calculate " + inp
+
+    result = m.group(1).replace("<font size=-2> </font>",",")
+    result = result.replace(" &#215; 10<sup>","E").replace("</sup>","")
+    result = result.replace("\xa0",",")
+    return result

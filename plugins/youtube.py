@@ -11,13 +11,14 @@ from urllib import quote_plus
 locale.setlocale(locale.LC_ALL, '')
 
 youtube_re = re.compile(r'youtube.*?v=([-_a-z0-9]+)', flags=re.I)
-url = 'http://gdata.youtube.com/feeds/api/videos/%s?v=2&alt=jsonc'
 
-search_api_url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&alt=json"
+base_url = 'http://gdata.youtube.com/feeds/api/'
+url = base_url + 'videos/%s?v=2&alt=jsonc'
+search_api_url = base_url + 'videos?v=2&alt=jsonc&max-results=1&q=%s'
 video_url = "http://youtube.com/watch?v=%s"
 
-def get_video_description(vid):
-    j = json.load(urllib2.urlopen(url % vid))
+def get_video_description(vid_id):
+    j = json.load(urllib2.urlopen(url % vid_id))
 
     if j.get('error'):
         return 
@@ -59,19 +60,20 @@ def youtube_url(inp):
     if m:
         return get_video_description(m.group(1))
 
-@hook.command
+
 @hook.command('y')
+@hook.command
 def youtube(inp):
     '.youtube <query> -- returns the first YouTube search result for <query>'
     inp = quote_plus(inp)
     j = json.load(urllib2.urlopen(search_api_url % (inp)))
-    if j.get('error'):
-        return
-    
-    try:
-        vid = j['feed']['entry'][0]['id']['$t']
-        #youtube returns a gdata url for this some reason. The videoid has to be stripped out
-        vid = vid[vid.rfind('/')+1:]
-        return get_video_description(vid) + " " + video_url%vid
-    except:
-        return
+
+    if 'error' in j:
+        return 'error performing search'
+
+    if j['data']['totalItems'] == 0:
+        return 'no results found'
+
+    vid_id = j['data']['items'][0]['id']
+
+    return get_video_description(vid_id) + " - " + video_url % vid_id
