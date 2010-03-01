@@ -17,7 +17,6 @@ search_api_url = "http://gdata.youtube.com/feeds/api/videos?q=%s&max-results=1&a
 video_url = "http://youtube.com/watch?v=%s"
 
 def get_video_description(vid):
-    print vid
     j = json.load(urllib2.urlopen(url % vid))
 
     if j.get('error'):
@@ -56,7 +55,6 @@ def get_video_description(vid):
 
 @hook.command(hook=r'(.*)', prefix=False)
 def youtube_url(inp):
-    print inp
     m = youtube_re.search(inp)
     if m:
         return get_video_description(m.group(1))
