@@ -127,7 +127,7 @@ def twitter(inp):
     reply_name = tweet.find(reply_name).text
     reply_id = tweet.find(reply_id).text
     reply_user = tweet.find(reply_user).text
-    if reply_name is not None and (reply_id is Not None or
+    if reply_name is not None and (reply_id is not None or
             reply_user is not None):
         add_reply(reply_name, reply_id if reply_id else -1)
 
