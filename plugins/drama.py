@@ -1,6 +1,7 @@
 '''Searches Encyclopedia Dramatica and returns the first paragraph of the 
 article'''
 
+from ast import literal_eval
 import urllib2
 from util import hook
 from util import BeautifulSoup
@@ -17,7 +18,7 @@ def get_article_name(query):
    request.add_header(*ua_header)
    opener = urllib2.build_opener()
    try:
-      results = eval(opener.open(request).read())
+      results = literal_eval(opener.open(request).read())
       if isinstance(results,list) and len(results[1]):
          return results[1][0].replace(' ','_')
    except:
