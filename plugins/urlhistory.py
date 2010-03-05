@@ -30,7 +30,7 @@ def insert_history(db, chan, url, nick):
     db.commit()
 
 
-def get_history(db, chan, url, duration):
+def get_history_duration(db, chan, url, duration):
     db.execute("delete from urlhistory where time < ?",
                  (time.time() - duration,))
     return db.execute("select nick, time from urlhistory where "
@@ -38,11 +38,11 @@ def get_history(db, chan, url, duration):
 
 
 def get_history(db, chan, url):
-    return get_history(db, chan, url, expiration_period)
+    return get_history_duration(db, chan, url, expiration_period)
 
 
 def get_recent_links_count(db, chan, url):
-    return len(get_history(db, chan, url, rate_limit_period))
+    return len(get_history_duration(db, chan, url, rate_limit_period))
    
 
 def nicklist(nicks):
