@@ -8,6 +8,9 @@ url_re = re.compile(r'([a-zA-Z]+://|www\.)[^ ]*')
 
 expiration_period = 60 * 60 * 24  # 1 day
 
+rate_limit_period = 60 * 3 # 3 minutes
+rate_limit_count = 3
+
 ignored_urls = [urlnorm.normalize("http://google.com")]
 
 
@@ -27,12 +30,20 @@ def insert_history(db, chan, url, nick):
     db.commit()
 
 
-def get_history(db, chan, url):
+def get_history(db, chan, url, duration):
     db.execute("delete from urlhistory where time < ?",
-                 (time.time() - expiration_period,))
+                 (time.time() - duration,))
     return db.execute("select nick, time from urlhistory where "
             "chan=? and url=? order by time desc", (chan, url)).fetchall()
 
+
+def get_history(db, chan, url):
+    return get_history(db, chan, url, expiration_period)
+
+
+def get_recent_links_count(db, chan, url):
+    return len(get_history(db, chan, url, rate_limit_period))
+   
 
 def nicklist(nicks):
     nicks = sorted(dict(nicks), key=unicode.lower)
@@ -78,6 +89,7 @@ def urlinput(inp, nick='', chan='', server='', reply=None, bot=None):
     url = urlnorm.normalize(m.group(0))
     if url not in ignored_urls:
         history = get_history(db, chan, url)
+        recent_history = get_recent_links_count(db, chan, url)
         insert_history(db, chan, url, nick)
-        if nick not in dict(history):
+        if nick not in dict(history) and recent_history < rate_limit_count:
             return format_reply(history)

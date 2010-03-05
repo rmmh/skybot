@@ -10,7 +10,7 @@ from urllib import quote_plus
 
 locale.setlocale(locale.LC_ALL, '')
 
-youtube_re = re.compile(r'youtube.*?v=([-_a-z0-9]+)', flags=re.I)
+youtube_re = re.compile(r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)([-_a-z0-9]+)', flags=re.I)
 
 base_url = 'http://gdata.youtube.com/feeds/api/'
 url = base_url + 'videos/%s?v=2&alt=jsonc'
