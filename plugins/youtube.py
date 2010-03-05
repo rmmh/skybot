@@ -65,6 +65,9 @@ def youtube_url(inp):
 @hook.command
 def youtube(inp):
     '.youtube <query> -- returns the first YouTube search result for <query>'
+    if not inp:
+        return youtube.__doc__
+
     inp = quote_plus(inp)
     j = json.load(urllib2.urlopen(search_api_url % (inp)))
 
