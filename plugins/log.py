@@ -43,7 +43,8 @@ def gmtime(format):
 
 def beautify(input):
     format = formats.get(input.command, '%(raw)s')
-    args = vars(input)
+    args = dict(input)
+
     leng = len(args['paraml'])
     for n, p in enumerate(args['paraml']):
         args['param' + str(n)] = p

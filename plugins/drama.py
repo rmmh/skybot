@@ -1,4 +1,4 @@
-'''Searches Encyclopedia Dramatica and returns the first paragraph of the 
+'''Searches Encyclopedia Dramatica and returns the first paragraph of the
 article'''
 
 import json
@@ -7,8 +7,8 @@ import urllib2
 
 from util import hook
 
-api_url = "http://encyclopediadramatica.com/api.php?action=opensearch&search=%s"
-ed_url = "http://encyclopediadramatica.com/%s"
+api_url = "http://encyclopediadramatica.com/api.php?action=opensearch&search="
+ed_url = "http://encyclopediadramatica.com/"
 
 ua_header = ('User-Agent','Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
 
@@ -21,7 +21,7 @@ def drama(inp):
     if not inp:
         return drama.__doc__
     
-    q = api_url % (urllib2.quote(inp, safe=''))
+    q = api_url + (urllib2.quote(inp, safe=''))
     request = urllib2.Request(q)
     request.add_header(*ua_header)
     j = json.loads(urllib2.build_opener().open(request).read())
@@ -29,7 +29,7 @@ def drama(inp):
         return 'no results found'
     article_name = j[1][0].replace(' ', '_')
     
-    url = ed_url % (urllib2.quote(article_name))
+    url = ed_url + (urllib2.quote(article_name))
     request = urllib2.Request(url)
     request.add_header(*ua_header)
     page = html.fromstring(urllib2.build_opener().open(request).read())
