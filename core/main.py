@@ -23,7 +23,12 @@ class Input(dict):
                     params=params, nick=nick, user=user, host=host,
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
                     say=say, reply=reply, pm=pm, bot=bot)
-        self.__dict__ = self  # permits attribute access to values
+
+    def __getattr__(self, key):
+        return self[key]
+
+    def __setattr__(self, key value):
+        self[key] = value
 
 
 def run(func, input):
