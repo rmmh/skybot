@@ -2,6 +2,9 @@ import thread
 import traceback
 
 
+print thread.stack_size(1024 * 512)  # reduce vm size
+
+
 class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
                     nick, user, host, paraml, msg):
