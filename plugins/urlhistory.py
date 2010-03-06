@@ -31,13 +31,13 @@ def insert_history(db, chan, url, nick):
 
 
 def get_history_duration(db, chan, url, duration):
-    db.execute("delete from urlhistory where time < ?",
-                 (time.time() - duration,))
     return db.execute("select nick, time from urlhistory where "
             "chan=? and url=? order by time desc", (chan, url)).fetchall()
 
 
 def get_history(db, chan, url):
+    db.execute("delete from urlhistory where time < ?",
+                 (time.time() - duration,))
     return get_history_duration(db, chan, url, expiration_period)
 
 
