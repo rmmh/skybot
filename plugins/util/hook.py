@@ -1,5 +1,4 @@
 import inspect
-import traceback
 
 
 def _hook_add(func, add, name=''):

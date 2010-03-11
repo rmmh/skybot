@@ -27,7 +27,6 @@
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import datetime
-import time
 
 
 def timesince(d, now=None):

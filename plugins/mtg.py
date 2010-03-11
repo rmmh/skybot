@@ -1,7 +1,6 @@
 from lxml import html
 import re
 import urllib2
-import sys
 
 from util import hook
 

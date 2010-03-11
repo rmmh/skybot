@@ -1,4 +1,3 @@
-import sys
 import re
 import socket
 import time

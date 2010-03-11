@@ -1,10 +1,8 @@
 import collections
 import glob
 import os
-import Queue
 import re
 import sys
-import thread
 import traceback
 
 

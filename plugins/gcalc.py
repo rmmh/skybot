@@ -1,8 +1,6 @@
 import urllib2
 import re
 
-from lxml import html
-
 from util import hook
 
 
