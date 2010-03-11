@@ -8,7 +8,7 @@ tinyurl_re = re.compile(r'http://(?:www\.)?tinyurl.com/([A-Za-z0-9\-]+)',
                 flags=re.IGNORECASE)
 
 
-@hook.command(hook=r'(.*)', prefix=False)
+@hook.event('PRIVMSG')
 def tinyurl(inp):
     tumatch = tinyurl_re.search(inp)
     if tumatch:

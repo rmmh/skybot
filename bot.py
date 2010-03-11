@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+a = 34123
+
 import os
 import Queue
 import sys
@@ -39,7 +41,7 @@ try:
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
-
+ 
 bot.persist_dir = os.path.abspath('persist')
 if not os.path.exists(bot.persist_dir):
     os.mkdir(bot.persist_dir)
@@ -57,4 +59,4 @@ while True:
         except Queue.Empty:
             pass
     while all(conn.out.empty() for conn in bot.conns.itervalues()):
-        time.sleep(.3)
+        time.sleep(.1)

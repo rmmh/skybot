@@ -5,26 +5,14 @@ from util import hook
 
 
 @hook.sieve
-def sieve_suite(bot, input, func, args):
+def sieve_suite(bot, input, func, kind, args):    
     events = args.get('events', ['PRIVMSG'])
 
-    if input.command not in events and events != '*':
+    if input.command not in events and '*' not in events:
         return None
 
-    if input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
-        return None
-
-    hook = args.get('hook', r'(.*)')
-
-    if args.get('prefix', True):
-        if input.chan == input.nick:  # private message, prefix not required
-            prefix = r'^(?:[.!]?|'
-        else:
-            prefix = r'^(?:[.!]|'
-        hook = prefix + input.conn.nick + r'[:,]*\s)' + hook
-
-    input.re = re.match(hook, input.msg, flags=re.I)
-    if input.re is None:
+    if input.command == 'PRIVMSG' and input.nick.lower()[-3:] == 'bot' \
+            and args.get('ignorebots', True):
         return None
 
     acl = bot.config.get('acls', {}).get(func.__name__)
@@ -38,7 +26,7 @@ def sieve_suite(bot, input, func, args):
             if input.chan.lower() in denied_channels:
                 return None
 
-    input.inp_unstripped = ' '.join(input.re.groups())
-    input.inp = input.inp_unstripped.strip()
+#    input.inp_unstripped = ' '.join(input.re.groups())
+#    input.inp = input.inp_unstripped.strip()
 
     return input

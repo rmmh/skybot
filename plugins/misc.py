@@ -1,7 +1,9 @@
-from util import hook
 import socket
+import time
 
-socket.setdefaulttimeout(5)  # global setting
+from util import hook
+
+socket.setdefaulttimeout(10)  # global setting
 
 
 #autorejoin channels
@@ -22,11 +24,13 @@ def invite(inp, command='', conn=None):
 #join channels when server says hello & identify bot
 @hook.event('004')
 def onjoin(inp, conn=None):
-    for channel in conn.channels:
-        conn.join(channel)
-
     nickserv_password = conn.conf.get('nickserv_password', '')
     nickserv_name = conn.conf.get('nickserv_name', 'nickserv')
     nickserv_command = conn.conf.get('nickserv_command', 'IDENTIFY %s')
     if nickserv_password:
         conn.msg(nickserv_name, nickserv_command % nickserv_password)
+        time.sleep(1)
+    
+    for channel in conn.channels:
+        conn.join(channel)
+        time.sleep(1) # don't flood JOINs

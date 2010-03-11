@@ -12,11 +12,9 @@ def get_tells(db, user_to, chan):
                          (user_to.lower(), chan)).fetchall()
 
 
-@hook.tee
-def tellinput(bot, input):
-    if input.command != 'PRIVMSG':
-        return
-
+@hook.thread
+@hook.event('PRIVMSG')
+def tellinput(inp, input=None, bot=None):
     if 'showtells' in input.msg.lower():
         return
 

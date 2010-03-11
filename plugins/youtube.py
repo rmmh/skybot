@@ -54,7 +54,7 @@ def get_video_description(vid_id):
     return out
 
 
-@hook.command(hook=r'(.*)', prefix=False)
+@hook.event('PRIVMSG')
 def youtube_url(inp):
     m = youtube_re.search(inp)
     if m:

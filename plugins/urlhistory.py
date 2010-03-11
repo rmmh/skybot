@@ -67,7 +67,7 @@ def format_reply(history):
             hour_span, nicklist(history), last)
 
 
-@hook.command(hook=r'(.*)', prefix=False)
+@hook.event('PRIVMSG')
 def urlinput(inp, nick='', chan='', server='', reply=None, bot=None):
     m = url_re.search(inp.encode('utf8'))
     if not m:

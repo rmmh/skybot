@@ -62,7 +62,7 @@ def forget(inp, chan='', db=None):
         return "I don't know about that."
 
 
-@hook.command(hook='\?(.+)', prefix=False)
+@hook.event('PRIVMSG', hook=r'\?(.+)')
 def question(inp, chan='', say=None, db=None):
     "?<word> -- shows what data is associated with word"
     db_init(db)

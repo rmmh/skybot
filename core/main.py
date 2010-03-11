@@ -2,7 +2,7 @@ import thread
 import traceback
 
 
-print thread.stack_size(1024 * 512)  # reduce vm size
+thread.stack_size(1024 * 512)  # reduce vm size
 
 
 class Input(dict):
@@ -25,7 +25,7 @@ class Input(dict):
         dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
                     params=params, nick=nick, user=user, host=host,
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
-                    say=say, reply=reply, pm=pm, bot=bot)
+                    say=say, reply=reply, pm=pm, bot=bot, lastparam=paraml[-1])
 
     def __getattr__(self, key):
         return self[key]
@@ -35,10 +35,15 @@ class Input(dict):
 
 
 def run(func, input):
-    args = func._skybot_args
+    args = func._args
+    if 'inp' not in input:
+        input.inp = input.params
+
     if args:
         if 'db' in args:
             input['db'] = get_db_connection(input['server'])
+        if 'input' in args:
+            input['input'] = input
         if 0 in args:
             out = func(input['inp'], **input)
         else:
@@ -50,21 +55,74 @@ def run(func, input):
         input['reply'](unicode(out))
 
 
-def main(conn, out):
-    for csig, func, args in bot.plugs['tee']:
-        input = Input(conn, *out)
-        func._iqueue.put((bot, input))
-    for csig, func, args in (bot.plugs['command'] + bot.plugs['event']):
-        input = Input(conn, *out)
-        for fsig, sieve in bot.plugs['sieve']:
-            try:
-                input = sieve(bot, input, func, args)
-            except Exception, e:
-                print 'sieve error',
-                traceback.print_exc(Exception)
-                input = None
-            if input == None:
+def do_sieve(sieve, bot, input, func, type, args):
+    try:
+        return sieve(bot, input, func, type, args)
+    except Exception, e:
+        print 'sieve error',
+        traceback.print_exc(Exception)
+        return None
+
+    
+class Handler(object):
+    '''Runs plugins in their own threads (ensures order)'''
+    def __init__(self, func):
+        self.func = func
+        self.input_queue = Queue.Queue()
+        thread.start_new_thread(self.start, ())
+
+    def start(self):
+        while True:
+            input = self.input_queue.get()
+
+            if input == StopIteration:
                 break
+
+            run(self.func, input)
+
+    def stop(self):
+        self.input_queue.put(StopIteration)
+
+    def put(self, value):
+        self.input_queue.put(value)
+
+
+def dispatch(input, kind, func, args):
+    for sieve, in bot.plugs['sieve']:
+        input = do_sieve(sieve, bot, input, func, kind, args)
         if input == None:
-            continue
+            return
+    
+    if func._thread:
+        bot.threads[func].put(input)
+    else:
         thread.start_new_thread(run, (func, input))
+        
+
+def main(conn, out):
+    inp = Input(conn, *out)
+
+    # EVENTS
+    for func, args in bot.events[inp.command] + bot.events['*']:
+        dispatch(Input(conn, *out), "event", func, args)
+
+    # COMMANDS
+    if inp.command == 'PRIVMSG':
+        if inp.chan == inp.nick: # private message, no command prefix
+            prefix = r'^(?:[.!]?|'
+        else:
+            prefix = r'^(?:[.!]|'
+            
+        command_re = prefix + inp.conn.nick + r'[:,]*\s+)(\w+)\s+(.*)$'
+
+        m = re.match(command_re, inp.lastparam)
+
+        if m:
+            command = m.group(1).lower()
+            if command in bot.commands:
+                input = Input(conn, *out)
+                input.inp_unstripped = m.group(2)
+                input.inp = m.group(2).strip()
+                
+                func, args = bot.commands[command]
+                dispatch(input, "command", func, args)

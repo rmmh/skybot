@@ -1,20 +1,16 @@
 import inspect
-import thread
 import traceback
-import Queue
-
-
-def _isfunc(x):
-    if type(x) == type(_isfunc):
-        return True
-    return False
 
 
 def _hook_add(func, add, name=''):
-    if not hasattr(func, '_skybot_hook'):
-        func._skybot_hook = []
-    func._skybot_hook.append(add)
-    if not hasattr(func, '_skybot_args'):
+    if not hasattr(func, '_hook'):
+        func._hook = []
+    func._hook.append(add)
+
+    if not hasattr(func, '_filename'):
+        func._filename = func.func_code.co_filename
+
+    if not hasattr(func, '_args'):
         argspec = inspect.getargspec(func)
         if name:
             n_args = len(argspec.args)
@@ -36,39 +32,34 @@ def _hook_add(func, add, name=''):
                         end if end else None])
         if argspec.keywords:
             args.append(0)  # means kwargs present
-        func._skybot_args = args
+        func._args = args
 
-
-def _make_sig(f):
-    return f.func_code.co_filename, f.func_name, f.func_code.co_firstlineno
-
+    if not hasattr(func, '_skybot_thread'): # does function run in its own thread?
+        func._thread = False
 
 def sieve(func):
-    if func.func_code.co_argcount != 4:
+    if func.func_code.co_argcount != 5:
         raise ValueError(
-                'sieves must take 4 arguments: (bot, input, func, args)')
-    _hook_add(func, ['sieve', (_make_sig(func), func)])
+                'sieves must take 5 arguments: (bot, input, func, type, args)')
+    _hook_add(func, ['sieve', (func,)])
     return func
 
 
-def command(func=None, hook=None, **kwargs):
+def command(arg, **kwargs):
     args = {}
 
     def command_wrapper(func):
         args.setdefault('name', func.func_name)
-        args.setdefault('hook', args['name'] + r'(?:\s+|$)(.*)')
-        _hook_add(func, ['command', (_make_sig(func), func, args)], 'command')
+        _hook_add(func, ['command', (func, args)], 'command')
         return func
 
-    if hook is not None or kwargs or not _isfunc(func):
-        if func is not None:
-            args['name'] = func
-        if hook is not None:
-            args['hook'] = hook
+    if kwargs or not inspect.isfunction(arg):
+        if arg is not None:
+            args['name'] = arg
         args.update(kwargs)
         return command_wrapper
     else:
-        return command_wrapper(func)
+        return command_wrapper(arg)
 
 
 def event(arg=None, **kwargs):
@@ -76,12 +67,11 @@ def event(arg=None, **kwargs):
 
     def event_wrapper(func):
         args['name'] = func.func_name
-        args['prefix'] = False
-        args.setdefault('events', '*')
-        _hook_add(func, ['event', (_make_sig(func), func, args)], 'event')
+        args.setdefault('events', ['*'])
+        _hook_add(func, ['event', (func, args)], 'event')
         return func
 
-    if _isfunc(arg):
+    if inspect.isfunction(arg):
         return event_wrapper(arg, kwargs)
     else:
         if arg is not None:
@@ -89,26 +79,6 @@ def event(arg=None, **kwargs):
         return event_wrapper
 
 
-def tee(func, **kwargs):
-    "passes _all_ input lines to function, in order (skips sieves)"
-
-    if func.func_code.co_argcount != 2:
-        raise ValueError('tees must take 2 arguments: (bot, input)')
-
-    _hook_add(func, ['tee', (_make_sig(func), func, kwargs)])
-    func._iqueue = Queue.Queue()
-
-    def trampoline(func):
-        input = None
-        while True:
-            input = func._iqueue.get()
-            if input == StopIteration:
-                return
-            try:
-                func(*input)
-            except Exception:
-                traceback.print_exc(Exception)
-
-    thread.start_new_thread(trampoline, (func,))
-
+def thread(func):
+    func._thread = True
     return func
