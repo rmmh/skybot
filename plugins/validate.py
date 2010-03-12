@@ -1,6 +1,8 @@
 '''
 Runs a given url through the w3c validator and queries
 	the result header for information
+
+by Vladi
 '''
 
 import urllib
