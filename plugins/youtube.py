@@ -10,7 +10,8 @@ from urllib import quote_plus
 
 locale.setlocale(locale.LC_ALL, '')
 
-youtube_re = re.compile(r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)([-_a-z0-9]+)', flags=re.I)
+youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
+              '([-_a-z0-9]+)', re.I)
 
 base_url = 'http://gdata.youtube.com/feeds/api/'
 url = base_url + 'videos/%s?v=2&alt=jsonc'
@@ -54,11 +55,9 @@ def get_video_description(vid_id):
     return out
 
 
-@hook.event('PRIVMSG')
-def youtube_url(inp):
-    m = youtube_re.search(inp)
-    if m:
-        return get_video_description(m.group(1))
+@hook.regex(*youtube_re)
+def youtube_url(match):
+    return get_video_description(match.group(1))
 
 
 @hook.command('y')

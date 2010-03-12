@@ -4,7 +4,7 @@ import time
 
 from util import hook, urlnorm, timesince
 
-url_re = re.compile(r'([a-zA-Z]+://|www\.)[^ ]*')
+url_re = r'([a-zA-Z]+://|www\.)[^ ]*'
 
 expiration_period = 60 * 60 * 24  # 1 day
 
@@ -67,15 +67,10 @@ def format_reply(history):
             hour_span, nicklist(history), last)
 
 
-@hook.event('PRIVMSG')
-def urlinput(inp, nick='', chan='', server='', reply=None, bot=None):
-    m = url_re.search(inp.encode('utf8'))
-    if not m:
-        return
-
-    # URL detected
+@hook.regex(url_re)
+def urlinput(match, nick='', chan='', server='', reply=None, bot=None):
     db = db_connect(bot, server)
-    url = urlnorm.normalize(m.group(0))
+    url = urlnorm.normalize(match.group().encode('utf-8'))
     if url not in ignored_urls:
         history = get_history(db, chan, url)
         insert_history(db, chan, url, nick)

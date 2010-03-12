@@ -106,14 +106,16 @@ def main(conn, out):
     for func, args in bot.events[inp.command] + bot.events['*']:
         dispatch(Input(conn, *out), "event", func, args)
 
-    # COMMANDS
+
     if inp.command == 'PRIVMSG':
+        # COMMANDS
         if inp.chan == inp.nick: # private message, no command prefix
             prefix = r'^(?:[.!]?|'
         else:
             prefix = r'^(?:[.!]|'
             
-        command_re = prefix + inp.conn.nick + r'[:,]*\s+)(\w+)\s+(.*)$'
+        command_re = prefix + inp.conn.nick
+        command_re += r'[:,]*\s+)(\w+)(?:$|\s+)(.*)'
 
         m = re.match(command_re, inp.lastparam)
 
@@ -126,3 +128,12 @@ def main(conn, out):
                 
                 func, args = bot.commands[command]
                 dispatch(input, "command", func, args)
+                
+        # REGEXES
+        for func, args in bot.plugs['regex']:
+            m = args['re'].search(inp.lastparam)
+            if m:
+                input = Input(conn, *out)
+                input.inp = m
+
+                dispatch(input, "regex", func, args)

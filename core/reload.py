@@ -25,6 +25,10 @@ def format_plug(plug, kind='', lpad=0, width=40):
     if kind == 'event':
         out += ' ' * (50 - len(out)) + ', '.join(plug[1]['events'])
 
+    if kind == 'regex':
+        out += ' ' * (50 - len(out)) + plug[1]['regex']
+
+
     return out
 
 
@@ -153,7 +157,7 @@ def reload(init=False):
         for kind, plugs in sorted(bot.plugs.iteritems()):
             if kind == 'command':
                 continue
-            print '    %s:' % type
+            print '    %s:' % kind
             for plug in plugs:
                 print format_plug(plug, kind=kind, lpad=6)
         print

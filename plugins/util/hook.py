@@ -1,4 +1,5 @@
 import inspect
+import re
 
 
 def _hook_add(func, add, name=''):
@@ -81,3 +82,19 @@ def event(arg=None, **kwargs):
 def thread(func):
     func._thread = True
     return func
+
+
+def regex(regex, flags=0, **kwargs):
+    args = kwargs
+    
+    def regex_wrapper(func):
+        args['name'] = func.func_name
+        args['regex'] = regex
+        args['re'] = re.compile(regex, flags)
+        _hook_add(func, ['regex', (func, args)], 'regex')
+        return func
+
+    if inspect.isfunction(regex):
+        raise ValueError("regex decorators require a regex to match against")
+    else:
+        return regex_wrapper
