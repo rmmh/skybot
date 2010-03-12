@@ -14,7 +14,7 @@ def get_tells(db, user_to, chan):
 
 @hook.thread
 @hook.event('PRIVMSG')
-def tellinput(inp, input=None, bot=None):
+def tellinput(paraml, input=None, bot=None):
     if 'showtells' in input.msg.lower():
         return
 

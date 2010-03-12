@@ -36,8 +36,9 @@ class Input(dict):
 
 def run(func, input):
     args = func._args
+
     if 'inp' not in input:
-        input.inp = input.params
+        input.inp = input.paraml
 
     if args:
         if 'db' in args:
