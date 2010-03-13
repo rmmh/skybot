@@ -34,7 +34,7 @@ def _hook_add(func, add, name=''):
             args.append(0)  # means kwargs present
         func._args = args
 
-    if not hasattr(func, '_skybot_thread'): # does function run in its own thread?
+    if not hasattr(func, '_thread'): # does function run in its own thread?
         func._thread = False
 
 def sieve(func):
@@ -79,7 +79,7 @@ def event(arg=None, **kwargs):
         return event_wrapper
 
 
-def thread(func):
+def singlethread(func):
     func._thread = True
     return func
 

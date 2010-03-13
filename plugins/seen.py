@@ -5,10 +5,16 @@ import time
 from util import hook, timesince
 
 
-@hook.thread
+def db_init(db):
+    "check to see that our db has the the seen table and return a connection."
+    db.execute("create table if not exists seen(name, time, quote, chan, "
+                 "primary key(name, chan))")
+    db.commit()
+
+
+@hook.singlethread
 @hook.event('PRIVMSG')
-def seeninput(paraml, input=None, bot=None):
-    db = bot.get_db_connection(input.conn)
+def seeninput(paraml, input=None, db=None, bot=None):
     db_init(db)
     db.execute("insert or replace into seen(name, time, quote, chan)"
         "values(?,?,?,?)", (input.nick.lower(), time.time(), input.msg,
@@ -39,10 +45,3 @@ def seen(inp, nick='', chan='', db=None):
                     (inp, reltime, last_seen[2])
     else:
         return "I've never seen %s" % inp
-
-
-def db_init(db):
-    "check to see that our db has the the seen table and return a connection."
-    db.execute("create table if not exists seen(name, time, quote, chan, "
-                 "primary key(name, chan))")
-    db.commit()

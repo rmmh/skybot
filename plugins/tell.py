@@ -12,14 +12,13 @@ def get_tells(db, user_to, chan):
                          (user_to.lower(), chan)).fetchall()
 
 
-@hook.thread
+@hook.singlethread
 @hook.event('PRIVMSG')
-def tellinput(paraml, input=None, bot=None):
+def tellinput(paraml, input=None, db=None, bot=None):
     if 'showtells' in input.msg.lower():
         return
 
-    db = bot.get_db_connection(input.conn)
-    db = db_init(db)
+    db_init(db)
 
     tells = get_tells(db, input.nick, input.chan)
 
