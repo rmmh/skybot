@@ -23,7 +23,7 @@ def wolframalpha(inp):
 
     pod_texts = []
     for pod in pods:
-        heading = pod.find('h1/span')
+        heading = pod.find('h2')
         if heading is not None:
             heading = heading.text_content().strip()
             if heading.startswith('Input'):
