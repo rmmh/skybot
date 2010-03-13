@@ -1,35 +1,35 @@
 '''
-Runs a given url through the w3c validator and queries
-	the result header for information
+Runs a given url through the w3c validator
 
 by Vladi
 '''
 
 import urllib
+import urllib2
 
 from util import hook
 
-path = 'http://validator.w3.org/check?uri=%s'
 
 @hook.command('val')
 @hook.command
 def validate(inp):
-	'''.val/.validate <url> -- runs url through the w3c markup validator'''
-	
-	if not inp:
-		return validate.__doc__
-		
-	if not inp.startswith('http://'):
-		inp = 'http://' + inp
-		
-	url = path % (urllib.quote(inp))
-	temp = urllib.urlopen(url).info()
+    '''.val/.validate <url> -- runs url through the w3c markup validator'''
 
-	status = temp.getheader('X-W3C-Validator-Status')
-	if (status == "Valid" or status == "Invalid"):
-		errorcount = temp.getheader('X-W3C-Validator-Errors')
-		warningcount = temp.getheader('X-W3C-Validator-Warnings')
-		return "%s was validated as %s with %s errors and %s warnings. See: %s" \
-			% (inp, status.lower(), errorcount, warningcount, url)
-	else:
-		return "Something went wrong while validating %s" % (inp)
+    if not inp:
+        return validate.__doc__
+
+    if not inp.startswith('http://'):
+        inp = 'http://' + inp
+
+        url = 'http://validator.w3.org/check?uri=%s' % urllib.quote(inp, '')
+        info = dict(urllib2.urlopen(url).info())
+
+        print info
+        status = info['x-w3c-validator-status'].lower()
+        if status in ("valid", "invalid"):
+            errorcount = info['x-w3c-validator-errors']
+            warningcount = info['x-w3c-validator-warnings']
+            return "%s was found to be %s with %s errors and %s warnings." \
+                    " see: %s" % (inp, status, errorcount, warningcount, url)
+    else:
+        return "Something went wrong while validating %s" % inp

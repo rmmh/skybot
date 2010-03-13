@@ -13,7 +13,7 @@ ed_url = "http://encyclopediadramatica.com/"
 ua_header = ('User-Agent','Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
 
 
-@hook.command('ed')   
+@hook.command('ed')
 @hook.command
 def drama(inp):
     '''.drama <phrase> -- gets first paragraph of Encyclopedia Dramatica ''' \

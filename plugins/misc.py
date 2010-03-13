@@ -32,4 +32,4 @@ def onjoin(paraml, conn=None):
     
     for channel in conn.channels:
         conn.join(channel)
-        time.sleep(1) # don't flood JOINs
+        time.sleep(1)  # don't flood JOINs

@@ -59,7 +59,7 @@ def normalize(url):
     fragment=quote(clean(fragment), "~")
 
     # note care must be taken to only encode & and = characters as values
-    query="&".join(["=".join([quote(clean(t) , "~:/?#[]@!$'()*+,;=")
+    query="&".join(["=".join([quote(clean(t), "~:/?#[]@!$'()*+,;=")
         for t in q.split("=", 1)]) for q in query.split("&")])
 
     # Prevent dot-segments appearing in non-relative URI paths.

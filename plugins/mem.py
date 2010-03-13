@@ -26,5 +26,3 @@ def mem(inp):
         return 'memory usage: %d kB' % total
 
     return mem.__doc__
-
-print mem('')
