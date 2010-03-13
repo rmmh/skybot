@@ -8,7 +8,7 @@ from util import hook, timesince
 @hook.thread
 @hook.event('PRIVMSG')
 def seeninput(paraml, input=None, bot=None):
-    db = bot.get_db_connection(input.server)
+    db = bot.get_db_connection(input.conn)
     db_init(db)
     db.execute("insert or replace into seen(name, time, quote, chan)"
         "values(?,?,?,?)", (input.nick.lower(), time.time(), input.msg,

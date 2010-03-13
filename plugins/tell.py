@@ -18,7 +18,7 @@ def tellinput(paraml, input=None, bot=None):
     if 'showtells' in input.msg.lower():
         return
 
-    db = bot.get_db_connection(input.server)
+    db = bot.get_db_connection(input.conn)
     db = db_init(db)
 
     tells = get_tells(db, input.nick, input.chan)

@@ -11,9 +11,8 @@ expiration_period = 60 * 60 * 24  # 1 day
 ignored_urls = [urlnorm.normalize("http://google.com")]
 
 
-def db_connect(bot, server):
-    "check to see that our db has the the seen table and return a dbection."
-    db = bot.get_db_connection(server)
+def db_connect(bot, conn):
+    db = bot.get_db_connection(conn)
     db.execute("create table if not exists urlhistory"
                  "(chan, url, nick, time)")
     db.commit()
@@ -68,8 +67,8 @@ def format_reply(history):
 
 
 @hook.regex(url_re)
-def urlinput(match, nick='', chan='', server='', reply=None, bot=None):
-    db = db_connect(bot, server)
+def urlinput(match, nick='', chan='', conn=None, bot=None):
+    db = db_connect(bot, conn)
     url = urlnorm.normalize(match.group().encode('utf-8'))
     if url not in ignored_urls:
         history = get_history(db, chan, url)

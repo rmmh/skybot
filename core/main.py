@@ -27,6 +27,7 @@ class Input(dict):
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
                     say=say, reply=reply, pm=pm, bot=bot, lastparam=paraml[-1])
 
+    # make dict keys accessible as attributes
     def __getattr__(self, key):
         return self[key]
 
@@ -42,18 +43,18 @@ def run(func, input):
 
     if args:
         if 'db' in args:
-            input['db'] = get_db_connection(input['server'])
+            input.db = get_db_connection(input.conn)
         if 'input' in args:
-            input['input'] = input
+            input.input = input
         if 0 in args:
-            out = func(input['inp'], **input)
+            out = func(input.inp, **input)
         else:
             kw = dict((key, input[key]) for key in args if key in input)
-            out = func(input['inp'], **kw)
+            out = func(input.inp, **kw)
     else:
-        out = func(input['inp'])
+        out = func(input.inp)
     if out is not None:
-        input['reply'](unicode(out))
+        input.reply(unicode(out))
 
 
 def do_sieve(sieve, bot, input, func, type, args):

@@ -11,7 +11,6 @@ import re
 from util import hook
 
 
-lock = thread.allocate_lock()
 log_fds = {}  # '%(net)s %(chan)s' : (filename, fd)
 
 timestamp_format = '%H:%M:%S'
@@ -86,24 +85,23 @@ def get_log_fd(dir, server, chan):
 @hook.thread
 @hook.event('*')
 def log(paraml, input=None, bot=None):
-    with lock:
-        timestamp = gmtime(timestamp_format)
+    timestamp = gmtime(timestamp_format)
 
-        fd = get_log_fd(bot.persist_dir, input.server, 'raw')
-        fd.write(timestamp + ' ' + input.raw + '\n')
+    fd = get_log_fd(bot.persist_dir, input.server, 'raw')
+    fd.write(timestamp + ' ' + input.raw + '\n')
 
-        if input.command == 'QUIT':  # these are temporary fixes until proper
-            input.chan = 'quit'      # presence tracking is implemented
-        if input.command == 'NICK':
-            input.chan = 'nick'
+    if input.command == 'QUIT':  # these are temporary fixes until proper
+        input.chan = 'quit'      # presence tracking is implemented
+    if input.command == 'NICK':
+        input.chan = 'nick'
 
-        beau = beautify(input)
+    beau = beautify(input)
 
-        if beau == '':  # don't log this
-            return
+    if beau == '':  # don't log this
+        return
 
-        if input.chan:
-            fd = get_log_fd(bot.persist_dir, input.server, input.chan)
-            fd.write(timestamp + ' ' + beau + '\n')
+    if input.chan:
+        fd = get_log_fd(bot.persist_dir, input.server, input.chan)
+        fd.write(timestamp + ' ' + beau + '\n')
 
-        print timestamp, input.chan, beau.encode('utf8', 'ignore')
+    print timestamp, input.chan, beau.encode('utf8', 'ignore')
