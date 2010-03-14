@@ -5,7 +5,7 @@ import urllib
 
 @hook.command
 def bam(inp):
-    """[basic|magic|pepsi|jprdy] bigassify this"""
+    ".bam [basic|magic|pepsi|jprdy] <message> -- creates a big ass message"
 
     if not inp:
         return bam.__doc__
