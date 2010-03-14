@@ -2,18 +2,26 @@ from util import hook
 from lxml import etree
 import urllib
 
-host = 'http://bigassmessage.com'
-
 
 @hook.command
 def bam(inp):
+    """[basic|magic|pepsi|jprdy] bigassify this"""
 
     if not inp:
-        return 'you forgot something'
+        return bam.__doc__
 
-    inp = urllib.quote_plus(inp)
-    path = '/dsx_BAM/boe.php?action=saveMsg&theStyle=magic&theMessage=' + inp
-    url = host + path
+    host = 'http://bigassmessage.com'
+    path = '/dsx_BAM/boe.php'
+    params = {'action': 'saveMsg', 'theStyle': 'basic', 'theMessage': inp}
+
+    styles = ['basic', 'magic', 'pepsi', 'jprdy']
+
+    for style in styles:
+        if inp.startswith(style + ' '):
+            params['theStyle'] = style
+            params['theMessage'] = inp[len(style) + 1:]
+
+    url = host + path + '?' + urllib.urlencode(params)
 
     try:
         response = etree.parse(url)
