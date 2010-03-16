@@ -11,26 +11,35 @@ def mtg(inp):
     url = 'http://magiccards.info/query.php?cardname='
     url += urllib2.quote(inp, safe='')
     h = html.parse(url)
-    name = h.find('/body/table/tr/td/table/tr/td/h1')
+
+    name = h.find('/body/table/tr/td/span/a')
     if name is None:
         return "no cards found"
-    card = name.getparent()
-    text = card.find('p')
+    card = name.getparent().getparent().getparent()
 
-    type = text.text
-    text = text.find('b').text_content()
+    type = card.find('td/p').text.replace('\n', '')
+
+    # this is ugly
+    text = html.tostring(card.xpath("//p[@class='ctext']/b")[0])
+    text = text.replace('<br>', '$')
+    text = html.fromstring(text).text_content()
+    text = re.sub(r'(\w+\s*)\$+(\s*\w+)', r'\1. \2', text)
+    text = text.replace('$', ' ')
     text = re.sub(r'\(.*?\)', '', text)  # strip parenthetical explanations
     text = re.sub(r'\.(\S)', r'. \1', text)  # fix spacing
 
-    printings = card.find('table/tr/td/img').getparent().text_content()
+
+    printings = card.find('td/small').text_content()
+    printings = re.search(r'Editions:(.*)Languages:', printings).group(1)
     printings = re.findall(r'\s*(.+?(?: \([^)]+\))*) \((.*?)\)',
                            ' '.join(printings.split()))
+
     printing_out = ', '.join('%s (%s)' % (set_abbrevs.get(x[0], x[0]),
                                           rarity_abbrevs.get(x[1], x[1]))
                                           for x in printings)
 
     name.make_links_absolute()
-    link = name.find('a').attrib['href']
+    link = name.attrib['href']
     name = name.text_content().strip()
     type = type.strip()
     text = ' '.join(text.split())
@@ -50,7 +59,9 @@ set_abbrevs = {
     'Arena League': 'ARENA',
     'Asia Pacific Land Program': 'APAC',
     'Battle Royale': 'BR',
-    'Beatdown': 'BD',
+    'Battle Royale Box Set': 'BRB',
+    'Beatdown': 'BTD',
+    'Beatdown Box Set': 'BTD',
     'Betrayers of Kamigawa': 'BOK',
     'Celebration Cards': 'UQC',
     'Champions of Kamigawa': 'CHK',
@@ -70,6 +81,7 @@ set_abbrevs = {
     'Duel Decks: Elves vs. Goblins': 'EVG',
     'Duel Decks: Garruk vs. Liliana': 'GVL',
     'Duel Decks: Jace vs. Chandra': 'JVC',
+    'Eighth Edition': '8ED',
     'Eighth Edition Box Set': '8EB',
     'European Land Program': 'EURO',
     'Eventide': 'EVE',
@@ -97,8 +109,10 @@ set_abbrevs = {
     'Legend Membership': 'DCILM',
     'Legends': 'LG',
     'Legions': 'LE',
-    'Limited Edition (Alpha)': 'AL',
-    'Limited Edition (Beta)': 'BE',
+    'Limited Edition (Alpha)': 'LEA',
+    'Limited Edition (Beta)': 'LEB',
+    'Limited Edition Alpha': 'LEA',
+    'Limited Edition Beta': 'LEB',
     'Lorwyn': 'LW',
     'MTGO Masters Edition': 'MED',
     'MTGO Masters Edition II': 'ME2',
@@ -138,6 +152,7 @@ set_abbrevs = {
     'Shadowmoor': 'SHM',
     'Shards of Alara': 'ALA',
     'Starter': 'ST',
+    'Starter 1999': 'S99',
     'Starter 2000 Box Set': 'ST2K',
     'Stronghold': 'SH',
     'Summer of Magic': 'SOM',
