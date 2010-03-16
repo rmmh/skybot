@@ -52,7 +52,7 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
 
     db_init(db)
 
-    tells = get_tells(db, nick, chan)
+    tells = get_tells(db, nick)
 
     if not tells:
         pm("You have no pending tells.")
@@ -64,7 +64,7 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
         pm("%s said %s ago in %s: %s" % (user_from, reltime, chan, message))
 
     db.execute("delete from tell where user_to=lower(?)",
-                  (nick, chan))
+                  (nick,))
     db.commit()
 
 
