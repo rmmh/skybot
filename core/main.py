@@ -17,7 +17,10 @@ class Input(dict):
             conn.msg(chan, msg)
 
         def reply(msg):
-            conn.msg(chan, nick + ': ' + msg)
+            if chan == nick: # PMs don't need prefixes
+                conn.msg(chan, msg)
+            else:
+                conn.msg(chan, nick + ': ' + msg)
 
         def pm(msg):
             conn.msg(nick, msg)
