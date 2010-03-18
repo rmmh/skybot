@@ -71,9 +71,12 @@ def quote(inp, nick='', chan='', db=None):
                 num = int(num)
 
             if num:
-                if num > n_quotes:
+                if num > n_quotes or (num < 0 and num < -n_quotes):
                     return "I only have %d quote%s for %s" % (n_quotes,
                                 ('s', '')[n_quotes == 1], select)
+                elif num < 0:
+                    selected_quote = quotes[num]
+                    num = n_quotes + num + 1
                 else:
                     selected_quote = quotes[num - 1]
             else:
