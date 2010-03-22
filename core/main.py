@@ -63,9 +63,9 @@ def run(func, input):
 def do_sieve(sieve, bot, input, func, type, args):
     try:
         return sieve(bot, input, func, type, args)
-    except Exception, e:
+    except Exception:
         print 'sieve error',
-        traceback.print_exc(Exception)
+        traceback.print_exc()
         return None
 
     

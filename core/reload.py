@@ -53,8 +53,8 @@ def reload(init=False):
                 eval(compile(open(filename, 'U').read(), filename, 'exec'),
                         globals())
             except Exception:
-                traceback.print_exc(Exception)
-                if init:        # stop if there's a syntax error in a core
+                traceback.print_exc()
+                if init:        # stop if there's an error (syntax?) in a core
                     sys.exit()  # script on startup
                 continue
 
@@ -90,7 +90,7 @@ def reload(init=False):
                 namespace = {}
                 eval(code, namespace)
             except Exception:
-                traceback.print_exc(Exception)
+                traceback.print_exc()
                 continue
 
             # remove plugins already loaded from this filename
