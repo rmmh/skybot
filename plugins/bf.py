@@ -76,12 +76,16 @@ def bf(inp):
         ip += 1
         steps += 1
         if steps > MAX_STEPS:
-            output += "Maximum number of steps exceeded"
+            if output == '':
+                output = '(no output)'
+            output += '[exceeded %d iterations]' % MAX_STEPS
             break
 
-    output = '/'.join(output.splitlines())
+    stripped_output = re.sub(r'[\x00-\x1F]', '', output)
 
-    if output == '':
+    if stripped_output == '':
+        if output != '':
+            return 'no printable output'
         return 'no output'
 
-    return unicode(output, 'iso-8859-1')[:430]
+    return stripped_output[:430].decode('utf8', 'ignore')
