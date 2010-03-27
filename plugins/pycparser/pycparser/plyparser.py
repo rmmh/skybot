@@ -43,10 +43,10 @@ class PLYParser(object):
         optrule.__doc__ = '%s : empty\n| %s' % (optname, rulename)
         optrule.__name__ = 'p_%s' % optname
         setattr(self.__class__, optrule.__name__, optrule)
-    
+
     def _coord(self, lineno, column=None):
         return Coord(
-                file=self.clex.filename, 
+                file=self.clex.filename,
                 line=lineno,
                 column=column)
 
@@ -64,4 +64,4 @@ if __name__ == '__main__':
     print ar
     print pp.p_java_opt.__doc__
 
-    print dir(pp)         
+    print dir(pp)

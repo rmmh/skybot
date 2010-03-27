@@ -26,17 +26,17 @@ from pycparser import c_parser, c_ast
 
 
 def explain_c_declaration(c_decl):
-    """ Parses the declaration in c_decl and returns a text 
+    """ Parses the declaration in c_decl and returns a text
         explanation as a string.
-        
+
         The last external node of the string is used, to allow
         earlier typedefs for used types.
     """
     parser = c_parser.CParser()
-    
+
     node = parser.parse(c_decl, filename='<stdin>')
 
-    if (    not isinstance(node, c_ast.FileAST) or 
+    if (    not isinstance(node, c_ast.FileAST) or
             not isinstance(node.ext[-1], c_ast.Decl)):
         return "Last external node is invalid type"
 
@@ -49,10 +49,10 @@ def _explain_decl_node(decl_node):
     """
     #~ print decl_node.show()
     storage = ' '.join(decl_node.storage) + ' ' if decl_node.storage else ''
-        
-    return (decl_node.name + 
-            " is a " + 
-            storage + 
+
+    return (decl_node.name +
+            " is a " +
+            storage +
             _explain_type(decl_node.type))
 
 
@@ -60,7 +60,7 @@ def _explain_type(decl):
     """ Recursively explains a type decl node
     """
     typ = type(decl)
-    
+
     if typ == c_ast.TypeDecl:
         quals = ' '.join(decl.quals) + ' ' if decl.quals else ''
         return quals + _explain_type(decl.type)
@@ -74,16 +74,16 @@ def _explain_type(decl):
     elif typ == c_ast.ArrayDecl:
         arr = 'array'
         if decl.dim: arr += '[%s]' % decl.dim.value
-        
+
         return arr + " of " + _explain_type(decl.type)
-        
+
     elif typ == c_ast.FuncDecl:
         if decl.args:
             params = [_explain_type(param) for param in decl.args.params]
             args = ', '.join(params)
         else:
             args = ''
-        
+
         return ('function(%s) returning ' % (args) +
                 _explain_type(decl.type))
 

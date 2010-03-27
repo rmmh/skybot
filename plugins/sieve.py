@@ -2,7 +2,7 @@ from util import hook
 
 
 @hook.sieve
-def sieve_suite(bot, input, func, kind, args):    
+def sieve_suite(bot, input, func, kind, args):
     if input.command == 'PRIVMSG' and input.nick.lower()[-3:] == 'bot' \
             and args.get('ignorebots', True):
         return None
@@ -17,5 +17,5 @@ def sieve_suite(bot, input, func, kind, args):
             denied_channels = map(unicode.lower, acl['allow-except'])
             if input.chan.lower() in denied_channels:
                 return None
-    
+
     return input

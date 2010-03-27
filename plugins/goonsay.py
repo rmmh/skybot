@@ -11,11 +11,12 @@ from util import hook
 #    say('(--[. ]-[ .]  /')
 #    say('(_______o__)')
 
+
 @hook.command
 @hook.command('gs')
 def goonsay(inp):
-    ".gs/.goonsay <id|add [message]> -- Get's the goonsay.com result for <id> or "
-    "add a new :goonsay: to the database. If no arg it will get a random result."
+    ".gs/.goonsay <id|add [message]> -- Get's the goonsay.com result for <id> "
+    " or add a new :goonsay: to the database. With no args, random result."
 
     url = "http://goonsay.com/api/goonsays"
 
@@ -44,7 +45,8 @@ def goonsay(inp):
 
     if len(inp):
         try:
-            req = urllib2.Request('%s/%d/' % (url, int(inp)), None, req_headers)
+            req = urllib2.Request('%s/%d/' % (url, int(inp)), None,
+                    req_headers)
             j = json.loads(urllib2.urlopen(req).read())
         except urllib2.HTTPError, e:
             if e.code == 410 or e.code == 404:

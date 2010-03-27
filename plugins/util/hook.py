@@ -34,8 +34,9 @@ def _hook_add(func, add, name=''):
             args.append(0)  # means kwargs present
         func._args = args
 
-    if not hasattr(func, '_thread'): # does function run in its own thread?
+    if not hasattr(func, '_thread'):  # does function run in its own thread?
         func._thread = False
+
 
 def sieve(func):
     if func.func_code.co_argcount != 5:
@@ -86,7 +87,7 @@ def singlethread(func):
 
 def regex(regex, flags=0, **kwargs):
     args = kwargs
-    
+
     def regex_wrapper(func):
         args['name'] = func.func_name
         args['regex'] = regex

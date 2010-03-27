@@ -14,7 +14,7 @@ def mem(inp):
         status = dict(line_pairs)
         keys = 'VmSize VmLib VmData VmExe VmRSS VmStk'.split()
         return ', '.join(key + ':' + status[key] for key in keys)
-    
+
     elif os.name == 'nt':
         cmd = "tasklist /FI \"PID eq %s\" /FO CSV /NH" % os.getpid()
         out = os.popen(cmd).read()

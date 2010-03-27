@@ -41,7 +41,7 @@ try:
 except Exception, e:
     print 'ERROR: malformed config file', Exception, e
     sys.exit()
- 
+
 bot.persist_dir = os.path.abspath('persist')
 if not os.path.exists(bot.persist_dir):
     os.mkdir(bot.persist_dir)

@@ -28,7 +28,6 @@ def mtg(inp):
     text = re.sub(r'\(.*?\)', '', text)  # strip parenthetical explanations
     text = re.sub(r'\.(\S)', r'. \1', text)  # fix spacing
 
-
     printings = card.find('td/small').text_content()
     printings = re.search(r'Editions:(.*)Languages:', printings).group(1)
     printings = re.findall(r'\s*(.+?(?: \([^)]+\))*) \((.*?)\)',

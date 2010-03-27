@@ -28,9 +28,7 @@ def format_plug(plug, kind='', lpad=0, width=40):
     if kind == 'regex':
         out += ' ' * (50 - len(out)) + plug[1]['regex']
 
-
     return out
-
 
 
 def reload(init=False):
@@ -41,12 +39,12 @@ def reload(init=False):
         bot.threads = {}
 
     core_fileset = set(glob.glob(os.path.join("core", "*.py")))
-        
+
     for filename in core_fileset:
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
             mtimes[filename] = mtime
-            
+
             changed = True
 
             try:
@@ -82,7 +80,7 @@ def reload(init=False):
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
             mtimes[filename] = mtime
-            
+
             changed = True
 
             try:
@@ -95,7 +93,7 @@ def reload(init=False):
 
             # remove plugins already loaded from this filename
             for name, data in bot.plugs.iteritems():
-                bot.plugs[name] = [x for x in data 
+                bot.plugs[name] = [x for x in data
                                    if x[0]._filename != filename]
 
             for func, handler in list(bot.threads.iteritems()):
@@ -107,7 +105,7 @@ def reload(init=False):
                 if hasattr(obj, '_hook'):  # check for magic
                     if obj._thread:
                         bot.threads[obj] = Handler(obj)
-                        
+
                     for type, data in obj._hook:
                         bot.plugs[type] += [data]
 
@@ -141,7 +139,7 @@ def reload(init=False):
         if bot.commands:
             # hack to make commands with multiple aliases
             # print nicely
-            
+
             print '    command:'
             commands = collections.defaultdict(list)
 
@@ -149,11 +147,11 @@ def reload(init=False):
                 commands[make_signature(func)].append(name)
 
             for sig, names in sorted(commands.iteritems()):
-                names.sort(key=lambda x: (-len(x), x)) # long names first
+                names.sort(key=lambda x: (-len(x), x))  # long names first
                 out = ' ' * 6 + '%s:%s:%s' % sig
                 out += ' ' * (50 - len(out)) + ', '.join(names)
                 print out
-        
+
         for kind, plugs in sorted(bot.plugs.iteritems()):
             if kind == 'command':
                 continue

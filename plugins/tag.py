@@ -24,20 +24,20 @@ def add_tag(db, chan, nick, subject):
                        (nick, chan, subject)).fetchall()
     if match:
         return 'already tagged'
-    
+
     db.execute('replace into tag(chan, subject, nick) values(?,?,?)',
                (chan, subject, nick))
     db.commit()
 
     return 'tag added'
-    
+
 
 def delete_tag(db, chan, nick, del_tag):
     count = db.execute('delete from tag where lower(nick)=lower(?) and'
                        ' chan=? and lower(subject)=lower(?)',
                        (nick, chan, del_tag)).rowcount
     db.commit()
-        
+
     if count:
         return 'deleted'
     else:
@@ -69,7 +69,7 @@ def get_nicks_by_tag(db, chan, subject):
     nicks = db.execute("select nick from tag where lower(subject)=lower(?)"
                        " and chan=?"
                        " order by lower(nick)", (subject, chan)).fetchall()
-    
+
     nicks = [munge(x[0], 3) for x in nicks]
     if not nicks:
         return 'tag not found'
@@ -108,9 +108,9 @@ def tag(inp, chan='', db=None):
         if not tags:
             return get_nicks_by_tag(db, chan, inp)
         else:
-            return 'tags for "%s": ' % munge(inp, 3) + ', '.join(
+            return 'tags for "%s": ' % munge(inp, 1) + ', '.join(
                 tag[0] for tag in tags)
-        
+
 
 character_replacements = {
     'a': 'ä',

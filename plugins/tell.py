@@ -36,7 +36,8 @@ def tellinput(paraml, input=None, db=None, bot=None):
         user_from, message, time, chan = tells[0]
         reltime = timesince.timesince(time)
 
-        reply = "%s said %s ago in %s: %s" % (user_from, reltime, chan, message)
+        reply = "%s said %s ago in %s: %s" % (user_from, reltime, chan, 
+                                              message)
         if len(tells) > 1:
             reply += " (+%d more, .showtells to view)" % (len(tells) - 1)
 

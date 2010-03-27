@@ -17,7 +17,7 @@ class Input(dict):
             conn.msg(chan, msg)
 
         def reply(msg):
-            if chan == nick: # PMs don't need prefixes
+            if chan == nick:  # PMs don't need prefixes
                 conn.msg(chan, msg)
             else:
                 conn.msg(chan, nick + ': ' + msg)
@@ -68,7 +68,7 @@ def do_sieve(sieve, bot, input, func, type, args):
         traceback.print_exc()
         return None
 
-    
+
 class Handler(object):
     '''Runs plugins in their own threads (ensures order)'''
     def __init__(self, func):
@@ -106,12 +106,12 @@ def dispatch(input, kind, func, args):
         input = do_sieve(sieve, bot, input, func, kind, args)
         if input == None:
             return
-    
+
     if func._thread:
         bot.threads[func].put(input)
     else:
         thread.start_new_thread(run, (func, input))
-        
+
 
 def main(conn, out):
     inp = Input(conn, *out)
@@ -120,14 +120,13 @@ def main(conn, out):
     for func, args in bot.events[inp.command] + bot.events['*']:
         dispatch(Input(conn, *out), "event", func, args)
 
-
     if inp.command == 'PRIVMSG':
         # COMMANDS
-        if inp.chan == inp.nick: # private message, no command prefix
+        if inp.chan == inp.nick:  # private message, no command prefix
             prefix = r'^(?:[.!]?|'
         else:
             prefix = r'^(?:[.!]|'
-            
+
         command_re = prefix + inp.conn.nick
         command_re += r'[:,]*\s+)(\w+)(?:$|\s+)(.*)'
 
@@ -139,10 +138,10 @@ def main(conn, out):
                 input = Input(conn, *out)
                 input.inp_unstripped = m.group(2)
                 input.inp = m.group(2).strip()
-                
+
                 func, args = bot.commands[command]
                 dispatch(input, "command", func, args)
-                
+
         # REGEXES
         for func, args in bot.plugs['regex']:
             m = args['re'].search(inp.lastparam)
