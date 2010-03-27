@@ -73,7 +73,7 @@ def get_nicks_by_tag(db, chan, subject):
     nicks = [munge(x[0], 3) for x in nicks]
     if not nicks:
         return 'tag not found'
-    return 'nicks tagged %r: ' % subject + ', '.join(nicks)
+    return 'nicks tagged "%s": ' % subject + ', '.join(nicks)
 
 
 @hook.command
