@@ -70,7 +70,7 @@ def get_nicks_by_tag(db, chan, subject):
                        " and chan=?"
                        " order by lower(nick)", (subject, chan)).fetchall()
 
-    nicks = [munge(x[0], 3) for x in nicks]
+    nicks = [munge(x[0], 1) for x in nicks]
     if not nicks:
         return 'tag not found'
     return 'nicks tagged "%s": ' % subject + ', '.join(nicks)

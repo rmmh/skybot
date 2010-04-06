@@ -1,3 +1,5 @@
+import re
+
 from util import hook
 
 
@@ -17,5 +19,10 @@ def sieve_suite(bot, input, func, kind, args):
             denied_channels = map(unicode.lower, acl['allow-except'])
             if input.chan.lower() in denied_channels:
                 return None
+
+    fn = re.match(r'^plugins.(.+).py$', func._filename)
+    disabled = bot.config.get('disabled_plugins', {})
+    if fn and fn.group(1).lower() in disabled:
+        return None
 
     return input
