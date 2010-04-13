@@ -44,11 +44,11 @@ def tellinput(paraml, input=None, db=None, bot=None):
         db.execute("delete from tell where user_to=lower(?) and message=?",
                      (input.nick, message))
         db.commit()
-        input.pm(reply)
+        input.notice(reply)
 
 
 @hook.command
-def showtells(inp, nick='', chan='', pm=None, db=None):
+def showtells(inp, nick='', chan='', notice=None, db=None):
     ".showtells -- view all pending tell messages (sent in PM)."
 
     db_init(db)
@@ -56,13 +56,13 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
     tells = get_tells(db, nick)
 
     if not tells:
-        pm("You have no pending tells.")
+        notice("You have no pending tells.")
         return
 
     for tell in tells:
         user_from, message, time, chan = tell
         reltime = timesince.timesince(time)
-        pm("%s said %s ago in %s: %s" % (user_from, reltime, chan, message))
+        notice("%s said %s ago in %s: %s" % (user_from, reltime, chan, message))
 
     db.execute("delete from tell where user_to=lower(?)",
                   (nick,))

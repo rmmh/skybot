@@ -24,11 +24,15 @@ class Input(dict):
 
         def pm(msg):
             conn.msg(nick, msg)
+        
+        def notice(msg):
+            conn.cmd('NOTICE', [nick, msg])
 
         dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
                     params=params, nick=nick, user=user, host=host,
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
-                    say=say, reply=reply, pm=pm, bot=bot, lastparam=paraml[-1])
+                    notice=notice, say=say, reply=reply, pm=pm, bot=bot, 
+                    lastparam=paraml[-1])
 
     # make dict keys accessible as attributes
     def __getattr__(self, key):
