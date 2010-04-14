@@ -1,4 +1,6 @@
+import re
 import socket
+import subprocess
 import time
 
 from util import hook
@@ -39,3 +41,14 @@ def onjoin(paraml, conn=None):
     for channel in conn.channels:
         conn.join(channel)
         time.sleep(1)  # don't flood JOINs
+
+
+@hook.regex(r'^\x01VERSION\x01$')
+def version(inp, notice=None):
+    p = subprocess.Popen(['hg', 'id', '-n'], stdout=subprocess.PIPE)
+    stdout, _ = p.communicate()
+    p.wait()
+
+    ret = 'r' + stdout[:-2]
+    notice('\x01VERSION skybot %s - http://bitbucket.org/Scaevolus/'
+           'skybot/\x01' % ret)
