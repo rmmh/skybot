@@ -28,20 +28,20 @@ def tf(inp):
     raw_data = urllib.urlopen(url).read().decode('utf-8')
 
     try:
-        inv = json.JSONDecoder().decode(raw_data)
+        inv = json.loads(raw_data)
     except ValueError:
         return '%s is not a valid profile' % inp
 
     dropped,dhats,hats = 0,0,0
-    for item in inv:
-        defindex = int(inv[item]['defindex'])
-        if inv[item]['inventory'] == 0:
-            if 47<=defindex<=55 or 94<=defindex<=126 or 134<=defindex<=152:
-                dhats += 1
+    for item, data in inv.iteritems():
+        ind = int(data['defindex'])
+        if data['inventory'] == 0:
+            if 47<=ind<=55 or 94<=ind<=126 or 134<=ind<=152:
+                dhats+=1
             else:
-                dropped += 1
+                dropped+=1
         else:
-            if 47<=defindex<=55 or 94<=defindex<=126 or 134<=defindex<=152:
-                hats += 1
+            if 47<=ind<=55 or 94<=ind<=126 or 134<=ind<=152:
+                hats+=1
 
     return '%s has had %s items and %s hats drop (%s total hats)' % (inp,dropped,dhats,dhats+hats)
