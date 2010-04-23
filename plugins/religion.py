@@ -25,11 +25,10 @@ def bible(inp):
 
     return text
 
-## Koran look-up plugin by Ghetto Wizard
 
 @hook.command('allah')
 @hook.command
-def koran(inp):
+def koran(inp):  # Koran look-up plugin by Ghetto Wizard
     ".koran <chapter.verse> -- gets <chapter.verse> from the Koran"
 
     if not inp:
@@ -38,7 +37,7 @@ def koran(inp):
     url = 'http://quod.lib.umich.edu/cgi/k/koran/koran-idx?type=simple'
 
     results = http.get_html(url, q1=inp).xpath('//li')
-    
+
     if not results:
         return 'No results for ' + inp
 

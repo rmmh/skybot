@@ -1,6 +1,6 @@
 # tf.py: written by ipsum
 #
-# This skybot plugin retreives the number of items 
+# This skybot plugin retreives the number of items
 # a given user has waiting from idling in Team Fortress 2.
 
 from util import hook, http
@@ -13,10 +13,10 @@ def tf(inp):
 
     if not inp:
         return tf.__doc__
-        
-    if inp.isdigit(): 
+
+    if inp.isdigit():
         link = 'profiles'
-    else: 
+    else:
         link = 'id'
 
     url = 'http://steamcommunity.com/%s/%s/tfitems?json=1' % \
@@ -27,7 +27,7 @@ def tf(inp):
     except ValueError:
         return '%s is not a valid profile' % inp
 
-    dropped,dhats,hats = 0,0,0
+    dropped, dhats, hats = 0, 0, 0
     for item, data in inv.iteritems():
         ind = int(data['defindex'])
         if data['inventory'] == 0:

@@ -33,7 +33,7 @@ def get_json(*args, **kwargs):
     return json.loads(get(*args, **kwargs))
 
 
-def open(url, query_params={}, user_agent=user_agent, post_data=None, 
+def open(url, query_params={}, user_agent=user_agent, post_data=None,
          get_method=None, **kwargs):
     query_params.update(kwargs)
 
@@ -47,7 +47,7 @@ def open(url, query_params={}, user_agent=user_agent, post_data=None,
     request.add_header('User-Agent', user_agent)
     return urllib2.build_opener().open(request)
 
-    
+
 def prepare_url(url, queries):
     if queries:
         scheme, netloc, path, query, fragment = urlparse.urlsplit(url)
