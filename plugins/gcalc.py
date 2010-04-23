@@ -1,7 +1,6 @@
-import urllib2
 import re
 
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -10,10 +9,7 @@ def calc(inp):
     if not inp:
         return calc.__doc__
 
-    url = "http://www.google.com/search?q="
-    request = urllib2.Request(url + urllib2.quote(inp, ''))
-    request.add_header('User-Agent', 'skybot')
-    page = urllib2.build_opener().open(request).read()
+    page = http.get('http://www.google.com/search', q=inp)
 
     # ugh, scraping HTML with regexes
     m = re.search(r'<h2 class=r style="font-size:138%"><b>(.*?)</b>', page)

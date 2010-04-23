@@ -1,15 +1,13 @@
 '''Searches wikipedia and returns first sentence of article
 Scaevolus 2009'''
 
-import urllib2
-from lxml import etree
 import re
 
-from util import hook
+from util import hook, http
 
 
 api_prefix = "http://en.wikipedia.org/w/api.php"
-search_url = api_prefix + "?action=opensearch&search=%s&format=xml"
+search_url = api_prefix + "?action=opensearch&format=xml"
 
 paren_re = re.compile('\s*\(.*\)$')
 
@@ -23,14 +21,7 @@ def wiki(inp):
     if not inp:
         return wiki.__doc__
 
-    q = search_url % (urllib2.quote(inp, safe=''))
-
-    request = urllib2.Request(q)
-    request.add_header('User-Agent',
-                'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot/')
-    opener = urllib2.build_opener()
-    xml = opener.open(request).read()
-    x = etree.fromstring(xml)
+    x = http.get_xml(search_url, search=inp)
 
     ns = '{http://opensearch.org/searchsuggest2}'
     items = x.findall(ns + 'Section/' + ns + 'Item')
@@ -60,4 +51,10 @@ def wiki(inp):
     if len(desc) > 300:
         desc = desc[:300] + '...'
 
-    return '%s -- %s' % (desc, url)
+    return '%s -- %s' % (desc, http.quote(url, ':/'))
+
+
+@hook.command
+def dict(inp):
+    ".dict/.define <word> -- gets definition of <word> from Wiktionary"
+    pass

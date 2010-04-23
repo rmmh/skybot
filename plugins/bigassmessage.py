@@ -1,8 +1,4 @@
-import urllib
-
-from lxml import etree
-
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -22,9 +18,7 @@ def bam(inp):
             params['theStyle'] = style
             params['theMessage'] = message
 
-    url = host + path + urllib.urlencode(params)
-
-    response = etree.parse(url)
+    response = http.get_xml(host + path, params)
     status = response.xpath('//status/text()')[0]
     if status == 'ok':
         return host + response.xpath('//msgid/text()')[0]

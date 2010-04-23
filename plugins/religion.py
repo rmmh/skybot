@@ -1,8 +1,4 @@
-import urllib
-
-from lxml import html
-
-from util import hook
+from util import hook, http
 
 
 @hook.command('god')
@@ -13,13 +9,14 @@ def bible(inp):
     if not inp:
         return bible.__doc__
 
-    base_url = 'http://www.esvapi.org/v2/rest/passageQuery?key=IP&' \
-        'output-format=plain-text&include-heading-horizontal-lines&' \
-        'include-headings=false&include-passage-horizontal-lines=false&' \
-        'include-passage-references=false&include-short-copyright=false&' \
-        'include-footnotes=false&line-length=0&passage='
+    base_url = ('http://www.esvapi.org/v2/rest/passageQuery?key=IP&'
+        'output-format=plain-text&include-heading-horizontal-lines&'
+        'include-headings=false&include-passage-horizontal-lines=false&'
+        'include-passage-references=false&include-short-copyright=false&'
+        'include-footnotes=false&line-length=0&'
+        'include-heading-horizontal-lines=false')
 
-    text = urllib.urlopen(base_url + urllib.quote(inp)).read()
+    text = http.get(base_url, passage=inp)
 
     text = ' '.join(text.split())
 
@@ -38,11 +35,9 @@ def koran(inp):
     if not inp:
         return koran.__doc__
 
-    base_url = 'http://quod.lib.umich.edu/cgi/k/koran/koran-idx?type=simple&q1='
+    url = 'http://quod.lib.umich.edu/cgi/k/koran/koran-idx?type=simple'
 
-    raw_data = urllib.urlopen(base_url + urllib.quote(inp, '')).read()
-    
-    results = html.fromstring(raw_data).xpath('//li')
+    results = http.get_html(url, q1=inp).xpath('//li')
     
     if not results:
         return 'No results for ' + inp

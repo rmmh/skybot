@@ -1,16 +1,9 @@
-import re
-import urllib2
-
-from util import hook
+from util import hook, http
 
 
-tinyurl_re = (r'http://(?:www\.)?tinyurl.com/([A-Za-z0-9\-]+)',
-                re.IGNORECASE)
-
-
-@hook.regex(*tinyurl_re)
+@hook.regex(r'(?i)http://(?:www\.)?tinyurl.com/([A-Za-z0-9\-]+)')
 def tinyurl(match):
     try:
-        return urllib2.urlopen(match.group()).url.strip()
-    except urllib2.URLError:
+        return http.open(match.group()).url.strip()
+    except http.URLError, e:
         pass

@@ -1,7 +1,6 @@
-import urllib2
 import urlparse
 
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -18,10 +17,7 @@ def down(inp):
 
     # http://mail.python.org/pipermail/python-list/2006-December/589854.html
     try:
-        request = urllib2.Request(inp)
-        request.get_method = lambda: "HEAD"
-        http_file = urllib2.urlopen(request)
-        head = http_file.read()
+        http.get(inp, get_method='HEAD')
         return inp + ' seems to be up'
-    except urllib2.URLError:
+    except http.URLError:
         return inp + ' seems to be down'

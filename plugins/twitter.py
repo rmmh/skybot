@@ -3,13 +3,11 @@ twitter.py: written by Scaevolus 2009
 retrieves most recent tweets
 """
 
-import re
 import random
-import urllib2
-from lxml import etree
+import re
 from time import strptime, strftime
 
-from util import hook
+from util import hook, http
 
 
 def unescape_xml(string):
@@ -89,8 +87,8 @@ def twitter(inp):
         return 'error: invalid request'
 
     try:
-        xml = urllib2.urlopen(url).read()
-    except urllib2.HTTPError, e:
+        tweet = http.get_xml(url)
+    except http.HTTPError, e:
         errors = {400: 'bad request (ratelimited?)',
                 401: 'tweet is private',
                 404: 'invalid user/id',
@@ -102,10 +100,8 @@ def twitter(inp):
         if e.code in errors:
             return 'error: ' + errors[e.code]
         return 'error: unknown'
-    except urllib2.URLerror, e:
+    except http.URLerror, e:
         return 'error: timeout'
-
-    tweet = etree.fromstring(xml)
 
     if searching_hashtag:
         ns = '{http://www.w3.org/2005/Atom}'

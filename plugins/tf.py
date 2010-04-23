@@ -3,10 +3,7 @@
 # This skybot plugin retreives the number of items 
 # a given user has waiting from idling in Team Fortress 2.
 
-import json
-import urllib
-
-from util import hook
+from util import hook, http
 
 
 @hook.command('hats')
@@ -17,14 +14,16 @@ def tf(inp):
     if not inp:
         return tf.__doc__
         
-    if inp.isdigit(): link = 'profiles'
-    else: link = 'id'
+    if inp.isdigit(): 
+        link = 'profiles'
+    else: 
+        link = 'id'
+
     url = 'http://steamcommunity.com/%s/%s/tfitems?json=1' % \
-        (link,urllib.quote(inp, safe=''))
-    raw_data = urllib.urlopen(url).read().decode('utf-8')
+        (link, http.quote(inp.encode('utf8'), safe=''))
 
     try:
-        inv = json.loads(raw_data)
+        inv = http.get_json(url)
     except ValueError:
         return '%s is not a valid profile' % inp
 
@@ -41,4 +40,4 @@ def tf(inp):
                 hats += 1
 
     return '%s has had %s items and %s hats drop (%s total hats)' %  \
-        (inp,dropped,dhats,dhats+hats)
+        (inp, dropped, dhats, dhats + hats)

@@ -1,9 +1,6 @@
 "weather, thanks to google"
 
-from lxml import etree
-import urllib
-
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -25,9 +22,8 @@ def weather(inp, nick='', server='', reply=None, db=None):
             return weather.__doc__
         loc = loc[0]
 
-    data = urllib.urlencode({'weather': loc.encode('utf-8')})
-    url = 'http://www.google.com/ig/api?' + data
-    w = etree.parse(url).find('weather')
+    w = http.get_xml('http://www.google.com/ig/api', weather=loc)
+    w = w.find('weather')
 
     if w.find('problem_cause') is not None:
         return "Couldn't fetch weather data for '%s', try using a zip or " \

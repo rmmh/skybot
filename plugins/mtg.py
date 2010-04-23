@@ -1,18 +1,21 @@
-from lxml import html
 import re
-import urllib2
 
-from util import hook
+from lxml import html
+
+from util import hook, http
 
 
 @hook.command
 def mtg(inp):
     ".mtg <name> -- gets information about Magic the Gathering card <name>"
-    url = 'http://magiccards.info/query.php?cardname='
-    url += urllib2.quote(inp, safe='')
-    h = html.parse(url)
 
-    name = h.find('/body/table/tr/td/span/a')
+    if not inp:
+        return mtg.__doc__
+
+    url = 'http://magiccards.info/query?v=card&s=cname'
+    h = http.get_html(url, q=inp)
+
+    name = h.find('body/table/tr/td/span/a')
     if name is None:
         return "no cards found"
     card = name.getparent().getparent().getparent()
@@ -37,7 +40,7 @@ def mtg(inp):
                                           rarity_abbrevs.get(x[1], x[1]))
                                           for x in printings)
 
-    name.make_links_absolute()
+    name.make_links_absolute(base_url=url)
     link = name.attrib['href']
     name = name.text_content().strip()
     type = type.strip()

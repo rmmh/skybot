@@ -1,11 +1,8 @@
-import json
 import locale
 import re
 import time
-import urllib2
 
-from util import hook
-from urllib import quote_plus
+from util import hook, http
 
 
 locale.setlocale(locale.LC_ALL, '')
@@ -15,12 +12,12 @@ youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
 
 base_url = 'http://gdata.youtube.com/feeds/api/'
 url = base_url + 'videos/%s?v=2&alt=jsonc'
-search_api_url = base_url + 'videos?v=2&alt=jsonc&max-results=1&q=%s'
+search_api_url = base_url + 'videos?v=2&alt=jsonc&max-results=1'
 video_url = "http://youtube.com/watch?v=%s"
 
 
 def get_video_description(vid_id):
-    j = json.load(urllib2.urlopen(url % vid_id))
+    j = http.get_json(url % vid_id)
 
     if j.get('error'):
         return
@@ -67,8 +64,7 @@ def youtube(inp):
     if not inp:
         return youtube.__doc__
 
-    inp = quote_plus(inp)
-    j = json.load(urllib2.urlopen(search_api_url % (inp)))
+    j = http.get_json(search_api_url, q=inp)
 
     if 'error' in j:
         return 'error performing search'

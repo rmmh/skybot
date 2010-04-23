@@ -1,10 +1,8 @@
-import random
-import urllib
-import urllib2
-import re
 import json
+import random
+import re
 
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -23,8 +21,7 @@ def suggest(inp, inp_unstripped=''):
     else:
         num = 0
 
-    url = 'http://google.com/complete/search?q=' + urllib.quote(inp, safe='')
-    page = urllib2.urlopen(url).read()
+    page = http.get('http://google.com/complete/search', q=inp)
     page_json = page.split('(', 1)[1][:-1]
     suggestions = json.loads(page_json)[1]
     if not suggestions:

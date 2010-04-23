@@ -1,9 +1,6 @@
 import re
-import urllib2
 
-from lxml import html
-
-from util import hook
+from util import hook, http
 
 
 @hook.command
@@ -15,9 +12,9 @@ def wolframalpha(inp):
     if not inp:
         return wolframalpha.__doc__
 
-    url = "http://www.wolframalpha.com/input/?i=%s&asynchronous=false"
+    url = "http://www.wolframalpha.com/input/?asynchronous=false"
 
-    h = html.parse(url % urllib2.quote(inp, safe=''))
+    h = http.get_html(url, i=inp)
 
     pods = h.xpath("//div[@class='pod ']")
 
