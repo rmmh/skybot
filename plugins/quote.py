@@ -40,7 +40,7 @@ def quote(inp, nick='', chan='', db=None):
         "primary key (chan, nick, msg))")
     db.commit()
 
-    add = re.match(r"add\W+(\S+?)>?\s+(.*)", inp, re.I)
+    add = re.match(r"add[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
     retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?$", inp)
 
     if add:
