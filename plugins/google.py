@@ -1,7 +1,5 @@
 import random
 
-from lxml import html
-
 from util import hook, http
 
 
@@ -43,7 +41,7 @@ def google(inp):
 
     result = parsed['responseData']['results'][0]
 
-    title, content = map(lambda x: html.fromstring(x).text_content(),
+    title, content = map(lambda x: http.html.fromstring(x).text_content(),
             (result['titleNoFormatting'], result['content']))
 
     out = '%s -- \x02%s\x02: "%s"' % (result['unescapedUrl'], title, content)

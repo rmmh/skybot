@@ -1,7 +1,5 @@
 import re
 
-from lxml import html
-
 from util import hook, http
 
 
@@ -23,9 +21,9 @@ def mtg(inp):
     type = card.find('td/p').text.replace('\n', '')
 
     # this is ugly
-    text = html.tostring(card.xpath("//p[@class='ctext']/b")[0])
+    text = http.html.tostring(card.xpath("//p[@class='ctext']/b")[0])
     text = text.replace('<br>', '$')
-    text = html.fromstring(text).text_content()
+    text = http.html.fromstring(text).text_content()
     text = re.sub(r'(\w+\s*)\$+(\s*\w+)', r'\1. \2', text)
     text = text.replace('$', ' ')
     text = re.sub(r'\(.*?\)', '', text)  # strip parenthetical explanations

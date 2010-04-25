@@ -52,9 +52,3 @@ def wiki(inp):
         desc = desc[:300] + '...'
 
     return '%s -- %s' % (desc, http.quote(url, ':/'))
-
-
-@hook.command
-def dict(inp):
-    ".dict/.define <word> -- gets definition of <word> from Wiktionary"
-    pass

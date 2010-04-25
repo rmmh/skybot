@@ -8,7 +8,7 @@ import urlparse
 from urllib import quote, quote_plus
 from urllib2 import HTTPError, URLError
 
-import lxml
+from lxml import etree, html
 
 user_agent = 'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot'
 
@@ -22,11 +22,11 @@ def get(*args, **kwargs):
 
 
 def get_html(*args, **kwargs):
-    return lxml.html.fromstring(get(*args, **kwargs))
+    return html.fromstring(get(*args, **kwargs))
 
 
 def get_xml(*args, **kwargs):
-    return lxml.etree.fromstring(get(*args, **kwargs))
+    return etree.fromstring(get(*args, **kwargs))
 
 
 def get_json(*args, **kwargs):
