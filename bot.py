@@ -25,6 +25,10 @@ eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
     os.path.join('core', 'reload.py'), 'exec'))
 reload(init=True)
 
+config()
+if not hasattr(bot, 'config'):
+    exit()
+
 print 'Connecting to IRC'
 
 bot.conns = {}
@@ -39,7 +43,7 @@ try:
             bot.conns[name] = IRC(conf['server'], conf['nick'], conf=conf,
                     port=conf.get('port', 6667), channels=conf['channels'])
 except Exception, e:
-    print 'ERROR: malformed config file', Exception, e
+    print 'ERROR: malformed config file', e
     sys.exit()
 
 bot.persist_dir = os.path.abspath('persist')

@@ -7,11 +7,8 @@ re_lineends = re.compile(r'[\r\n]*')
 
 
 @hook.command
-def py(inp):
-    ".py <prog> -- executes python code <prog>"
-
-    if not inp:
-        return py.__doc__
+def python(inp):
+    ".python <prog> -- executes python code <prog>"
 
     res = http.get("http://eval.appspot.com/eval", statement=inp).splitlines()
 

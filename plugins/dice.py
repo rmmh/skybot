@@ -30,13 +30,11 @@ def nrolls(count, n):
                 (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
 
 
-@hook.command
 @hook.command('roll')
+@hook.command
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
-    if not inp:
-        return dice.__doc__
 
     spec = whitespace_re.sub('', inp)
     if not valid_diceroll_re.match(spec):

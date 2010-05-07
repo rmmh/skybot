@@ -12,9 +12,7 @@ ed_url = "http://encyclopediadramatica.com/"
 def drama(inp):
     '''.drama <phrase> -- gets first paragraph of Encyclopedia Dramatica ''' \
     '''article on <phrase>'''
-    if not inp:
-        return drama.__doc__
-
+    
     j = http.get_json(api_url, search=inp)
     if not j[1]:
         return 'no results found'

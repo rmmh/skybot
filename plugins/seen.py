@@ -26,9 +26,6 @@ def seeninput(paraml, input=None, db=None, bot=None):
 def seen(inp, nick='', chan='', db=None):
     ".seen <nick> -- Tell when a nickname was last in active in irc"
 
-    if not inp:
-        return seen.__doc__
-
     if inp.lower() == nick.lower():
         return "Have you looked in a mirror lately?"
 

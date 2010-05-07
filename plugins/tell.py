@@ -47,7 +47,7 @@ def tellinput(paraml, input=None, db=None, bot=None):
         input.notice(reply)
 
 
-@hook.command
+@hook.command(autohelp=False)
 def showtells(inp, nick='', chan='', notice=None, db=None):
     ".showtells -- view all pending tell messages (sent in PM)."
 
@@ -75,7 +75,7 @@ def tell(inp, nick='', chan='', db=None):
 
     query = inp.split(' ', 1)
 
-    if not inp or len(query) != 2:
+    if len(query) != 2:
         return tell.__doc__
 
     user_to = query[0].lower()

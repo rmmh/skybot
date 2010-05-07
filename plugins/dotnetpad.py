@@ -47,18 +47,12 @@ def dotnetpad(lang, code, timeout=10):
 def fs(inp):
     ".fs -- post a F# code snippet to dotnetpad.net and print the results"
 
-    if not inp:
-        return fs.__doc__
-
     return dotnetpad('fsharp', inp)
 
 
 @hook.command
 def cs(snippet):
     ".cs -- post a C# code snippet to dotnetpad.net and print the results"
-
-    if not snippet:
-        return cs.__doc__
 
     file_template = ('using System; '
                      'using System.Linq; '

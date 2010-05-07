@@ -12,8 +12,6 @@ def api_get(kind, query):
 @hook.command
 def gis(inp):
     '''.gis <term> -- returns first google image result (safesearch off)'''
-    if not inp:
-        return gis.__doc__
 
     parsed = api_get('images', inp)
     if not 200 <= parsed['responseStatus'] < 300:
@@ -25,12 +23,10 @@ def gis(inp):
             ['unescapedUrl']  # squares is dumb
 
 
-@hook.command
 @hook.command('g')
+@hook.command
 def google(inp):
     '''.g/.google <query> -- returns first google search result'''
-    if not inp:
-        return google.__doc__
 
     parsed = api_get('web', inp)
     if not 200 <= parsed['responseStatus'] < 300:

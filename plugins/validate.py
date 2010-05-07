@@ -7,14 +7,9 @@ by Vladi
 from util import hook, http
 
 
-@hook.command('val')
-@hook.command('valid')
 @hook.command
 def validate(inp):
-    ".val/.valid/.validate <url> -- runs url through w3c markup validator"
-
-    if not inp:
-        return validate.__doc__
+    ".validate <url> -- runs url through w3c markup validator"
 
     if not inp.startswith('http://'):
         inp = 'http://' + inp

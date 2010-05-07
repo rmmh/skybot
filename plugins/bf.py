@@ -15,9 +15,6 @@ MAX_STEPS = 1000000
 def bf(inp):
     ".bf <prog> -- executes brainfuck program <prog>"""
 
-    if not inp:
-        return bf.__doc__
-
     program = re.sub('[^][<>+-.,]', '', inp)
 
     # create a dict of brackets pairs, for speed later on

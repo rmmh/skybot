@@ -7,9 +7,6 @@ from util import hook, http
 def down(inp):
     '''.down <url> -- checks to see if the site is down'''
 
-    if not inp:
-        return down.__doc__
-
     if 'http://' not in inp:
         inp = 'http://' + inp
 

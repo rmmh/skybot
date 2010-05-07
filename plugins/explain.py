@@ -5,8 +5,6 @@ from pycparser.cdecl import explain_c_declaration
 @hook.command
 def explain(inp):
     ".explain <c expression> -- gives an explanation of C expression"
-    if not inp:
-        return explain.__doc__
 
     inp = inp.encode('utf8', 'ignore')
 

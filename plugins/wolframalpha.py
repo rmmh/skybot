@@ -3,14 +3,11 @@ import re
 from util import hook, http
 
 
-@hook.command
 @hook.command('wa')
+@hook.command
 def wolframalpha(inp):
     ".wa/.wolframalpha <query> -- scrapes Wolfram Alpha's" \
             "results for <query>"
-
-    if not inp:
-        return wolframalpha.__doc__
 
     url = "http://www.wolframalpha.com/input/?asynchronous=false"
 

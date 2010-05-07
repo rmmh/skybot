@@ -46,7 +46,7 @@ def sieve(func):
     return func
 
 
-def command(arg, **kwargs):
+def command(arg=None, **kwargs):
     args = {}
 
     def command_wrapper(func):

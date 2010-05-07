@@ -105,16 +105,31 @@ class Handler(object):
         self.input_queue.put(value)
 
 
-def dispatch(input, kind, func, args):
+def dispatch(input, kind, func, args, autohelp=False):
     for sieve, in bot.plugs['sieve']:
         input = do_sieve(sieve, bot, input, func, kind, args)
         if input == None:
             return
 
+    if autohelp and args.get('autohelp', True) and not input.inp:
+        input.reply(func.__doc__)
+        return
+
     if func._thread:
         bot.threads[func].put(input)
     else:
         thread.start_new_thread(run, (func, input))
+
+
+def match_command(command):
+    commands = list(bot.commands)
+
+    # do some fuzzy matching
+    prefix = filter(lambda x: x.startswith(command), commands)
+    if len(prefix) == 1:
+        return prefix[0]
+    
+    return command
 
 
 def main(conn, out):
@@ -127,9 +142,9 @@ def main(conn, out):
     if inp.command == 'PRIVMSG':
         # COMMANDS
         if inp.chan == inp.nick:  # private message, no command prefix
-            prefix = r'^(?:[.!]?|'
+            prefix = r'^(?:[.]?|'
         else:
-            prefix = r'^(?:[.!]|'
+            prefix = r'^(?:[.]|'
 
         command_re = prefix + inp.conn.nick
         command_re += r'[:,]*\s+)(\w+)(?:$|\s+)(.*)'
@@ -137,14 +152,17 @@ def main(conn, out):
         m = re.match(command_re, inp.lastparam)
 
         if m:
-            command = m.group(1).lower()
+            trigger = m.group(1).lower()
+            command = match_command(trigger)
+
             if command in bot.commands:
                 input = Input(conn, *out)
+                input.trigger = trigger
                 input.inp_unstripped = m.group(2)
-                input.inp = m.group(2).strip()
+                input.inp = input.inp_unstripped.strip()
 
                 func, args = bot.commands[command]
-                dispatch(input, "command", func, args)
+                dispatch(input, "command", func, args, autohelp=True)
 
         # REGEXES
         for func, args in bot.plugs['regex']:

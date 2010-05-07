@@ -100,9 +100,6 @@ def tag(inp, chan='', db=None):
         nick, subject = add.groups()
         return add_tag(db, chan, nick, subject)
     else:
-        if not inp:
-            return tag.__doc__
-
         tags = get_tags_by_nick(db, chan, inp)
 
         if not tags:

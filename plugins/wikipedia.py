@@ -18,9 +18,6 @@ def wiki(inp):
     '''.w/.wiki <phrase> -- gets first sentence of wikipedia ''' \
     '''article on <phrase>'''
 
-    if not inp:
-        return wiki.__doc__
-
     x = http.get_xml(search_url, search=inp)
 
     ns = '{http://opensearch.org/searchsuggest2}'

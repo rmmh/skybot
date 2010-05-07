@@ -6,9 +6,6 @@ from util import hook, http
 def bible(inp):
     ".bible <passage> -- gets <passage> from the Bible (ESV)"
 
-    if not inp:
-        return bible.__doc__
-
     base_url = ('http://www.esvapi.org/v2/rest/passageQuery?key=IP&'
         'output-format=plain-text&include-heading-horizontal-lines&'
         'include-headings=false&include-passage-horizontal-lines=false&'
@@ -30,9 +27,6 @@ def bible(inp):
 @hook.command
 def koran(inp):  # Koran look-up plugin by Ghetto Wizard
     ".koran <chapter.verse> -- gets <chapter.verse> from the Koran"
-
-    if not inp:
-        return koran.__doc__
 
     url = 'http://quod.lib.umich.edu/cgi/k/koran/koran-idx?type=simple'
 

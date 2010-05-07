@@ -6,8 +6,6 @@ from util import hook, http
 @hook.command
 def calc(inp):
     '''.calc <term> -- returns Google Calculator result'''
-    if not inp:
-        return calc.__doc__
 
     page = http.get('http://www.google.com/search', q=inp)
 

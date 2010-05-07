@@ -7,9 +7,7 @@ from util import hook, http
 @hook.command
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
-    if not inp:
-        return urban.__doc__
-
+    
     url = 'http://www.urbandictionary.com/define.php'
     page = http.get_html(url, term=inp)
     words = page.xpath("//td[@class='word']")
@@ -28,13 +26,10 @@ def urban(inp):
 
 
 # define plugin by GhettoWizard & Scaevolus
-@hook.command('dict')
+@hook.command('dictionary')
 @hook.command
 def define(inp):
-    ".define/.dict <word> -- fetches definition of <word>"
-
-    if not inp:
-        return define.__doc__
+    ".define/.dictionary <word> -- fetches definition of <word>"
 
     url = 'http://ninjawords.com/'
 

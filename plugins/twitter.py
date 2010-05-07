@@ -31,9 +31,6 @@ def twitter(inp):
     "tweet from <user>/gets tweet <id>/gets random tweet with #<hashtag>/"\
     "gets replied tweet from @<user>"
 
-    if not inp:
-        return twitter.__doc__
-
     def add_reply(reply_name, reply_id):
         if len(history) == history_max_size:
             history.pop()

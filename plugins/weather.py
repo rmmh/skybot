@@ -3,7 +3,7 @@
 from util import hook, http
 
 
-@hook.command
+@hook.command(autohelp=False)
 def weather(inp, nick='', server='', reply=None, db=None):
     ".weather <location> [dontsave] -- gets weather data from Google"
 

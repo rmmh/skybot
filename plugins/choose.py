@@ -8,9 +8,6 @@ from util import hook
 def choose(inp):
     ".choose <choice1>, <choice2>, ... <choicen> -- makes a decision"
 
-    if not inp:
-        return choose.__doc__
-
     c = re.findall(r'([^,]+)', inp)
     if len(c) == 1:
         c = re.findall(r'(\S+)', inp)

@@ -83,5 +83,3 @@ def quote(inp, nick='', chan='', db=None):
             selected_quote = quotes[num - 1]
 
         return format_quote(selected_quote, num, n_quotes)
-    else:
-        return quote.__doc__

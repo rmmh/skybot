@@ -7,9 +7,6 @@ from util import hook, http
 def mtg(inp):
     ".mtg <name> -- gets information about Magic the Gathering card <name>"
 
-    if not inp:
-        return mtg.__doc__
-
     url = 'http://magiccards.info/query?v=card&s=cname'
     h = http.get_html(url, q=inp)
 

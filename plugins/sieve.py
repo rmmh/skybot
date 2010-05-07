@@ -5,8 +5,15 @@ from util import hook
 
 @hook.sieve
 def sieve_suite(bot, input, func, kind, args):
-    if input.command == 'PRIVMSG' and input.nick.lower()[-3:] == 'bot' \
-            and args.get('ignorebots', True):
+    if input.command == 'PRIVMSG'
+        if input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
+            return None
+        elif input.trigger in bot.config.get('disabled_commands', []):
+            return None
+
+    fn = re.match(r'^plugins.(.+).py$', func._filename)
+    disabled = bot.config.get('disabled_plugins', [])
+    if fn and fn.group(1).lower() in disabled:
         return None
 
     acl = bot.config.get('acls', {}).get(func.__name__)
@@ -19,10 +26,5 @@ def sieve_suite(bot, input, func, kind, args):
             denied_channels = map(unicode.lower, acl['allow-except'])
             if input.chan.lower() in denied_channels:
                 return None
-
-    fn = re.match(r'^plugins.(.+).py$', func._filename)
-    disabled = bot.config.get('disabled_plugins', {})
-    if fn and fn.group(1).lower() in disabled:
-        return None
 
     return input

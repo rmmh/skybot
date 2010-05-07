@@ -11,9 +11,6 @@ from util import hook, http
 def tf(inp):
     """.tf/.hats <SteamID> -- Shows items waiting to be received in TF2."""
 
-    if not inp:
-        return tf.__doc__
-
     if inp.isdigit():
         link = 'profiles'
     else:

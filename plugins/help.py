@@ -1,7 +1,7 @@
 from util import hook
 
 
-@hook.command
+@hook.command(autohelp=False)
 def help(inp, bot=None, pm=None):
     ".help [command] -- gives a list of commands/help for a command"
 

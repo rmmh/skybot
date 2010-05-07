@@ -44,8 +44,6 @@ def remember(inp, nick='', chan='', db=None):
 @hook.command
 def forget(inp, chan='', db=None):
     ".forget <word> -- forgets the mapping that word had"
-    if not inp:
-        return forget.__doc__
 
     db_init(db)
     data = get_memory(db, chan, inp)

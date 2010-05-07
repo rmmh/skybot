@@ -5,9 +5,6 @@ from util import hook, http
 def bam(inp):
     ".bam [basic|magic|pepsi|jprdy] <message> -- creates a big ass message"
 
-    if not inp:
-        return bam.__doc__
-
     host = 'http://bigassmessage.com/'
     path = 'dsx_BAM/boe.php?'
     params = {'action': 'saveMsg', 'theStyle': 'basic', 'theMessage': inp}
