@@ -5,10 +5,12 @@ from util import hook
 
 @hook.sieve
 def sieve_suite(bot, input, func, kind, args):
-    if input.command == 'PRIVMSG'
-        if input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
+    if input.command == 'PRIVMSG' and
+       input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
             return None
-        elif input.trigger in bot.config.get('disabled_commands', []):
+
+    if kind == "command":
+        if input.trigger in bot.config.get('disabled_commands', []):
             return None
 
     fn = re.match(r'^plugins.(.+).py$', func._filename)
