@@ -84,3 +84,27 @@ def define(inp):
         result = re.sub(r'[^A-Za-z]+\.?$', '', result) + ' ...'
 
     return result
+
+
+@hook.command('e')
+@hook.command
+def etymology(inp):
+    ".e/.etymology <word> -- Retrieves the etymology of chosen word"
+
+    url = 'http://www.etymonline.com/index.php'
+
+    h = http.get_html(url, term=inp)
+
+    etym = h.xpath('//dl')
+
+    if not etym:
+        return 'No etymology found for ' + inp
+
+    etym = etym[0].text_content()
+    
+    etym = ' '.join(etym.split())
+
+    if len(etym) > 400:
+        etym = etym[:etym.rfind(' ', 0, 400)] + ' ...'
+
+    return etym
