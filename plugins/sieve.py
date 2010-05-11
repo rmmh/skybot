@@ -5,7 +5,7 @@ from util import hook
 
 @hook.sieve
 def sieve_suite(bot, input, func, kind, args):
-    if input.command == 'PRIVMSG' and
+    if input.command == 'PRIVMSG' and \
        input.nick.lower()[-3:] == 'bot' and args.get('ignorebots', True):
             return None
 
