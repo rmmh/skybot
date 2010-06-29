@@ -111,7 +111,8 @@ def dispatch(input, kind, func, args, autohelp=False):
         if input == None:
             return
 
-    if autohelp and args.get('autohelp', True) and not input.inp:
+    if autohelp and args.get('autohelp', True) and not input.inp \
+      and func.__doc__ is not None:
         input.reply(func.__doc__)
         return
 
