@@ -129,6 +129,8 @@ def match_command(command):
     prefix = filter(lambda x: x.startswith(command), commands)
     if len(prefix) == 1:
         return prefix[0]
+    elif prefix:
+        return prefix
     
     return command
 
@@ -156,7 +158,11 @@ def main(conn, out):
             trigger = m.group(1).lower()
             command = match_command(trigger)
 
-            if command in bot.commands:
+            if isinstance(command, list):  # multiple potential matches
+                input = Input(conn, *out)
+                input.reply("did you mean %s or %s?" % 
+                            (', '.join(command[:-1]), command[-1]))
+            elif command in bot.commands:
                 input = Input(conn, *out)
                 input.trigger = trigger
                 input.inp_unstripped = m.group(2)

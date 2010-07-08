@@ -43,11 +43,11 @@ def define(inp):
         return 'No results for ' + inp
 
     def format_output(show_examples):
-        result = ''
-
-        correction = h.xpath('//span[@class="correct-word"]')
+        result = '%s: ' % h.xpath('//dt[@class="title-word"]/a/text()')[0]
+    
+        correction = h.xpath('//span[@class="correct-word"]/text()')
         if correction:
-            result = 'definition for "%s": ' % correction[0].text
+            result = 'definition for "%s": ' % correction[0]
 
         sections = []
         for section in definition:
