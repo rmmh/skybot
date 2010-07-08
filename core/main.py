@@ -129,7 +129,7 @@ def match_command(command):
     prefix = filter(lambda x: x.startswith(command), commands)
     if len(prefix) == 1:
         return prefix[0]
-    elif prefix:
+    elif prefix and command not in prefix:
         return prefix
     
     return command
