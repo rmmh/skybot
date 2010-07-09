@@ -37,8 +37,14 @@ def google(inp):
 
     result = parsed['responseData']['results'][0]
 
-    title, content = map(lambda x: http.html.fromstring(x).text_content(),
-            (result['titleNoFormatting'], result['content']))
+    
+    title = result['titleNoFormatting']
+    content =  result['content']
+
+    if len(content) == 0:
+       content = "No description available"
+    else:
+       content = http.html.fromstring(content).text_content()
 
     out = '%s -- \x02%s\x02: "%s"' % (result['unescapedUrl'], title, content)
     out = ' '.join(out.split())
