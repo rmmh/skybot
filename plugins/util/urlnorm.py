@@ -30,6 +30,19 @@ default_port = {
     'http': 80,
 }
 
+class Normalizer(object):
+    def __init__(self, regex, normalize_func):
+        self.regex = regex
+        self.normalize = normalize_func
+
+normalizers = ( Normalizer( re.compile(r'(?:https?://)?(?:[a-zA-Z0-9\-]+\.)?(?:amazon|amzn){1}\.(?P<tld>[a-zA-Z\.]{2,})\/(gp/(?:product|offer-listing|customer-media/product-gallery)/|exec/obidos/tg/detail/-/|o/ASIN/|dp/|(?:[A-Za-z0-9\-]+)/dp/)?(?P<ASIN>[0-9A-Za-z]{10})'),
+                            lambda m: r'http://amazon.%s/dp/%s' % (m.group('tld'), m.group('ASIN'))),
+                Normalizer( re.compile(r'.*waffleimages\.com.*/([0-9a-fA-F]{40})'), 
+                            lambda m: r'http://img.waffleimages.com/%s' % m.group(1) ),
+                Normalizer( re.compile(r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)([-_a-z0-9]+)'),
+                            lambda m: r'http://youtube.com/watch?v=%s' % m.group(1) ),
+    )
+
 def normalize(url):
     """Normalize a URL."""
 
@@ -100,5 +113,12 @@ def normalize(url):
         auth+=":"+port
     if url.endswith("#") and query == "" and fragment == "": 
         path += "#"
-    return urlparse.urlunsplit((scheme, auth, path, query, fragment)).replace(
+    normal_url = urlparse.urlunsplit((scheme, auth, path, query, fragment)).replace(
             "http:///", "http://")
+    for norm in normalizers:
+        m = norm.regex.match(normal_url)
+        if m:
+            print 'Normalized %s to %s' % (url, norm.normalize(m))
+            return norm.normalize(m)
+    print 'Normalized %s to %s' % (url, normal_url)
+    return normal_url

@@ -4,7 +4,7 @@ import time
 
 from util import hook, urlnorm, timesince
 
-url_re = r'([a-zA-Z]+://|www\.)[^ ]*'
+url_re = r'([a-zA-Z]+://|www\.)[^ ]+'
 
 expiration_period = 60 * 60 * 24  # 1 day
 
