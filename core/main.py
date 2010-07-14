@@ -25,6 +25,9 @@ class Input(dict):
         def pm(msg):
             conn.msg(nick, msg)
 
+        def me(msg):
+            conn.msg(chan, "\x01%s %s\x01" % ("ACTION", msg))
+
         def notice(msg):
             conn.cmd('NOTICE', [nick, msg])
 
@@ -32,7 +35,7 @@ class Input(dict):
                     params=params, nick=nick, user=user, host=host,
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
                     notice=notice, say=say, reply=reply, pm=pm, bot=bot,
-                    lastparam=paraml[-1])
+                    me=me, lastparam=paraml[-1])
 
     # make dict keys accessible as attributes
     def __getattr__(self, key):
