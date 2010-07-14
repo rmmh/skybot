@@ -118,7 +118,5 @@ def normalize(url):
     for norm in normalizers:
         m = norm.regex.match(normal_url)
         if m:
-            print 'Normalized %s to %s' % (url, norm.normalize(m))
             return norm.normalize(m)
-    print 'Normalized %s to %s' % (url, normal_url)
     return normal_url
