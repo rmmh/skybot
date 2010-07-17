@@ -62,12 +62,12 @@ def cs(snippet):
 
     class_template = ('public class Default '
                       '{'
-                      '    %s '
+                      '    %s \n'
                       '}')
 
     main_template = ('public static void Main(String[] args) '
                      '{'
-                     '    %s '
+                     '    %s \n'
                      '}')
 
     # There are probably better ways to do the following, but I'm feeling lazy
