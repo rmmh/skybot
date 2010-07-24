@@ -5,7 +5,7 @@ import urllib
 import urllib2
 import urlparse
 
-from urllib import quote, quote_plus
+from urllib import quote, quote_plus as _quote_plus
 from urllib2 import HTTPError, URLError
 
 from lxml import etree, html
@@ -67,3 +67,7 @@ def to_utf8(s):
         return s
     else:
         return s.encode('utf8', 'ignore')
+
+
+def quote_plus(s):
+    return _quote_plus(to_utf8(s))
