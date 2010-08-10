@@ -30,4 +30,4 @@ def suggest(inp, inp_unstripped=''):
         out = suggestions[num - 1]
     else:
         out = random.choice(suggestions)
-    return '#%d: %s (%s)' % (int(out[2][0]) + 1, out[0], out[1])
+    return '#%d: %s' % (int(out[2][0]) + 1, out[0])
