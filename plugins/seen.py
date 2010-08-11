@@ -13,7 +13,7 @@ def db_init(db):
 
 
 @hook.singlethread
-@hook.event('PRIVMSG')
+@hook.event('PRIVMSG', ignorebots=False)
 def seeninput(paraml, input=None, db=None, bot=None):
     db_init(db)
     db.execute("insert or replace into seen(name, time, quote, chan)"
