@@ -9,10 +9,10 @@ from util import hook
 
 
 whitespace_re = re.compile(r'\s+')
-valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d\d+)([+-](\d+|\d*d\d+))*$',
+valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d(\d+|F))([+-](\d+|\d*d(\d+|F)))*$',
                                re.I)
-sign_re = re.compile(r'[+-]?(?:\d*d)?\d+', re.I)
-split_re = re.compile(r'([\d+-]*)d?(\d*)', re.I)
+sign_re = re.compile(r'[+-]?(?:\d*d)?(?:\d+|F)', re.I)
+split_re = re.compile(r'([\d+-]*)d?(F|\d*)', re.I)
 
 
 def nrolls(count, n):
@@ -43,10 +43,15 @@ def dice(inp):
     groups = sign_re.findall(spec)
     for roll in groups:
         count, side = split_re.match(roll).groups()
-        if side == "":
-            sum += int(count)
+        count = int(count) if count not in " +-" else 1
+        if side.lower() == "f":
+            if count > 0:
+                sum += nrolls(count, 3) - 2 * count
+            else:
+                sum -= nrolls(count, 3) + 2 * count
+        elif side == "":
+            sum += count
         else:
-            count = int(count) if count not in" +-" else 1
             side = int(side)
             try:
                 if count > 0:
