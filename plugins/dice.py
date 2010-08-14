@@ -9,8 +9,8 @@ from util import hook
 
 
 whitespace_re = re.compile(r'\s+')
-valid_diceroll_re = re.compile(r'^[+-]?(\d+|\d*d(\d+|F))([+-](\d+|\d*d(\d+|F)))*$',
-                               re.I)
+valid_diceroll = r'^([+-]?(\d+|\d*d(\d+|F))([+-](\d+|\d*d(\d+|F)))*)$'
+valid_diceroll_re = re.compile(valid_diceroll, re.I)
 sign_re = re.compile(r'[+-]?(?:\d*d)?(?:\d+|F)', re.I)
 split_re = re.compile(r'([\d+-]*)d?(F|\d*)', re.I)
 
@@ -31,11 +31,15 @@ def nrolls(count, n):
 
 
 @hook.command('roll')
+@hook.regex(valid_diceroll, re.I)
 @hook.command
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
         "D20s, subtract 1D5, add 4"
-
+    try:
+        inp = inp.groups()[0] # try to grab the roll
+    except AttributeError:
+        pass # we got called via hook.command, inp is already the roll
     spec = whitespace_re.sub('', inp)
     if not valid_diceroll_re.match(spec):
         return "Invalid diceroll"
