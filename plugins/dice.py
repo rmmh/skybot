@@ -17,17 +17,19 @@ split_re = re.compile(r'([\d+-]*)d?(F|\d*)', re.I)
 
 def nrolls(count, n):
     "roll an n-sided die count times"
+    if n == "F":
+        return [random.randint(-1,1) for x in xrange(count)]
     if n < 2:  # it's a coin
         if count < 5000:
-            return sum(random.randint(0, 1) for x in xrange(count))
+            return [random.randint(0, 1) for x in xrange(count)]
         else:  # fake it
-            return int(random.normalvariate(.5*count, (.75*count)**.5))
+            return [int(random.normalvariate(.5*count, (.75*count)**.5))]
     else:
         if count < 5000:
-            return sum(random.randint(1, n) for x in xrange(count))
+            return [random.randint(1, n) for x in xrange(count)]
         else:  # fake it
-            return int(random.normalvariate(.5*(1+n)*count,
-                (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))
+            return [int(random.normalvariate(.5*(1+n)*count,
+                (((n+1)*(2*n+1)/6.-(.5*(1+n))**2)*count)**.5))]
 
 
 @hook.command('roll')
@@ -46,26 +48,25 @@ def dice(inp):
     spec = whitespace_re.sub('', inp)
     if not valid_diceroll_re.match(spec):
         return "Invalid diceroll"
-    sum = 0
     groups = sign_re.findall(spec)
+
+    rolls = []
+    bias = 0
     for roll in groups:
         count, side = split_re.match(roll).groups()
         count = int(count) if count not in " +-" else 1
-        if side.lower() == "f":
-            if count > 0:
-                sum += nrolls(count, 3) - 2 * count
-            else:
-                sum -= nrolls(count, 3) + 2 * count
+        if side.lower() == "f": # fudge dice are basically 1d3-2
+                rolls += nrolls(count, "F")
         elif side == "":
-            sum += count
+            bias += count
         else:
             side = int(side)
             try:
                 if count > 0:
-                    sum += nrolls(count, side)
+                    rolls += nrolls(count, side)
                 else:
-                    sum -= nrolls(abs(count), side)
+                    rolls += [-x for x in  nrolls(abs(count), side)]
             except OverflowError:
                 return "Thanks for overflowing a float, jerk >:["
 
-    return "%s: %d" % (desc, sum)
+    return "%s: %d (%s=%s)" % (desc,  sum(rolls)+bias, inp, str(rolls).strip("[]"))
