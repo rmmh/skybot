@@ -44,7 +44,7 @@ def dice(inp):
     except AttributeError:
         pass # we got called via hook.command, inp is already the roll
     if desc == None: (inp, desc) = valid_diceroll_re.match(inp).groups()
-    desc = desc.strip()
+
     spec = whitespace_re.sub('', inp)
     if not valid_diceroll_re.match(spec):
         return "Invalid diceroll"
@@ -69,4 +69,7 @@ def dice(inp):
             except OverflowError:
                 return "Thanks for overflowing a float, jerk >:["
 
-    return "%s: %d (%s=%s)" % (desc,  sum(rolls)+bias, inp, str(rolls).strip("[]"))
+    if desc:
+        return "%s: %d (%s=%s)" % (desc.strip(),  sum(rolls)+bias, inp, str(rolls).strip("[]"))
+    else:
+        return "%d (%s=%s)" % (sum(rolls)+bias, inp, str(rolls).strip("[]"))
