@@ -50,26 +50,38 @@ def dice(inp):
         return "Invalid diceroll"
     groups = sign_re.findall(spec)
 
+    total = 0
     rolls = []
-    bias = 0
+
     for roll in groups:
         count, side = split_re.match(roll).groups()
         count = int(count) if count not in " +-" else 1
-        if side.lower() == "f": # fudge dice are basically 1d3-2
-                rolls += nrolls(count, "F")
+        if side.upper() == "F": # fudge dice are basically 1d3-2
+            for fudge in nrolls(count, "F"):
+                if fudge == 1:
+                    rolls.append("\x033+\x0F")
+                elif fudge == -1:
+                    rolls.append("\x034-\x0F")
+                else:
+                    rolls.append("0")
+                total += fudge
         elif side == "":
-            bias += count
+            total += count
         else:
             side = int(side)
             try:
                 if count > 0:
-                    rolls += nrolls(count, side)
+                    dice = nrolls(count, side)
+                    rolls += map(str, dice)
+                    total += sum(dice)
                 else:
-                    rolls += [-x for x in  nrolls(abs(count), side)]
+                    dice = nrolls(-count, side)
+                    rolls += [str(-x) for x in dice]
+                    total -= sum(dice)
             except OverflowError:
                 return "Thanks for overflowing a float, jerk >:["
 
     if desc:
-        return "%s: %d (%s=%s)" % (desc.strip(),  sum(rolls)+bias, inp, str(rolls).strip("[]"))
+        return "%s: %d (%s=%s)" % (desc.strip(),  total, inp, ", ".join(rolls))
     else:
-        return "%d (%s=%s)" % (sum(rolls)+bias, inp, str(rolls).strip("[]"))
+        return "%d (%s=%s)" % (total, inp, ", ".join(rolls))
