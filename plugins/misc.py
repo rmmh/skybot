@@ -45,10 +45,10 @@ def onjoin(paraml, conn=None):
 
 @hook.regex(r'^\x01VERSION\x01$')
 def version(inp, notice=None):
-    p = subprocess.Popen(['hg', 'id', '-n'], stdout=subprocess.PIPE)
+    p = subprocess.Popen(['git', 'describe', '--always'], stdout=subprocess.PIPE)
     stdout, _ = p.communicate()
     p.wait()
 
-    ret = 'r' + stdout[:-2]
-    notice('\x01VERSION skybot %s - http://bitbucket.org/Scaevolus/'
+    ret = stdout.strip()
+    notice('\x01VERSION skybot %s - http://github.com/rmmh/'
            'skybot/\x01' % ret)
