@@ -44,7 +44,7 @@ def dice(inp):
     except AttributeError:
         pass # we got called via hook.command, inp is already the roll
     if desc == None: (inp, desc) = valid_diceroll_re.match(inp).groups()
-
+    if "d" not in inp: return
     spec = whitespace_re.sub('', inp)
     if not valid_diceroll_re.match(spec):
         return "Invalid diceroll"
