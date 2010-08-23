@@ -9,8 +9,8 @@ class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
                     nick, user, host, paraml, msg):
 
-        chan = paraml[0].lower()
-        if chan == conn.nick:  # is a PM
+        chan = paraml[0]
+        if chan.lower() == conn.nick.lower():  # is a PM
             chan = nick
 
         def say(msg):
