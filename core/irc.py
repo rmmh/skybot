@@ -139,7 +139,7 @@ class IRC(object):
         self.set_nick(self.nick)
         self.cmd("USER",
             [conf.get('user', 'skybot'), "3", "*", conf.get('realname',
-             'Python bot - http://bitbucket.org/Scaevolus/skybot/')])
+                'Python bot - http://github.com/rmmh/skybot')])
 
     def parse_loop(self):
         while True:
