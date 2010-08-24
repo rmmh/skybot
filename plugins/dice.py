@@ -33,7 +33,7 @@ def nrolls(count, n):
 
 
 @hook.command('roll')
-@hook.regex(valid_diceroll, re.I)
+#@hook.regex(valid_diceroll, re.I)
 @hook.command
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \

@@ -12,7 +12,7 @@ def db_init(db):
 
 
 def get_memory(db, chan, word):
-    row = db.execute("select data from memory where chan=lower(?) and word=lower(?)",
+    row = db.execute("select data from memory where chan=? and word=lower(?)",
                       (chan, word)).fetchone()
     if row:
         return row[0]
