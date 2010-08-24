@@ -9,8 +9,8 @@ class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
                     nick, user, host, paraml, msg):
 
-        chan = paraml[0].lower()
-        if chan == conn.nick:  # is a PM
+        chan = paraml[0]
+        if chan.lower() == conn.nick.lower():  # is a PM
             chan = nick
 
         def say(msg):
@@ -24,6 +24,9 @@ class Input(dict):
 
         def pm(msg):
             conn.msg(nick, msg)
+        
+        def set_nick(nick):
+            conn.set_nick(nick)
 
         def me(msg):
             conn.msg(chan, "\x01%s %s\x01" % ("ACTION", msg))
@@ -35,7 +38,7 @@ class Input(dict):
                     params=params, nick=nick, user=user, host=host,
                     paraml=paraml, msg=msg, server=conn.server, chan=chan,
                     notice=notice, say=say, reply=reply, pm=pm, bot=bot,
-                    me=me, lastparam=paraml[-1])
+                    me=me, set_nick=set_nick, lastparam=paraml[-1])
 
     # make dict keys accessible as attributes
     def __getattr__(self, key):
