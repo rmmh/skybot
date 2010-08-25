@@ -1,5 +1,6 @@
 # convenience wrapper for urllib2 & friends
 
+import cookielib
 import json
 import urllib
 import urllib2
@@ -10,11 +11,14 @@ from urllib2 import HTTPError, URLError
 
 from lxml import etree, html
 
-user_agent = 'Skybot/1.0 http://bitbucket.org/Scaevolus/skybot'
+
+user_agent = 'Skybot/1.0 http://github.com/rmmh/skybot'
 
 ua_firefox = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) ' \
     'Gecko/20070725 Firefox/2.0.0.6'
 ua_internetexplorer = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
+
+jar = cookielib.CookieJar()
 
 
 def get(*args, **kwargs):
@@ -34,7 +38,7 @@ def get_json(*args, **kwargs):
 
 
 def open(url, query_params={}, user_agent=user_agent, post_data=None,
-         get_method=None, **kwargs):
+         get_method=None, cookies=False, **kwargs):
     query_params.update(kwargs)
 
     url = prepare_url(url, query_params)
@@ -45,7 +49,13 @@ def open(url, query_params={}, user_agent=user_agent, post_data=None,
         request.get_method = lambda: get_method
 
     request.add_header('User-Agent', user_agent)
-    return urllib2.build_opener().open(request)
+
+    if cookies:
+        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
+    else:
+        opener = urllib2.build_opener()
+
+    return opener.open(request)
 
 
 def prepare_url(url, queries):
