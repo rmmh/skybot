@@ -15,7 +15,7 @@ api_key = "D1EBA6781E2572BB"
 @hook.command
 def tv_next(inp):
     ".tv_next <series> -- get the next episode of <series> from thetvdb.com"
-    
+
     # http://thetvdb.com/wiki/index.php/API:GetSeries
     query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
     series_id = query.xpath('//seriesid/text()')
@@ -34,19 +34,19 @@ def tv_next(inp):
 
     next_eps = []
     today = datetime.date.today()
-    
+
     for episode in reversed(series.xpath('//Episode')):
-        first_aired = episode.findtext("FirstAired")      
+        first_aired = episode.findtext("FirstAired")
         try:
             airdate = datetime.date(*map(int, first_aired.split('-')))
         except (ValueError, TypeError):
             continue
-        
+
         episode_name = episode.findtext("EpisodeName") or "No Title Yet"
         episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
                                       int(episode.findtext("EpisodeNumber")))
         episode_desc = '%s "%s"' % (episode_num, episode_name)
-        
+
         if airdate > today:
             next_eps = ['%s (%s)' % (first_aired, episode_desc)]
         elif airdate == today:
@@ -55,11 +55,12 @@ def tv_next(inp):
             #we're iterating in reverse order with newest episodes last
             #so, as soon as we're past today, break out of loop
             break
-            
+
     if not next_eps:
         return "there are no new episodes scheduled for %s" % series_name
-        
+
     if len(next_eps) == 1:
         return "the next episode of %s airs %s" % (series_name, next_eps[0])
     else:
-        return "the next episodes of %s: %s" % (series_name, ", ".join(next_eps))
+        next_eps = ', '.join(next_eps)
+        return "the next episodes of %s: %s" % (series_name, next_eps)

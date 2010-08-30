@@ -48,7 +48,7 @@ def version(inp, notice=None):
     p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
     stdout, _ = p.communicate()
     p.wait()
-    
+
     revnumber = len(stdout.splitlines())
 
     ret = stdout.split(None, 1)[0]

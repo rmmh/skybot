@@ -4,6 +4,7 @@ from util import hook, http
 thread_re = r"(?i)forums\.somethingawful\.com/\S+threadid=(\d+)"
 showthread = "http://forums.somethingawful.com/showthread.php?noseen=1"
 
+
 def login(user, password):
     http.jar.clear_expired_cookies()
     if any(cookie.domain == 'forums.somethingawful.com' and
@@ -13,7 +14,7 @@ def login(user, password):
             return
         assert("malformed cookie jar")
     http.get("http://forums.somethingawful.com/account.php", cookies=True,
-             post_data="action=login&username=%s&password=%s" % (user, password))
+        post_data="action=login&username=%s&password=%s" % (user, password))
 
 
 @hook.regex(thread_re)
@@ -24,7 +25,7 @@ def forum_link(inp, bot=None):
 
     login(bot.config['sa_user'], bot.config['sa_password'])
 
-    thread = http.get_html(showthread, threadid=inp.group(1), perpage='1', 
+    thread = http.get_html(showthread, threadid=inp.group(1), perpage='1',
                            cookies=True)
 
     breadcrumbs = thread.xpath('//div[@class="breadcrumbs"]//a/text()')
@@ -46,8 +47,8 @@ def forum_link(inp, bot=None):
         num_posts = int(num_posts[0].rsplit('=', 1)[1])
 
     return '\x02%s\x02 > \x02%s\x02 by \x02%s\x02, %s post%s' % (
-            forum_title, thread_title, poster, num_posts, 
-            's' if num_posts > 1 else '') 
+            forum_title, thread_title, poster, num_posts,
+            's' if num_posts > 1 else '')
 
 
 forum_abbrevs = {

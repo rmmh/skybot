@@ -122,7 +122,7 @@ def twitter(inp):
     reply_user = tweet.find(reply_user).text
     if reply_name is not None and (reply_id is not None or
             reply_user is not None):
-        add_reply(reply_name, reply_id if reply_id else -1)
+        add_reply(reply_name, reply_id or -1)
 
     time = strftime('%Y-%m-%d %H:%M:%S',
              strptime(time.text,

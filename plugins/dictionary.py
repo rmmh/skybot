@@ -7,7 +7,7 @@ from util import hook, http
 @hook.command
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
-    
+
     url = 'http://www.urbandictionary.com/define.php'
     page = http.get_html(url, term=inp)
     words = page.xpath("//td[@class='word']")
@@ -44,7 +44,7 @@ def define(inp):
 
     def format_output(show_examples):
         result = '%s: ' % h.xpath('//dt[@class="title-word"]/a/text()')[0]
-    
+
         correction = h.xpath('//span[@class="correct-word"]/text()')
         if correction:
             result = 'definition for "%s": ' % correction[0]
@@ -70,7 +70,7 @@ def define(inp):
         synonyms = h.xpath('//dd[@class="synonyms"]')
         if synonyms:
             result += synonyms[0].text_content()
-    
+
         result = re.sub(r'\s+', ' ', result)
         result = re.sub('\xb0', '', result)
         return result
@@ -101,7 +101,7 @@ def etymology(inp):
         return 'No etymology found for ' + inp
 
     etym = etym[0].text_content()
-    
+
     etym = ' '.join(etym.split())
 
     if len(etym) > 400:

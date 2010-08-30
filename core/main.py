@@ -24,7 +24,7 @@ class Input(dict):
 
         def pm(msg):
             conn.msg(nick, msg)
-        
+
         def set_nick(nick):
             conn.set_nick(nick)
 
@@ -137,7 +137,7 @@ def match_command(command):
         return prefix[0]
     elif prefix and command not in prefix:
         return prefix
-    
+
     return command
 
 
@@ -166,7 +166,7 @@ def main(conn, out):
 
             if isinstance(command, list):  # multiple potential matches
                 input = Input(conn, *out)
-                input.reply("did you mean %s or %s?" % 
+                input.reply("did you mean %s or %s?" %
                             (', '.join(command[:-1]), command[-1]))
             elif command in bot.commands:
                 input = Input(conn, *out)

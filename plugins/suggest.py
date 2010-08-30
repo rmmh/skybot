@@ -8,7 +8,7 @@ from util import hook, http
 @hook.command
 def suggest(inp, inp_unstripped=''):
     ".suggest [#n] <phrase> -- gets a random/the nth suggested google search"
-    
+
     inp = inp_unstripped
     m = re.match('^#(\d+) (.+)$', inp)
     if m:
