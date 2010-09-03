@@ -4,12 +4,13 @@ modified by rmmh 2010
 """
 
 import datetime
+from urllib2 import URLError
 
 from util import hook, http
 
 
 base_url = "http://thetvdb.com/api/"
-api_key = "D1EBA6781E2572BB"
+api_key = "469B73127CA0C411"
 
 
 @hook.command
@@ -17,7 +18,12 @@ def tv_next(inp):
     ".tv_next <series> -- get the next episode of <series> from thetvdb.com"
 
     # http://thetvdb.com/wiki/index.php/API:GetSeries
-    query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
+    try:
+        query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
+    except URLError:
+        #outputs on timeout
+        return "error contacting thetvdb.com"
+        
     series_id = query.xpath('//seriesid/text()')
 
     if not series_id:
@@ -25,8 +31,13 @@ def tv_next(inp):
 
     series_id = series_id[0]
 
-    series = http.get_xml(base_url + '%s/series/%s/all/en.xml' %
-                          (api_key, series_id))
+    try:
+        series = http.get_xml(base_url + '%s/series/%s/all/en.xml' %
+                              (api_key, series_id))
+    except URLError:    
+        #outputs on timeout    
+        return "error contacting thetvdb.com"
+                              
     series_name = series.xpath('//SeriesName/text()')[0]
 
     if series.xpath('//Status/text()')[0] == 'Ended':
