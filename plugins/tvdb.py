@@ -21,7 +21,6 @@ def tv_next(inp):
     try:
         query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
     except URLError:
-        #outputs on timeout
         return "error contacting thetvdb.com"
         
     series_id = query.xpath('//seriesid/text()')
@@ -35,7 +34,6 @@ def tv_next(inp):
         series = http.get_xml(base_url + '%s/series/%s/all/en.xml' %
                               (api_key, series_id))
     except URLError:    
-        #outputs on timeout    
         return "error contacting thetvdb.com"
                               
     series_name = series.xpath('//SeriesName/text()')[0]
