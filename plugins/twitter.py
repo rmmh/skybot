@@ -87,7 +87,8 @@ def twitter(inp):
         tweet = http.get_xml(url)
     except http.HTTPError, e:
         errors = {400: 'bad request (ratelimited?)',
-                401: 'tweet is private',
+		401: 'tweet is private',
+		403: 'tweet is private',
                 404: 'invalid user/id',
                 500: 'twitter is broken',
                 502: 'twitter is down ("getting upgraded")',
@@ -96,7 +97,7 @@ def twitter(inp):
             return 'error: invalid ' + ['username', 'tweet id'][getting_id]
         if e.code in errors:
             return 'error: ' + errors[e.code]
-        return 'error: unknown'
+        return 'error: unknown %s' % e.code
     except http.URLerror, e:
         return 'error: timeout'
 
