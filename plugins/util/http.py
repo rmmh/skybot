@@ -37,8 +37,12 @@ def get_json(*args, **kwargs):
     return json.loads(get(*args, **kwargs))
 
 
-def open(url, query_params={}, user_agent=user_agent, post_data=None,
+def open(url, query_params=None, user_agent=user_agent, post_data=None,
          get_method=None, cookies=False, **kwargs):
+         
+    if query_params is None:
+        query_params = {}
+        
     query_params.update(kwargs)
 
     url = prepare_url(url, query_params)
