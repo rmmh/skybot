@@ -4,14 +4,30 @@ modified by rmmh 2010
 """
 
 import datetime
+from contextlib import closing
 from urllib2 import URLError
+from zipfile import ZipFile
 
+from lxml import etree
 from util import hook, http
 
+# StringIO fallback method from: http://effbot.org/librarybook/cstringio.htm
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from StringIO import StringIO
 
 base_url = "http://thetvdb.com/api/"
 api_key = "469B73127CA0C411"
 
+def get_zipped_xml(*args, **kwargs):
+    try:
+        path = kwargs.pop("path")
+    except KeyError:
+        raise KeyError("must specify a path for the zipped file to be read")
+    
+    with closing(StringIO(http.get(*args, **kwargs))) as zip_buffer:
+        return etree.parse(ZipFile(zip_buffer, "r").open(path))
 
 @hook.command
 def tv_next(inp):
@@ -31,8 +47,8 @@ def tv_next(inp):
     series_id = series_id[0]
 
     try:
-        series = http.get_xml(base_url + '%s/series/%s/all/en.xml' %
-                              (api_key, series_id))
+        series = get_zipped_xml(base_url + '%s/series/%s/all/en.zip' %
+                                    (api_key, series_id), path="en.xml")
     except URLError:    
         return "error contacting thetvdb.com"
                               
