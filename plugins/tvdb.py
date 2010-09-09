@@ -67,10 +67,18 @@ def tv_next(inp):
         except (ValueError, TypeError):
             continue
 
-        episode_name = episode.findtext("EpisodeName") or "No Title Yet"
+        episode_name = episode.findtext("EpisodeName")
+        #in the event of an unannounced episode title, users either leave the
+        #field out (None) or fill it with TBA
+        if episode_name == "TBA":
+            episode_name = None
+        
         episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
                                       int(episode.findtext("EpisodeNumber")))
-        episode_desc = '%s "%s"' % (episode_num, episode_name)
+        #only include actually valid information, arranged in a familiar
+        #filename convention
+        episode_desc = ' - '.join([item for item in (episode_num, episode_name)
+                                    if item])
 
         if airdate > today:
             next_eps = ['%s (%s)' % (first_aired, episode_desc)]
