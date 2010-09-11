@@ -34,10 +34,9 @@ def unescape(text):
 def goog_trans(text, slang, tlang):
     url = 'http://ajax.googleapis.com/ajax/services/language/translate?v=1.0'
     parsed = http.get_json(url, q=text, langpair=(slang + '|' + tlang))
-    print slang, tlang, parsed
     if not 200 <= parsed['responseStatus'] < 300:
         raise IOError('error with the translation server: %d: %s' % (
-                parsed['responseStatus'], ''))
+                parsed['responseStatus'], parsed['responseDetails']))
     if not slang:
         return unescape('(%(detectedSourceLanguage)s) %(translatedText)s' %
                 (parsed['responseData']))
@@ -65,18 +64,21 @@ def translate(inp):
 
     args = inp.split(' ', 2)
 
-    if len(args) >= 2:
-        sl = match_language(args[0])
-        if not sl:
-            return goog_trans(inp, '', 'en')
-        if len(args) >= 3:
-            tl = match_language(args[1])
-            if not tl:
-                if sl == 'en':
-                    return 'unable to determine desired target language'
-                return goog_trans(args[1] + ' ' + args[2], sl, 'en')
-            return goog_trans(args[2], sl, tl)
-    return goog_trans(inp, '', 'en')
+    try:
+        if len(args) >= 2:
+            sl = match_language(args[0])
+            if not sl:
+                return goog_trans(inp, '', 'en')
+            if len(args) >= 3:
+                tl = match_language(args[1])
+                if not tl:
+                    if sl == 'en':
+                        return 'unable to determine desired target language'
+                    return goog_trans(args[1] + ' ' + args[2], sl, 'en')
+                return goog_trans(args[2], sl, tl)
+        return goog_trans(inp, '', 'en')
+    except IOError, e:
+        return e
 
 
 languages = 'ja fr de ko ru zh'.split()
