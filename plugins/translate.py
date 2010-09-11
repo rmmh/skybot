@@ -46,7 +46,7 @@ def goog_trans(text, slang, tlang):
 def match_language(fragment):
     fragment = fragment.lower()
     for short, _ in lang_pairs:
-        if fragment in short.split():
+        if fragment in short.lower().split():
             return short.split()[0]
 
     for short, full in lang_pairs:
@@ -137,7 +137,7 @@ lang_pairs = [
     ("be", "Belarusian"),
     ("bg", "Bulgarian"),
     ("ca", "Catalan"),
-    ("zh-CN", "Chinese"),
+    ("zh-CN zh", "Chinese"),
     ("hr", "Croatian"),
     ("cs", "Czech"),
     ("da", "Danish"),
@@ -159,7 +159,7 @@ lang_pairs = [
     ("id", "Indonesian"),
     ("ga", "Irish"),
     ("it", "Italian"),
-    ("ja jpn", "Japanese"),
+    ("ja jp jpn", "Japanese"),
     ("ko", "Korean"),
     ("lv", "Latvian"),
     ("lt", "Lithuanian"),
