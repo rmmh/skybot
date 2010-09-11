@@ -15,14 +15,16 @@ from util import hook, http
 base_url = "http://thetvdb.com/api/"
 api_key = "469B73127CA0C411"
 
+
 def get_zipped_xml(*args, **kwargs):
     try:
         path = kwargs.pop("path")
     except KeyError:
         raise KeyError("must specify a path for the zipped file to be read")
-    
+
     zip_buffer = StringIO(http.get(*args, **kwargs))
     return etree.parse(ZipFile(zip_buffer, "r").open(path))
+
 
 @hook.command
 def tv_next(inp):
@@ -33,7 +35,7 @@ def tv_next(inp):
         query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
     except URLError:
         return "error contacting thetvdb.com"
-        
+
     series_id = query.xpath('//seriesid/text()')
 
     if not series_id:
@@ -44,9 +46,9 @@ def tv_next(inp):
     try:
         series = get_zipped_xml(base_url + '%s/series/%s/all/en.zip' %
                                     (api_key, series_id), path="en.xml")
-    except URLError:    
+    except URLError:
         return "error contacting thetvdb.com"
-                              
+
     series_name = series.xpath('//SeriesName/text()')[0]
 
     if series.xpath('//Status/text()')[0] == 'Ended':
@@ -57,12 +59,12 @@ def tv_next(inp):
 
     for episode in reversed(series.xpath('//Episode')):
         first_aired = episode.findtext("FirstAired")
-        
+
         try:
             airdate = datetime.date(*map(int, first_aired.split('-')))
         except (ValueError, TypeError):
             continue
- 
+
         episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
                                       int(episode.findtext("EpisodeNumber")))
 
