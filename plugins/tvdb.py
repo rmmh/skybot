@@ -4,18 +4,13 @@ modified by rmmh 2010
 """
 
 import datetime
-from contextlib import closing
 from urllib2 import URLError
 from zipfile import ZipFile
+from cStringIO import StringIO
 
 from lxml import etree
 from util import hook, http
 
-# StringIO fallback method from: http://effbot.org/librarybook/cstringio.htm
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 base_url = "http://thetvdb.com/api/"
 api_key = "469B73127CA0C411"
@@ -26,8 +21,8 @@ def get_zipped_xml(*args, **kwargs):
     except KeyError:
         raise KeyError("must specify a path for the zipped file to be read")
     
-    with closing(StringIO(http.get(*args, **kwargs))) as zip_buffer:
-        return etree.parse(ZipFile(zip_buffer, "r").open(path))
+    zip_buffer = StringIO(http.get(*args, **kwargs))
+    return etree.parse(ZipFile(zip_buffer, "r").open(path))
 
 @hook.command
 def tv_next(inp):
@@ -62,23 +57,24 @@ def tv_next(inp):
 
     for episode in reversed(series.xpath('//Episode')):
         first_aired = episode.findtext("FirstAired")
+        
         try:
             airdate = datetime.date(*map(int, first_aired.split('-')))
         except (ValueError, TypeError):
             continue
-
-        episode_name = episode.findtext("EpisodeName")
-        #in the event of an unannounced episode title, users either leave the
-        #field out (None) or fill it with TBA
-        if episode_name == "TBA":
-            episode_name = None
-        
+ 
         episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
                                       int(episode.findtext("EpisodeNumber")))
-        #only include actually valid information, arranged in a familiar
-        #filename convention
-        episode_desc = ' - '.join([item for item in (episode_num, episode_name)
-                                    if item])
+
+        episode_name = episode.findtext("EpisodeName")
+        # in the event of an unannounced episode title, users either leave the
+        # field out (None) or fill it with TBA
+        if episode_name == "TBA":
+            episode_name = None
+
+        episode_desc = '%s' % episode_num
+        if episode_name:
+            episode_desc += ' - %s' % episode_name
 
         if airdate > today:
             next_eps = ['%s (%s)' % (first_aired, episode_desc)]
