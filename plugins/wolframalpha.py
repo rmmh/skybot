@@ -26,9 +26,8 @@ def wolframalpha(inp):
             continue
 
         results = []
-        for image in pod.xpath('div/div[@class="output"]/img'):
-            alt = image.attrib['alt'].strip()
-            alt = alt.replace('\\n', '; ')
+        for alt in pod.xpath('div/div[@class="output pnt"]/img/@alt'):
+            alt = alt.strip().replace('\\n', '; ')
             alt = re.sub(r'\s+', ' ', alt)
             if alt:
                 results.append(alt)
