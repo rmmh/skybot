@@ -84,8 +84,8 @@ def tag(inp, chan='', db=None):
     db.execute('create table if not exists tag(chan, subject, nick)')
 
     add = re.match(r'(?:a(?:dd)? )?(\S+) (.+)', inp)
-    delete = re.match(r'd(?:el(?:ete)?)? (\S+) (.+)', inp)
-    retrieve = re.match(r'l(?:ist)(?: (\S+))?$', inp)
+    delete = re.match(r'd(?:el(?:ete)?)? (\S+) (.+)\s*$', inp)
+    retrieve = re.match(r'l(?:ist)(?: (.+))?\s*$', inp)
 
     if retrieve:
         search_tag = retrieve.group(1)
