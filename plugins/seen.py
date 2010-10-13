@@ -23,8 +23,11 @@ def seeninput(paraml, input=None, db=None, bot=None):
 
 
 @hook.command
-def seen(inp, nick='', chan='', db=None):
+def seen(inp, nick='', chan='', db=None, input=None):
     ".seen <nick> -- Tell when a nickname was last in active in irc"
+
+    if input.conn.nick.lower() == inp.lower(): # user is looking for us, being a smartass
+        return "You need to get your eyes checked."
 
     if inp.lower() == nick.lower():
         return "Have you looked in a mirror lately?"
