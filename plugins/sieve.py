@@ -29,4 +29,10 @@ def sieve_suite(bot, input, func, kind, args):
             if input.chan.lower() in denied_channels:
                 return None
 
+    if args.get('adminonly', False):
+        admins = bot.config.get('admins', [])
+
+        if input.host not in admins and input.nick not in admins:
+            return None
+
     return input
