@@ -1,6 +1,7 @@
 """
 remember.py: written by Scaevolus 2010
 """
+import re
 
 from util import hook
 
@@ -22,7 +23,9 @@ def get_memory(db, chan, word):
 
 @hook.command
 def remember(inp, nick='', chan='', db=None):
-    ".remember <word> <data> -- maps word to data in the memory"
+    """.remember <word> <data> -- maps word to data in the memory
+    (use $<word> to reference the original value)"""
+
     db_init(db)
 
     try:
@@ -31,6 +34,16 @@ def remember(inp, nick='', chan='', db=None):
         return remember.__doc__
 
     data = get_memory(db, chan, head)
+
+    # replace one occurance of $<word> with the current value
+    patt = re.compile(r'\$%s' % head)
+
+    if data and patt.search(tail):
+        # the data string starts with the `head` followed by a space,
+        # so we have to strip that out
+        mem = data[len(head)+1:]
+        tail = patt.sub(mem, tail, 1)
+
     db.execute("replace into memory(chan, word, data, nick) values"
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
     db.commit()
