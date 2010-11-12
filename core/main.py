@@ -156,7 +156,7 @@ def main(conn, out):
             prefix = r'^(?:[.]|'
 
         command_re = prefix + inp.conn.nick
-        command_re += r'[:,]*\s+)(\w+)(?:$|\s+)(.*)'
+        command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
 
         m = re.match(command_re, inp.lastparam)
 

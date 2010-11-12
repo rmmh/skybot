@@ -8,6 +8,8 @@ search_url = "http://search.atomz.com/search/?sp_a=00062d45-sp00000000"
 
 @hook.command
 def snopes(inp):
+    ".snopes <topic> -- searches snopes for an urban legend about <topic>"
+
     search_page = http.get_html(search_url, sp_q=inp, sp_c="1")
     result_urls = search_page.xpath("//a[@target='_self']/@href")
 
@@ -23,4 +25,4 @@ def snopes(inp):
     claim = re.sub(r"[\s\xa0]+", " ", claim)   # compress whitespace
     status = re.sub(r"[\s\xa0]+", " ", status)
 
-    return "%s %s %s" % (claim, status, result_urls[0]) 
+    return "%s %s %s" % (claim, status, result_urls[0])

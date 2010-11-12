@@ -39,10 +39,10 @@ def get_json(*args, **kwargs):
 
 def open(url, query_params=None, user_agent=user_agent, post_data=None,
          get_method=None, cookies=False, **kwargs):
-         
+
     if query_params is None:
         query_params = {}
-        
+
     query_params.update(kwargs)
 
     url = prepare_url(url, query_params)
@@ -77,10 +77,10 @@ def prepare_url(url, queries):
 
 
 def to_utf8(s):
-    if isinstance(s, str):
-        return s
-    else:
+    if isinstance(s, unicode):
         return s.encode('utf8', 'ignore')
+    else:
+        return str(s)
 
 
 def quote_plus(s):
