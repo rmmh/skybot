@@ -34,5 +34,11 @@ def sieve_suite(bot, input, func, kind, args):
 
         if input.host not in admins and input.nick not in admins:
             return None
+    
+    if kind == "command":
+        ignored = bot.config.get('ignored', []);
 
+        if input.host in ignored or input.nick in ignored:
+            return None
+    
     return input
