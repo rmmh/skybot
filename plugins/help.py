@@ -8,16 +8,17 @@ def help(inp, bot=None, pm=None):
     ".help [command] -- gives a list of commands/help for a command"
 
     funcs = {}
+    disabled = bot.config.get('disabled_plugins', [])
     for command, (func, args) in bot.commands.iteritems():
         fn = re.match(r'^plugins.(.+).py$', func._filename)
-        disabled = bot.config.get('disabled_plugins', [])
         if fn.group(1).lower() not in disabled:
-            if func.__doc__ is not None:
-                if func in funcs:
-                    if len(funcs[func]) < len(command):
+            if command not in bot.config.get('disabled_commands', []):
+                if func.__doc__ is not None:
+                    if func in funcs:
+                        if len(funcs[func]) < len(command):
+                            funcs[func] = command
+                    else:
                         funcs[func] = command
-                else:
-                    funcs[func] = command
 
     commands = dict((value, key) for key, value in funcs.iteritems())
 
