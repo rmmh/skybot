@@ -9,10 +9,11 @@ def help(inp, bot=None, pm=None):
 
     funcs = {}
     disabled = bot.config.get('disabled_plugins', [])
+    disabled_comm = bot.config.get('disabled_commands', [])
     for command, (func, args) in bot.commands.iteritems():
         fn = re.match(r'^plugins.(.+).py$', func._filename)
         if fn.group(1).lower() not in disabled:
-            if command not in bot.config.get('disabled_commands', []):
+            if command not in disabled_comm:
                 if func.__doc__ is not None:
                     if func in funcs:
                         if len(funcs[func]) < len(command):
