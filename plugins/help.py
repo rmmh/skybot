@@ -1,3 +1,5 @@
+import re
+
 from util import hook
 
 
@@ -7,12 +9,15 @@ def help(inp, bot=None, pm=None):
 
     funcs = {}
     for command, (func, args) in bot.commands.iteritems():
-        if func.__doc__ is not None:
-            if func in funcs:
-                if len(funcs[func]) < len(command):
+        fn = re.match(r'^plugins.(.+).py$', func._filename)
+        disabled = bot.config.get('disabled_plugins', [])
+        if fn.group(1).lower() not in disabled:
+            if func.__doc__ is not None:
+                if func in funcs:
+                    if len(funcs[func]) < len(command):
+                        funcs[func] = command
+                else:
                     funcs[func] = command
-            else:
-                funcs[func] = command
 
     commands = dict((value, key) for key, value in funcs.iteritems())
 
