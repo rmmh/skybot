@@ -36,7 +36,7 @@ def forum_link(inp, bot=None):
     thread_title = breadcrumbs[-1]
     forum_title = forum_abbrevs.get(breadcrumbs[-2], breadcrumbs[-2])
 
-    poster = thread.xpath('//dt[contains(@class, op)]//text()')[0]
+    poster = thread.xpath('//dt[contains(@class, author)]//text()')[0]
 
     # 1 post per page => n_pages = n_posts
     num_posts = thread.xpath('//a[@title="last page"]/@href')
