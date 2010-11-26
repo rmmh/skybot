@@ -12,6 +12,11 @@ def sieve_suite(bot, input, func, kind, args):
     if kind == "command":
         if input.trigger in bot.config.get('disabled_commands', []):
             return None
+        
+        ignored = bot.config.get('ignored', []);
+        if input.host in ignored or input.nick in ignored:
+            return None
+ 
 
     fn = re.match(r'^plugins.(.+).py$', func._filename)
     disabled = bot.config.get('disabled_plugins', [])
@@ -33,12 +38,6 @@ def sieve_suite(bot, input, func, kind, args):
         admins = bot.config.get('admins', [])
 
         if input.host not in admins and input.nick not in admins:
-            return None
-    
-    if kind == "command":
-        ignored = bot.config.get('ignored', []);
-
-        if input.host in ignored or input.nick in ignored:
             return None
     
     return input
