@@ -26,6 +26,9 @@ def get_video_description(vid_id):
 
     out = '\x02%s\x02' % j['title']
 
+    if not j.get('duration'):
+        return out
+
     out += ' - length \x02'
     length = j['duration']
     if length / 3600:  # > 1 hour
