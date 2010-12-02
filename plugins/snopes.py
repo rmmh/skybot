@@ -19,8 +19,14 @@ def snopes(inp):
     snopes_page = http.get_html(result_urls[0])
     snopes_text = snopes_page.text_content()
 
-    claim = re.search(r"Claim: .*", snopes_text).group(0)
-    status = re.search(r"Status: .*", snopes_text).group(0)
+    claim = re.search(r"Claim: .*", snopes_text).group(0).strip()
+    status = re.search(r"Status: .*", snopes_text)
+
+    if status is not None:
+        status = status.group(0).strip()
+    else: # new-style statuses
+        status = "Status: %s." % re.search(r"FALSE|TRUE|MIXTURE|UNDETERMINED",
+                    snopes_text).group(0).title()
 
     claim = re.sub(r"[\s\xa0]+", " ", claim)   # compress whitespace
     status = re.sub(r"[\s\xa0]+", " ", status)
