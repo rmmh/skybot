@@ -32,7 +32,7 @@ def format_quote(q, num, n_quotes):
 @hook.command('q')
 @hook.command
 def quote(inp, nick='', chan='', db=None):
-    ".q/.quote <nick|#chan> [#n]/.quote add <nick> <msg> -- gets " \
+    ".q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg> -- gets " \
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
     db.execute("create table if not exists quote"
@@ -42,6 +42,7 @@ def quote(inp, nick='', chan='', db=None):
 
     add = re.match(r"add[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
     retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?$", inp)
+    retrieve_chan = re.match(r"(#\S+)\s+(\S+)(?:\s+#?(-?\d+))?$", inp)
 
     if add:
         quoted_nick, msg = add.groups()
@@ -60,26 +61,32 @@ def quote(inp, nick='', chan='', db=None):
             quotes = get_quotes_by_chan(db, select)
         else:
             quotes = get_quotes_by_nick(db, chan, select)
+    elif retrieve_chan:
+        chan, nick, num = retrieve_chan.groups()
 
-        n_quotes = len(quotes)
+        quotes = get_quotes_by_nick(db, chan, nick)
+    else:
+        return quote.__doc__
 
-        if not n_quotes:
-            return "no quotes found"
+    n_quotes = len(quotes)
 
-        if num:
-            num = int(num)
+    if not n_quotes:
+        return "no quotes found"
 
-        if num:
-            if num > n_quotes or (num < 0 and num < -n_quotes):
-                return "I only have %d quote%s for %s" % (n_quotes,
-                            ('s', '')[n_quotes == 1], select)
-            elif num < 0:
-                selected_quote = quotes[num]
-                num = n_quotes + num + 1
-            else:
-                selected_quote = quotes[num - 1]
+    if num:
+        num = int(num)
+
+    if num:
+        if num > n_quotes or (num < 0 and num < -n_quotes):
+            return "I only have %d quote%s for %s" % (n_quotes,
+                        ('s', '')[n_quotes == 1], select)
+        elif num < 0:
+            selected_quote = quotes[num]
+            num = n_quotes + num + 1
         else:
-            num = random.randint(1, n_quotes)
             selected_quote = quotes[num - 1]
+    else:
+        num = random.randint(1, n_quotes)
+        selected_quote = quotes[num - 1]
 
-        return format_quote(selected_quote, num, n_quotes)
+    return format_quote(selected_quote, num, n_quotes)
