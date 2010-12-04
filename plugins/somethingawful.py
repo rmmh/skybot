@@ -13,6 +13,8 @@ def login(user, password):
                cookie.name == 'bbpassword' for cookie in http.jar):
             return
         assert("malformed cookie jar")
+    user = http.quote(user)
+    password = http.quote(password)
     http.get("http://forums.somethingawful.com/account.php", cookies=True,
         post_data="action=login&username=%s&password=%s" % (user, password))
 
