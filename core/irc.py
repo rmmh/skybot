@@ -16,6 +16,15 @@ def decode(txt):
     return txt.decode('utf-8', 'ignore')
 
 
+def censor(text):
+    replacement = '[censored]'
+    if 'censored_strings' in bot.config:
+        words = map(re.escape, bot.config['censored_strings'])
+        regex = re.compile('(%s)' % "|".join(words))
+        text = regex.sub(replacement, text)
+    return text
+
+
 class crlf_tcp(object):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
 
@@ -181,7 +190,7 @@ class IRC(object):
     def cmd(self, command, params=None):
         if params:
             params[-1] = ':' + params[-1]
-            self.send(command + ' ' + ' '.join(params))
+            self.send(command + ' ' + ' '.join(map(censor, params)))
         else:
             self.send(command)
 
