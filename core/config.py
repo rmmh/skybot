@@ -8,7 +8,7 @@ def save(conf):
 
 if not os.path.exists('config'):
     open('config', 'w').write(inspect.cleandoc(
-        '''
+        r'''
         {
           "connections":
           {
@@ -21,7 +21,19 @@ if not os.path.exists('config'):
           },
           "disabled_plugins": [],
           "disabled_commands": [],
-          "acls": {}
+          "acls": {},
+          "censored_strings":
+          [
+            "DCC SEND",
+            "1nj3ct",
+            "thewrestlinggame",
+            "startkeylogger",
+            "hybux",
+            "\\0",
+            "\\x01",
+            "!coz",
+            "!tell /x"
+          ]
         }''') + '\n')
 
 
