@@ -12,6 +12,11 @@ def add_quote(db, chan, nick, add_nick, msg):
     db.commit()
 
 
+def del_quote(db, chan, nick, add_nick, msg):
+    db.execute('''update quote set deleted = 1 where
+                  chan=? and lower(nick)=lower(?) and msg=msg''')
+    db.commit()
+
 def get_quotes_by_nick(db, chan, nick):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
             "and chan=? and lower(nick)=lower(?) order by time",

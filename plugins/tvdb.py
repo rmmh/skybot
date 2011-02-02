@@ -21,25 +21,23 @@ def get_zipped_xml(*args, **kwargs):
         path = kwargs.pop("path")
     except KeyError:
         raise KeyError("must specify a path for the zipped file to be read")
-
     zip_buffer = StringIO(http.get(*args, **kwargs))
     return etree.parse(ZipFile(zip_buffer, "r").open(path))
 
-
-@hook.command
-def tv_next(inp):
-    ".tv_next <series> -- get the next episode of <series> from thetvdb.com"
-
+def get_episodes_for_series(seriesname):
+    res = {"error":None, "ended":False, "episodes":None, "name":None}
     # http://thetvdb.com/wiki/index.php/API:GetSeries
     try:
-        query = http.get_xml(base_url + 'GetSeries.php', seriesname=inp)
+        query = http.get_xml(base_url + 'GetSeries.php', seriesname=seriesname)
     except URLError:
-        return "error contacting thetvdb.com"
+        res["error"]="error contacting thetvdb.com"
+        return res
 
     series_id = query.xpath('//seriesid/text()')
 
     if not series_id:
-        return "unknown tv series (using www.thetvdb.com)"
+        res["error"] = "unknown tv series (using www.thetvdb.com)"
+        return res
 
     series_id = series_id[0]
 
@@ -47,36 +45,61 @@ def tv_next(inp):
         series = get_zipped_xml(base_url + '%s/series/%s/all/en.zip' %
                                     (api_key, series_id), path="en.xml")
     except URLError:
-        return "error contacting thetvdb.com"
+        res["error"] = "error contacting thetvdb.com"
+        return res
 
     series_name = series.xpath('//SeriesName/text()')[0]
 
     if series.xpath('//Status/text()')[0] == 'Ended':
-        return '%s has ended.' % series_name
+        res["ended"] = True
+        
+    res["episodes"] = series.xpath('//Episode')
+    res["name"] = series_name
+    return res
 
+def get_episode_info(episode):
+    first_aired = episode.findtext("FirstAired")
+    
+    try:
+        airdate = datetime.date(*map(int, first_aired.split('-')))
+    except (ValueError, TypeError):
+        return None
+    
+    episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
+                                  int(episode.findtext("EpisodeNumber")))
+    
+    episode_name = episode.findtext("EpisodeName")
+    # in the event of an unannounced episode title, users either leave the
+    # field out (None) or fill it with TBA
+    if episode_name == "TBA":
+        episode_name = None
+    
+    episode_desc = '%s' % episode_num
+    if episode_name:
+        episode_desc += ' - %s' % episode_name
+    return (first_aired, airdate, episode_desc)
+
+@hook.command
+@hook.command('tv')
+def tv_next(inp):
+    ".tv_next <series> -- get the next episode of <series> from thetvdb.com"
+    episodes = get_episodes_for_series(inp)
+
+    if episodes["error"]:
+        return episodes["error"]
+        
+    series_name = episodes["name"]
+    ended = episodes["ended"]
+    episodes = episodes["episodes"]
+    
+    if ended:
+        return "%s has ended." % series_name
+    
     next_eps = []
     today = datetime.date.today()
 
-    for episode in reversed(series.xpath('//Episode')):
-        first_aired = episode.findtext("FirstAired")
-
-        try:
-            airdate = datetime.date(*map(int, first_aired.split('-')))
-        except (ValueError, TypeError):
-            continue
-
-        episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
-                                      int(episode.findtext("EpisodeNumber")))
-
-        episode_name = episode.findtext("EpisodeName")
-        # in the event of an unannounced episode title, users either leave the
-        # field out (None) or fill it with TBA
-        if episode_name == "TBA":
-            episode_name = None
-
-        episode_desc = '%s' % episode_num
-        if episode_name:
-            episode_desc += ' - %s' % episode_name
+    for episode in reversed(episodes):
+        (first_aired, airdate, episode_desc) = get_episode_info(episode)
 
         if airdate > today:
             next_eps = ['%s (%s)' % (first_aired, episode_desc)]
@@ -95,3 +118,35 @@ def tv_next(inp):
     else:
         next_eps = ', '.join(next_eps)
         return "the next episodes of %s: %s" % (series_name, next_eps)
+
+
+@hook.command
+@hook.command('tv_prev')
+def tv_last(inp):
+    ".tv_last <series> -- get the most recently aired episode of <series> from thetvdb.com"
+    episodes = get_episodes_for_series(inp)
+
+    if episodes["error"]:
+        return episodes["error"]
+        
+    series_name = episodes["name"]
+    ended = episodes["ended"]
+    episodes = episodes["episodes"]
+    
+    prev_ep = None 
+    today = datetime.date.today()
+
+    for episode in reversed(episodes):
+        (first_aired, airdate, episode_desc) = get_episode_info(episode)
+
+        if airdate < today:
+            #iterating in reverse order, so the first episode encountered
+            #before today was the most recently aired
+            prev_ep = '%s (%s)' % (first_aired, episode_desc)
+            break
+
+    if not prev_ep:
+        return "there are no previously aired episodes for %s" % series_name
+    if ended:
+        return '%s has ended. The last episode aired %s' % (series_name, prev_ep)
+    return "the last episode of %s aired %s" % (series_name, prev_ep)
