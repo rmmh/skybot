@@ -11,6 +11,8 @@ from urllib2 import HTTPError, URLError
 
 from lxml import etree, html
 
+from dammit import UnicodeDammit
+
 
 user_agent = 'Skybot/1.0 http://github.com/rmmh/skybot'
 
@@ -30,7 +32,7 @@ def get_html(*args, **kwargs):
 
 
 def get_xml(*args, **kwargs):
-    return etree.fromstring(get(*args, **kwargs))
+    return etree.fromstring(UnicodeDammit(get(*args, **kwargs)).unicode)
 
 
 def get_json(*args, **kwargs):
