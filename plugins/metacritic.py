@@ -2,6 +2,7 @@
 
 from util import hook, http
 
+import re
 from urllib2 import HTTPError
 
 
@@ -101,8 +102,14 @@ def metacritic(inp):
     # get the name, release date, and score from the result
     name = result.find_class('product_title')[0].text_content()
 
-    release = result.find_class('release_date')[0].\
-        find_class('data')[0].text_content()
+    try:
+        release = result.find_class('release_date')[0].\
+            find_class('data')[0].text_content()
+
+        # strip extra spaces out of the release date
+        release = re.sub(r'\s{2,}', ' ', release)
+    except IndexError:
+        release = None
 
     try:
         score = result.find_class('metascore')[0].text_content()
@@ -110,7 +117,8 @@ def metacritic(inp):
         score = None
 
 
-    result = '[%s] %s - %s, released: %s' % (plat.upper(), name,
-        score or 'no score', release)
+    result = '[%s] %s - %s, %s' % (plat.upper(), name,
+            score or 'no score',
+            'release: %s' % release if release else 'unreleased')
 
     return result
