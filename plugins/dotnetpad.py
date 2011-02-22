@@ -8,7 +8,7 @@ import json
 from util import hook
 
 
-def dotnetpad(lang, code, timeout=10):
+def dotnetpad(lang, code, timeout=30):
     "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
 
     code = code.encode('utf8')
