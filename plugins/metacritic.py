@@ -88,14 +88,17 @@ def metacritic(inp):
             # if the result_type div has a platform div, get that one
             platform_div = result_type[0].find_class('platform')
             if platform_div:
-                plat = platform_div[0].text_content()
+                plat = platform_div[0].text_content().strip()
+            else:
+                # otherwise, use the result_type text_content
+                plat = result_type[0].text_content().strip()
 
     else:
         # for games, we want to pull the first result with the correct
         # platform
         results = doc.find_class('result')
         for res in results:
-            result_plat = res.find_class('platform')[0].text_content()
+            result_plat = res.find_class('platform')[0].text_content().strip()
             if result_plat == plat.upper():
                 result = res
                 break
@@ -104,7 +107,9 @@ def metacritic(inp):
         return 'no results found'
 
     # get the name, release date, and score from the result
-    name = result.find_class('product_title')[0].text_content()
+    product_title = result.find_class('product_title')[0]
+    name = product_title.text_content()
+    link = 'http://metacritic.com' + product_title.find('a').attrib['href']
 
     try:
         release = result.find_class('release_date')[0].\
@@ -121,8 +126,9 @@ def metacritic(inp):
         score = None
 
 
-    result = '[%s] %s - %s, %s' % (plat.upper(), name,
+    result = '[%s] %s - %s, %s -- %s' % (plat.upper(), name,
             score or 'no score',
-            'release: %s' % release if release else 'unreleased')
+            'release: %s' % release if release else 'unreleased',
+            link)
 
     return result
