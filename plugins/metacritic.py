@@ -1,4 +1,4 @@
-#Metacritic.com scraper
+# metacritic.com scraper
 
 from util import hook, http
 
@@ -11,6 +11,8 @@ def metacritic(inp):
     '.mc [all|movie|tv|album|x360|ps3|pc|ds|wii] <title> -- gets rating for'\
     ' <title> from metacritic on the specified medium'
 
+    # if the results suck, it's metacritic's fault
+
     args = inp.strip()
 
     game_platforms = ('x360', 'ps3', 'pc', 'ds', 'wii', '3ds', 'gba')
@@ -19,6 +21,9 @@ def metacritic(inp):
     try:
         plat, title = args.split(' ', 1)
         if plat not in all_platforms:
+            # raise the ValueError so that the except block catches it
+            # in this case, or in the case of the .split above raising the
+            # ValueError, we want the same thing to happen
             raise ValueError
     except ValueError:
         plat = 'all'
