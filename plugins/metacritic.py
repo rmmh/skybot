@@ -73,6 +73,10 @@ def metacritic(inp):
     if not doc.find_class('query_results'):
         return 'no results found'
 
+    # if they specified an invalid search term, the input box will be empty
+    if doc.get_element_by_id('search_term').value == '':
+        return 'invalid search term'
+
     if plat not in game_platforms:
         # for [all] results, or non-game platforms, get the first result
         result = doc.find_class('result first_result')[0]
