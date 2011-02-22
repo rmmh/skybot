@@ -32,8 +32,8 @@ def metacritic(inp):
 
     try:
         doc = http.get_html(url)
-    except HTTPError, e:
-        return 'fetch returned error %d' % e.code
+    except HTTPError:
+        return 'error fetching results'
 
     ''' result format:
     -- game result, with score
@@ -96,7 +96,7 @@ def metacritic(inp):
                 break
 
     if not result:
-        return 'could not fetch results'
+        return 'no results found'
 
     # get the name, release date, and score from the result
     name = result.find_class('product_title')[0].text_content()
