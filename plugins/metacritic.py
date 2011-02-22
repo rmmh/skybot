@@ -29,7 +29,6 @@ def metacritic(inp):
     title_safe = http.quote_plus(title)
 
     url = 'http://www.metacritic.com/search/%s/%s/results' % (cat, title_safe)
-    print url
 
     try:
         doc = http.get_html(url)
