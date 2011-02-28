@@ -3,7 +3,7 @@ from util import hook, http
 
 @hook.command
 def bam(inp):
-    ".bam [basic|magic|pepsi|jprdy] <message> -- creates a big ass message"
+    ".bam [basic|magic|heart|krugr] <message> -- creates a big ass message"
     
     host = 'http://bigassmessage.com/'
     path = 'BAM.php?'
