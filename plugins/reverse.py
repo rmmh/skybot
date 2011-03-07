@@ -8,11 +8,8 @@ by instanceoftom
 from util import hook
 
 
-@hook.command
-11	 	
-def reverse(inp):
-12	 	
+@hook.command	
+def reverse(inp): 	
   ".reverse <string> -- reverses the string"
-13	 	
   return inp[::-1]
  
