@@ -6,12 +6,12 @@ Doesn't cypher non-alphanumeric strings yet.
 by instanceoftom
 '''
 
-from util import hook, http
+from util import hook
 chars="abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ "
 len_chars = len(chars)
 
 @hook.command
-def cypher(message):
+def cypher(inp):
 	".cypher <pass> <string> -- cyphers a string with the password"
 	
 	passwd = message.split(" ")[0]
@@ -38,7 +38,7 @@ def cypher(message):
 	return out
 
 @hook.command
-def decypher(message):
+def decypher(inp):
 	".decypher <pass> <string> -- decyphers a string with the password"
 	
 	passwd = message.split(" ")[0]
