@@ -52,28 +52,28 @@ def get_episodes_for_series(seriesname):
 
     if series.xpath('//Status/text()')[0] == 'Ended':
         res["ended"] = True
-        
+
     res["episodes"] = series.xpath('//Episode')
     res["name"] = series_name
     return res
 
 def get_episode_info(episode):
     first_aired = episode.findtext("FirstAired")
-    
+
     try:
         airdate = datetime.date(*map(int, first_aired.split('-')))
     except (ValueError, TypeError):
         return None
-    
+
     episode_num = "S%02dE%02d" % (int(episode.findtext("SeasonNumber")),
                                   int(episode.findtext("EpisodeNumber")))
-    
+
     episode_name = episode.findtext("EpisodeName")
     # in the event of an unannounced episode title, users either leave the
     # field out (None) or fill it with TBA
     if episode_name == "TBA":
         episode_name = None
-    
+
     episode_desc = '%s' % episode_num
     if episode_name:
         episode_desc += ' - %s' % episode_name
@@ -87,19 +87,24 @@ def tv_next(inp):
 
     if episodes["error"]:
         return episodes["error"]
-        
+
     series_name = episodes["name"]
     ended = episodes["ended"]
     episodes = episodes["episodes"]
-    
+
     if ended:
         return "%s has ended." % series_name
-    
+
     next_eps = []
     today = datetime.date.today()
 
     for episode in reversed(episodes):
-        (first_aired, airdate, episode_desc) = get_episode_info(episode)
+        ep_info = get_episode_info(episode)
+
+        if ep_info is None:
+            continue
+
+        (first_aired, airdate, episode_desc) = ep_info
 
         if airdate > today:
             next_eps = ['%s (%s)' % (first_aired, episode_desc)]
@@ -128,16 +133,21 @@ def tv_last(inp):
 
     if episodes["error"]:
         return episodes["error"]
-        
+
     series_name = episodes["name"]
     ended = episodes["ended"]
     episodes = episodes["episodes"]
-    
+
     prev_ep = None 
     today = datetime.date.today()
 
     for episode in reversed(episodes):
-        (first_aired, airdate, episode_desc) = get_episode_info(episode)
+        ep_info = get_episode_info(episode)
+
+        if ep_info is None:
+            continue
+
+        (first_aired, airdate, episode_desc) = ep_info
 
         if airdate < today:
             #iterating in reverse order, so the first episode encountered
