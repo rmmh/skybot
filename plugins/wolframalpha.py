@@ -7,7 +7,7 @@ from util import hook, http
 @hook.command
 def wolframalpha(inp):
     ".wa/.wolframalpha <query> -- scrapes Wolfram Alpha's" \
-            "results for <query>"
+            " results for <query>"
 
     url = "http://www.wolframalpha.com/input/?asynchronous=false"
 
