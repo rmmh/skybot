@@ -22,8 +22,10 @@ def get_memory(db, chan, word):
 
 @hook.command
 def remember(inp, nick='', chan='', db=None):
-    ".remember <word> <data> -- maps word to data in the memory"
+    ".remember <word> [+]<data> -- maps word to data in the memory"
     db_init(db)
+
+    append = False
 
     try:
         head, tail = inp.split(None, 1)
@@ -31,12 +33,24 @@ def remember(inp, nick='', chan='', db=None):
         return remember.__doc__
 
     data = get_memory(db, chan, head)
+
+    if tail[0] == '+' and len(tail) > 1:
+        append = True
+        # ignore + symbol
+        new = tail[1:]
+        # data is stored with the input so ignore it when re-adding it
+        tail = data.replace('"', "''")[2:] + ' ' + new
+
     db.execute("replace into memory(chan, word, data, nick) values"
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
     db.commit()
+
     if data:
-        return 'forgetting "%s", remembering this instead.' % \
-                data.replace('"', "''")
+        if append:
+            return "appending %s to %s" % (new, data.replace('"', "''")[2:])
+        else:
+            return 'forgetting "%s", remembering this instead.' % \
+                    data.replace('"', "''")
     else:
         return 'done.'
 
