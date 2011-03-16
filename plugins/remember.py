@@ -24,13 +24,16 @@ def get_memory(db, chan, word):
 def remember(inp, nick='', chan='', db=None):
     ".remember <word> [+]<data> -- maps word to data in the memory"
     db_init(db)
+
     append = False
+
     try:
         head, tail = inp.split(None, 1)
     except ValueError:
         return remember.__doc__
 
     data = get_memory(db, chan, head)
+
     if tail[0] == '+' and len(tail) > 1:
         append = True
         # ignore + symbol
@@ -41,9 +44,10 @@ def remember(inp, nick='', chan='', db=None):
     db.execute("replace into memory(chan, word, data, nick) values"
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
     db.commit()
+
     if data:
         if append:
-            return "appending %s to %s" % (new,data.replace('"', "''")[2:]);
+            return "appending %s to %s" % (new, data.replace('"', "''")[2:])
         else:
             return 'forgetting "%s", remembering this instead.' % \
                     data.replace('"', "''")
