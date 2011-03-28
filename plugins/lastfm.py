@@ -20,12 +20,29 @@ def lastfm(inp, nick='', say=None):
         else:
             return "your nick is not a LastFM account. try '.lastfm username'."
 
-    track = response["recenttracks"]["track"]
+    tracks = response["recenttracks"]["track"]
+
+    if len(tracks) == 0:
+        return "no recent tracks for user %r found" % user
+
+    if type(tracks) == list:
+        # if the user is listening to something, the tracks entry is a list
+        # the first item is the current track
+        track = tracks[0]
+        status = 'current track'
+    elif type(tracks) == dict:
+        # otherwise, they aren't listening to anything right now, and
+        # the tracks entry is a dict representing the most recent track
+        track = tracks
+        status = 'last track'
+    else:
+        return "error parsing track listing"
+
     title = track["name"]
     album = track["album"]["#text"]
     artist = track["artist"]["#text"]
 
-    ret = "\x02%s\x0F's last track - \x02%s\x0f" % (user, title)
+    ret = "\x02%s\x0F's %s - \x02%s\x0f" % (user, status, title)
     if artist:
         ret += " by \x02%s\x0f" % artist
     if album:
