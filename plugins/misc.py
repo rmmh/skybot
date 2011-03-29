@@ -3,10 +3,21 @@ import socket
 import subprocess
 import time
 
-from util import hook
+from util import hook, http
 
 socket.setdefaulttimeout(10)  # global setting
 
+
+def get_version():
+    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
+    stdout, _ = p.communicate()
+    p.wait()
+
+    revnumber = len(stdout.splitlines())
+
+    ret = stdout.split(None, 1)[0]
+
+    return ret, revnumber
 
 #autorejoin channels
 @hook.event('KICK')
@@ -42,16 +53,13 @@ def onjoin(paraml, conn=None):
         conn.join(channel)
         time.sleep(1)  # don't flood JOINs
 
+    # set user-agent
+    ident, rev = get_version()
+    http.ua_skybot = 'Skybot/r%d %s http://github.com/rmmh/skybot' % (rev, ident)
 
 @hook.regex(r'^\x01VERSION\x01$')
 def version(inp, notice=None):
-    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-    p.wait()
-
-    revnumber = len(stdout.splitlines())
-
-    ret = stdout.split(None, 1)[0]
-
+    ident, rev = get_version()
     notice('\x01VERSION skybot %s r%d - http://github.com/rmmh/'
-           'skybot/\x01' % (ret, revnumber))
+           'skybot/\x01' % (ident, rev))
+    http.ua_skybot = 'Skybot/r%d %s http://github.com/rmmh/skybot' % (rev, ident)

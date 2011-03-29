@@ -12,7 +12,7 @@ from urllib2 import HTTPError, URLError
 from lxml import etree, html
 
 
-user_agent = 'Skybot/1.0 http://github.com/rmmh/skybot'
+ua_skybot = 'Skybot/1.0 http://github.com/rmmh/skybot'
 
 ua_firefox = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) ' \
     'Gecko/20070725 Firefox/2.0.0.6'
@@ -37,11 +37,14 @@ def get_json(*args, **kwargs):
     return json.loads(get(*args, **kwargs))
 
 
-def open(url, query_params=None, user_agent=user_agent, post_data=None,
+def open(url, query_params=None, user_agent=None, post_data=None,
          get_method=None, cookies=False, **kwargs):
 
     if query_params is None:
         query_params = {}
+
+    if user_agent is None:
+        user_agent = ua_skybot
 
     query_params.update(kwargs)
 
