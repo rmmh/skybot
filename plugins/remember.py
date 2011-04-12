@@ -3,7 +3,10 @@ remember.py: written by Scaevolus 2010
 """
 
 from util import hook
-multi_word_delimiter="::"
+from string import lstrip
+import re
+
+multi_word_regex='(".*")(.*)'
 
 def db_init(db):
     db.execute("create table if not exists memory(chan, word, data, nick,"
@@ -25,15 +28,19 @@ def remember(inp, nick='', chan='', db=None):
     ".remember <word> <data> -- maps word to data in the memory"
     db_init(db)
 
-    if multi_word_delimiter in inp:
-        head,tail = inp.split(multi_word_delimiter,1)
+    re_match = re.match(multi_word_regex,inp)
+    if re_match:
+        try:
+            head = re_match.group(1)
+            tail = re_match.group(2)
+            tail = lstrip(tail)
+        except:
+            return remember.__doc__
     else:
-
         try:
             head, tail = inp.split(None, 1)
         except ValueError:
             return remember.__doc__
-        print "Head: %s Tail: %s" % (head,tail)
 
 
     data = get_memory(db, chan, head)
@@ -70,7 +77,7 @@ def forget(inp, chan='', db=None):
 def question(inp, chan='', say=None, db=None):
     "?<word> -- shows what data is associated with word"
     db_init(db)
-
+    print inp
 
     data = get_memory(db, chan, inp.group(1).strip())
     if data:
