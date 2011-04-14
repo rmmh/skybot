@@ -138,7 +138,7 @@ def tv_last(inp):
     ended = episodes["ended"]
     episodes = episodes["episodes"]
 
-    prev_ep = None 
+    prev_ep = None
     today = datetime.date.today()
 
     for episode in reversed(episodes):
