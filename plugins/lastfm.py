@@ -1,8 +1,10 @@
 from util import hook, http
 
+
 api_key = ""
 
 api_url = "http://ws.audioscrobbler.com/2.0/?format=json"
+
 
 @hook.command
 def lastfm(inp, nick='', say=None):

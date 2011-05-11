@@ -15,9 +15,13 @@ def get_version():
 
     revnumber = len(stdout.splitlines())
 
-    ret = stdout.split(None, 1)[0]
+    shorthash = stdout.split(None, 1)[0]
+ 
+    http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
+                        % (revnumber, shorthash)
 
-    return ret, revnumber
+    return shorthash, revnumber
+
 
 #autorejoin channels
 @hook.event('KICK')
@@ -55,11 +59,10 @@ def onjoin(paraml, conn=None):
 
     # set user-agent
     ident, rev = get_version()
-    http.ua_skybot = 'Skybot/r%d %s http://github.com/rmmh/skybot' % (rev, ident)
+
 
 @hook.regex(r'^\x01VERSION\x01$')
 def version(inp, notice=None):
     ident, rev = get_version()
     notice('\x01VERSION skybot %s r%d - http://github.com/rmmh/'
            'skybot/\x01' % (ident, rev))
-    http.ua_skybot = 'Skybot/r%d %s http://github.com/rmmh/skybot' % (rev, ident)

@@ -24,7 +24,7 @@ def snopes(inp):
 
     if status is not None:
         status = status.group(0).strip()
-    else: # new-style statuses
+    else:  # new-style statuses
         status = "Status: %s." % re.search(r"FALSE|TRUE|MIXTURE|UNDETERMINED",
                     snopes_text).group(0).title()
 

@@ -24,13 +24,14 @@ def get_zipped_xml(*args, **kwargs):
     zip_buffer = StringIO(http.get(*args, **kwargs))
     return etree.parse(ZipFile(zip_buffer, "r").open(path))
 
+
 def get_episodes_for_series(seriesname):
-    res = {"error":None, "ended":False, "episodes":None, "name":None}
+    res = {"error": None, "ended": False, "episodes": None, "name": None}
     # http://thetvdb.com/wiki/index.php/API:GetSeries
     try:
         query = http.get_xml(base_url + 'GetSeries.php', seriesname=seriesname)
     except URLError:
-        res["error"]="error contacting thetvdb.com"
+        res["error"] = "error contacting thetvdb.com"
         return res
 
     series_id = query.xpath('//seriesid/text()')
@@ -57,6 +58,7 @@ def get_episodes_for_series(seriesname):
     res["name"] = series_name
     return res
 
+
 def get_episode_info(episode):
     first_aired = episode.findtext("FirstAired")
 
@@ -79,10 +81,11 @@ def get_episode_info(episode):
         episode_desc += ' - %s' % episode_name
     return (first_aired, airdate, episode_desc)
 
+
 @hook.command
 @hook.command('tv')
 def tv_next(inp):
-    ".tv_next <series> -- get the next episode of <series> from thetvdb.com"
+    ".tv_next <series> -- get the next episode of <series>"
     episodes = get_episodes_for_series(inp)
 
     if episodes["error"]:
@@ -128,7 +131,7 @@ def tv_next(inp):
 @hook.command
 @hook.command('tv_prev')
 def tv_last(inp):
-    ".tv_last <series> -- get the most recently aired episode of <series> from thetvdb.com"
+    ".tv_last <series> -- gets the most recently aired episode of <series>"
     episodes = get_episodes_for_series(inp)
 
     if episodes["error"]:
@@ -158,5 +161,5 @@ def tv_last(inp):
     if not prev_ep:
         return "there are no previously aired episodes for %s" % series_name
     if ended:
-        return '%s has ended. The last episode aired %s' % (series_name, prev_ep)
+        return '%s ended. The last episode aired %s' % (series_name, prev_ep)
     return "the last episode of %s aired %s" % (series_name, prev_ep)

@@ -1,6 +1,5 @@
-import re
+from util import hook, http
 
-from util import http,hook
 
 @hook.regex(r'vimeo.com/([0-9]+)')
 def vimeo_url(match):

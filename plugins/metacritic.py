@@ -1,9 +1,9 @@
 # metacritic.com scraper
 
-from util import hook, http
-
 import re
 from urllib2 import HTTPError
+
+from util import hook, http
 
 
 @hook.command('mc')
@@ -16,7 +16,7 @@ def metacritic(inp):
     args = inp.strip()
 
     game_platforms = ('x360', 'ps3', 'pc', 'ds', 'wii', '3ds', 'gba')
-    all_platforms = game_platforms + ('all','movie','tv','album')
+    all_platforms = game_platforms + ('all', 'movie', 'tv', 'album')
 
     try:
         plat, title = args.split(' ', 1)
@@ -53,10 +53,10 @@ def metacritic(inp):
                 <div class="main_stats">
                     <h3 class="product_title basic_stat">...</h3>
                     <div class="std_score">
-                        <div class="score_wrap">
-                            <span class="label">Metascore: </span>
-                            <span class="data metascore score_favorable">87</span>
-                        </div>
+                      <div class="score_wrap">
+                        <span class="label">Metascore: </span>
+                        <span class="data metascore score_favorable">87</span>
+                      </div>
                     </div>
                 </div>
                 <div class="more_stats extended_stats">...</div>
@@ -129,10 +129,7 @@ def metacritic(inp):
     except IndexError:
         score = None
 
-
-    result = '[%s] %s - %s, %s -- %s' % (plat.upper(), name,
+    return '[%s] %s - %s, %s -- %s' % (plat.upper(), name,
             score or 'no score',
             'release: %s' % release if release else 'unreleased',
             link)
-
-    return result

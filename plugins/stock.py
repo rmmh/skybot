@@ -15,7 +15,8 @@ def stock(inp):
         return "error getting stock info"
 
     # Stuff the results in a dict for easy string formatting
-    results = dict((el.tag, el.attrib['data']) for el in parsed.xpath('//finance/*'))
+    results = dict((el.tag, el.attrib['data'])
+                   for el in parsed.xpath('//finance/*'))
 
     # if we dont get a company name back, the symbol doesn't match a company
     if results['company'] == '':

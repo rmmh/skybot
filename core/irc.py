@@ -73,7 +73,7 @@ class crlf_tcp(object):
                         self.socket.close()
                         return
                     time.sleep(1)
-            except self.get_timeout_exception_type(), e:
+            except (self.get_timeout_exception_type(), socket.error) as e:
                 if self.handle_receive_exception(e, last_timestamp):
                     return
                 continue
