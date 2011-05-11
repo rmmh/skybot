@@ -7,6 +7,7 @@ movie_reviews_url = api_root+'movies/%s/reviews.json?apikey=%s&review_type=all'
 
 response = u"%s - critics: \x02%d%%\x02 (%d\u2191%d\u2193) audience: \x02%d%%\x02 - %s"
 
+
 @hook.command('rt')
 def rottentomatoes(inp, bot=None):
     '.rt <title> -- gets ratings for <title> from Rotten Tomatoes'
