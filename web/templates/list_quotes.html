@@ -1,0 +1,5 @@
+<pre>
+{% for quote in quotes %}
+    {{ loop.index }} {{ quote.time | ptime }} &lt;{{ quote.nick }}&gt; {{ quote.msg }}
+{%- endfor %}
+</pre>
