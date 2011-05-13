@@ -4,13 +4,6 @@ import time
 from util import hook
 
 
-def query(db, config, user, channel, permission):
-    if user in config["admins"]:
-        return True
-
-    return False
-
-
 class Users(object):
     def __init__(self, users={}, channels={}):
         self.users = dict(users)
