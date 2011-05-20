@@ -16,7 +16,7 @@ def get_version():
     revnumber = len(stdout.splitlines())
 
     shorthash = stdout.split(None, 1)[0]
- 
+
     http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
                         % (revnumber, shorthash)
 

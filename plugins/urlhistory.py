@@ -4,7 +4,6 @@ import time
 
 from util import hook, urlnorm, timesince
 
-url_re = r'([a-zA-Z]+://|www\.)[^ ]+'
 
 expiration_period = 60 * 60 * 24  # 1 day
 
@@ -64,7 +63,7 @@ def format_reply(history):
             hour_span, nicklist(history), last)
 
 
-@hook.regex(url_re)
+@hook.regex(r'([a-zA-Z]+://|www\.)[^ ]+')
 def urlinput(match, nick='', chan='', db=None, bot=None):
     db_init(db)
     url = urlnorm.normalize(match.group().encode('utf-8'))
@@ -72,5 +71,12 @@ def urlinput(match, nick='', chan='', db=None, bot=None):
         url = url.decode('utf-8')
         history = get_history(db, chan, url)
         insert_history(db, chan, url, nick)
+
+        inp = match.string.lower()
+
+        for name in dict(history):
+            if name.lower() in inp:  # person was probably quoting a line
+                return               # that had a link. don't remind them.
+
         if nick not in dict(history):
             return format_reply(history)
