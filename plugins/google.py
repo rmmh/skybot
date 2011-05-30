@@ -37,8 +37,8 @@ def google(inp):
 
     result = parsed['responseData']['results'][0]
 
-    title = result['titleNoFormatting']
-    content = result['content']
+    title = http.unescape(result['titleNoFormatting'])
+    content = http.unescape(result['content'])
 
     if len(content) == 0:
         content = "No description available"
