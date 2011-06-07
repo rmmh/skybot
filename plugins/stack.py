@@ -71,11 +71,11 @@ def get_stack_question(domain, question_id):
 
     out += '- \x02%d\x02 pt%s, ' % (
             q_json['score'],
-            's' if not q_json['score'] else '')
+            's' if q_json['score'] != 1 else '')
 
     out += '\x02%d\x02 answer%s ' % (
             q_json['answer_count'],
-            's' if not q_json['answer_count'] else '' )
+            's' if q_json['answer_count'] != 1 else '' )
 
     out += '- asked by \x02%s\x02 ' % q_json['owner']['display_name']
     out += fuzzy_date(q_json['creation_date'])
