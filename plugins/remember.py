@@ -21,6 +21,7 @@ def get_memory(db, chan, word):
 
 
 @hook.command
+@hook.command("r")
 def remember(inp, nick='', chan='', db=None):
     ".remember <word> [+]<data> -- maps word to data in the memory"
     db_init(db)
@@ -56,6 +57,7 @@ def remember(inp, nick='', chan='', db=None):
 
 
 @hook.command
+@hook.command("f")
 def forget(inp, chan='', db=None):
     ".forget <word> -- forgets the mapping that word had"
 
