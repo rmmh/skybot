@@ -11,6 +11,5 @@ def stayalive(paraml, conn=None):
     mode = conn.conf.get('stayalive')
     if mode:
         while True:
-        	# ping the server every n seconds, XChat for example pings every 15 seconds
             time.sleep(conn.conf.get('stayalive_delay', 20))
             conn.cmd('PING', [conn.nick])
