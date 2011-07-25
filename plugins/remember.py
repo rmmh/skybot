@@ -35,12 +35,17 @@ def remember(inp, nick='', chan='', db=None):
 
     data = get_memory(db, chan, head)
 
-    if tail[0] == '+' and len(tail) > 1:
+    if tail[0] == '+':
         append = True
         # ignore + symbol
         new = tail[1:]
+        _head, _tail = data.split(None, 1)
         # data is stored with the input so ignore it when re-adding it
-        tail = data.replace('"', "''")[2:] + ' ' + new
+        import string
+        if len(tail) > 1 and tail[1] in (string.punctuation + ' '):
+            tail = _tail + new
+        else:
+            tail = _tail + ' ' + new
 
     db.execute("replace into memory(chan, word, data, nick) values"
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
@@ -48,7 +53,7 @@ def remember(inp, nick='', chan='', db=None):
 
     if data:
         if append:
-            return "appending %s to %s" % (new, data.replace('"', "''")[2:])
+            return "appending %s to %s" % (new, data.replace('"', "''"))
         else:
             return 'forgetting "%s", remembering this instead.' % \
                     data.replace('"', "''")
