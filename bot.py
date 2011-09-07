@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-a = 34123
-
 import os
 import Queue
 import sys
