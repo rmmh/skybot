@@ -17,7 +17,7 @@ def fetch(inp, nick='', server='', reply=None, db=None, forecast=None):
                             (nick,)).fetchone()
         if not loc:
             if forecast is not None:
-            	return weather.__doc__
+                return weather.__doc__
             else:
                 return forecast.__doc__
 
