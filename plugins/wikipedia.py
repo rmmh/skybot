@@ -20,7 +20,7 @@ def wiki(inp):
 
     x = http.get_xml(search_url, search=inp)
 
-    ns = '{http://www.mediawiki.org/xml/api/}'
+    ns = '{http://opensearch.org/searchsuggest2}'
     items = x.findall(ns + 'Section/' + ns + 'Item')
 
     if items == []:
