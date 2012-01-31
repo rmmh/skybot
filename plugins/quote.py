@@ -49,7 +49,7 @@ def get_quote_num(num, count, name):
     if num: # Make sure num is a number if it isn't false
         num = int(num)
     if count == 0: # If there are no quotes in the database, raise an Exception.
-        raise Exception("The channel %s does not have any quotes" % name)
+        raise Exception("No quotes found for %s" % name)
     if num and num < 0: # If the selected quote is less than 0, count back if possible.
         num = count + num + 1 if num + count > -1 else count + 1
     if num and num > count: # If a number is given and and there are not enough quotes, raise an Exception.
