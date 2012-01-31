@@ -53,9 +53,11 @@ def get_quote_by_nick(db, chan, nick, num=False):
                           AND lower(nick) = lower(?)''', (chan, nick)).fetchall()[0][0]
     if count == 0: # If there are no quotes in the database
         return "I don't have any quotes for %s" % nick
+    if num and num < 0: # If the selected quote is less than 0, count back if possible
+        num = count + num + 1 if num + count > -1 else count + 1
     if num and num > count: # If a number is given and and there are not enough quotes
         return "I only have %d quote%s for %s" % (count, ('s', '')[count == 1], nick)
-    if not num: #If a number is not given, select a random one
+    if num is False: #If a number is not given, select a random one
         num = random.randint(1, count)
 
     quote = db.execute('''SELECT time, nick, msg
@@ -75,6 +77,8 @@ def get_quote_by_chan(db, chan, num=False):
                           AND chan = ?''', (chan,)).fetchall()[0][0]
     if count == 0: # If there are no quotes in the database
         return "The channel %s does not have any quotes" % chan
+    if num and num < 0: #If the selected quote is less than 0, count back if possible
+        num = count + num + 1 if num + count > -1 else count + 1
     if num and num > count: # If a number is given and and there are not enough quotes
         return "I only have %d quote%s for %s" % (count, ('s', '')[count == 1], chan)
     if not num: #If a number is not given, select a random one
@@ -105,6 +109,8 @@ def quote(inp, nick='', chan='', db=None):
     elif retrieve:
         select, num = retrieve.groups()
         by_chan = True if select.startswith('#') else False
+        if num:
+            num = int(num)
         if by_chan: 
             return get_quote_by_chan(db, select, num)
         else:
