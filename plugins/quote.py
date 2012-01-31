@@ -35,7 +35,6 @@ def add_quote(db, chan, nick, add_nick, msg):
         return "message already stored, doing nothing."
     return "quote added."
 
-
 def del_quote(db, chan, nick, add_nick, msg):
     """Deletes a quote from a nick"""
     db.execute('''UPDATE quote 
@@ -45,78 +44,73 @@ def del_quote(db, chan, nick, add_nick, msg):
                   AND msg=msg''')
     db.commit()
 
+def get_quote_by_nick(db, chan, nick, num=False):
+    """Returns a formatted quote from a nick, random or selected by number"""
+    count = db.execute('''SELECT COUNT(*)
+                          FROM quote
+                          WHERE deleted != 1
+                          AND chan = ?
+                          AND lower(nick) = lower(?)''', (chan, nick)).fetchall()[0][0]
+    if count == 0: # If there are no quotes in the database
+        return "I don't have any quotes for %s" % nick
+    if num and num > count: # If a number is given and and there are not enough quotes
+        return "I only have %d quote%s for %s" % (count, ('s', '')[count == 1], nick)
+    if not num: #If a number is not given, select a random one
+        num = random.randint(1, count)
 
-def get_quotes_by_nick(db, chan, nick):
-    """Return an array of every quote from a nick"""
-    return db.execute('''SELECT time, nick, msg
-                         FROM quote
-                         WHERE deleted != 1 
-                         AND chan=? and lower(nick)=lower(?)
-                         ORDER BY time''', (chan, nick)).fetchall()
+    quote = db.execute('''SELECT time, nick, msg
+                          FROM quote
+                          WHERE deleted != 1
+                          AND chan = ?
+                          AND lower(nick) = lower(?)
+                          ORDER BY time
+                          LIMIT ?, 1''', (chan, nick, (num-1))).fetchall()[0]
+    return format_quote(quote, num, count)
 
+def get_quote_by_chan(db, chan, num=False): 
+    """Returns a formatted quote from a channel, random or selected by number"""
+    count = db.execute('''SELECT COUNT(*)
+                          FROM quote
+                          WHERE deleted != 1
+                          AND chan = ?''', (chan,)).fetchall()[0][0]
+    if count == 0: # If there are no quotes in the database
+        return "The channel %s does not have any quotes" % chan
+    if num and num > count: # If a number is given and and there are not enough quotes
+        return "I only have %d quote%s for %s" % (count, ('s', '')[count == 1], chan)
+    if not num: #If a number is not given, select a random one
+        num = random.randint(1, count)
 
-def get_quotes_by_chan(db, chan):
-    """Return an array of every quote from a channel"""
-    return db.execute('''SELECT time, nick, msg 
-                         FROM quote
-                         WHERE deleted!=1
-                         AND chan=? 
-                         ORDER BY time''', (chan,)).fetchall()
-
-
+    quote = db.execute('''SELECT time, nick, msg 
+                          FROM quote
+                          WHERE deleted != 1
+                          AND chan = ? 
+                          ORDER BY time
+                          LIMIT ?, 1''', (chan, (num -1))).fetchall()[0]
+    return format_quote(quote, num, count)
 
 @hook.command('q')
 @hook.command
 def quote(inp, nick='', chan='', db=None):
-    """.q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg> --
-
-    gets random or [#n]th quote by <nick> or from <#chan>/adds quote
-    """
-
+    ".q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg> -- gets " \
+        "random or [#n]th quote by <nick> or from <#chan>/adds quote"
     create_table_if_not_exists(db)
 
     add = re.match(r"add[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
-    retrieve_nick = re.match(r"(\S+)(?:\s+#?(-?\d+))?$", inp)
+    retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?$", inp)
     retrieve_chan = re.match(r"(#\S+)\s+(\S+)(?:\s+#?(-?\d+))?$", inp)
 
     if add:
         quoted_nick, msg = add.groups()
         return add_quote(db, chan, quoted_nick, nick, msg)
-    elif retrieve_nick:
-        select, num = retrieve_nick.groups()
-
-        by_chan = False
-        if select.startswith('#'):
-            by_chan = True
-            quotes = get_quotes_by_chan(db, select)
+    elif retrieve:
+        select, num = retrieve.groups()
+        by_chan = True if select.startswith('#') else False
+        if by_chan: 
+            return get_quote_by_chan(db, select, num)
         else:
-            quotes = get_quotes_by_nick(db, chan, select)
+            return get_quote_by_nick(db, chan, select, num)
     elif retrieve_chan:
         chan, nick, num = retrieve_chan.groups()
-
-        quotes = get_quotes_by_nick(db, chan, nick)
-    else:
-        return quote.__doc__
-
-    n_quotes = len(quotes)
-
-    if not n_quotes:
-        return "no quotes found"
-
-    if num:
-        num = int(num)
-
-    if num:
-        if num > n_quotes or (num < 0 and num < -n_quotes):
-            return "I only have %d quote%s for %s" % (n_quotes,
-                        ('s', '')[n_quotes == 1], select)
-        elif num < 0:
-            selected_quote = quotes[num]
-            num = n_quotes + num + 1
-        else:
-            selected_quote = quotes[num - 1]
-    else:
-        num = random.randint(1, n_quotes)
-        selected_quote = quotes[num - 1]
-
-    return format_quote(selected_quote, num, n_quotes)
+        return get_quote_by_nick(db, chan, nick, num)
+    
+    return quote.__doc__
