@@ -28,5 +28,5 @@ def predb(inp):
         size = ' :: ' + size[0].split()[0]
     else:
         size = ''
- 
+
     return '%s - %s - %s%s' % (date, section, name, size)

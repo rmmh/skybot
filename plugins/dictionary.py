@@ -8,16 +8,14 @@ from util import hook, http
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
 
-    url = 'http://www.urbandictionary.com/define.php'
-    page = http.get_html(url, term=inp)
-    words = page.xpath("//td[@class='word']")
-    defs = page.xpath("//div[@class='definition']")
+    url = 'http://www.urbandictionary.com/iphone/search/define'
+    page = http.get_json(url, term=inp)
+    defs = page['list']
 
-    if not defs:
-        return 'no definitions found'
+    if page['result_type'] == 'no_results':
+        return 'not found.'
 
-    out = words[0].text_content().strip() + ': ' + ' '.join(
-            defs[0].text_content().split())
+    out = defs[0]['word'] + ': ' + defs[0]['definition']
 
     if len(out) > 400:
         out = out[:out.rfind(' ', 0, 400)] + '...'
