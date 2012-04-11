@@ -41,9 +41,11 @@ def get_video_description(vid_id):
         out += ' - rated \x02%.2f/5.0\x02 (%d)' % (j['rating'],
                 j['ratingCount'])
 
+    # The use of str.decode() prevents UnicodeDecodeError with some locales
+    # See http://stackoverflow.com/questions/4082645/
     if 'viewCount' in j:
         out += ' - \x02%s\x02 views' % locale.format('%d',
-                                                     j['viewCount'], 1)
+                           j['viewCount'], 1).decode(locale.getlocale()[1])
 
     upload_time = time.strptime(j['uploaded'], "%Y-%m-%dT%H:%M:%S.000Z")
     out += ' - \x02%s\x02 on \x02%s\x02' % (j['uploader'],
