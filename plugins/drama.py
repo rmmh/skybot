@@ -3,8 +3,8 @@ article'''
 
 from util import hook, http
 
-api_url = "http://encyclopediadramatica.ch/api.php?action=opensearch"
-ed_url = "http://encyclopediadramatica.ch/"
+api_url = "http://encyclopediadramatica.se/api.php?action=opensearch"
+ed_url = "http://encyclopediadramatica.se/"
 
 
 @hook.command('ed')
