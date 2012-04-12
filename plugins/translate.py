@@ -1,7 +1,14 @@
+'''
+A Google API key is required and retrieved from the bot config file.
+Since December 1, 2011, the Google Translate API is a paid service only.
+'''
+
 import htmlentitydefs
 import re
 
 from util import hook, http
+
+api_key = ""
 
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 
@@ -32,15 +39,15 @@ def unescape(text):
 
 
 def goog_trans(text, slang, tlang):
-    url = 'http://ajax.googleapis.com/ajax/services/language/translate?v=1.0'
-    parsed = http.get_json(url, q=text, langpair=(slang + '|' + tlang))
+    url = 'https://www.googleapis.com/language/translate/v2'
+    parsed = http.get_json(url, key=api_key, q=text, source=slang, target=tlang)
     if not 200 <= parsed['responseStatus'] < 300:
         raise IOError('error with the translation server: %d: %s' % (
                 parsed['responseStatus'], parsed['responseDetails']))
     if not slang:
         return unescape('(%(detectedSourceLanguage)s) %(translatedText)s' %
-                (parsed['responseData']))
-    return unescape(parsed['responseData']['translatedText'])
+                (parsed['responseData']['data']['translations'][0]))
+    return unescape('%(translatedText)s' % parsed['responseData']['data']['translations'][0])
 
 
 def match_language(fragment):
@@ -57,10 +64,13 @@ def match_language(fragment):
 
 
 @hook.command
-def translate(inp):
+def translate(inp, bot=None):
     '.translate [source language [target language]] <sentence> -- translates' \
     ' <sentence> from source language (default autodetect) to target' \
     ' language (default English) using Google Translate'
+
+    if not hasapikey(bot):
+        return None
 
     args = inp.split(' ', 2)
 
@@ -69,6 +79,8 @@ def translate(inp):
             sl = match_language(args[0])
             if not sl:
                 return goog_trans(inp, '', 'en')
+            if len(args) == 2:
+                return goog_trans(args[1], sl, 'en')
             if len(args) >= 3:
                 tl = match_language(args[1])
                 if not tl:
@@ -94,8 +106,11 @@ def babel_gen(inp):
 
 
 @hook.command
-def babel(inp):
+def babel(inp, bot=None):
     ".babel <sentence> -- translates <sentence> through multiple languages"
+
+    if not hasapikey(bot):
+        return None
 
     try:
         return list(babel_gen(inp))[-1][2]
@@ -104,8 +119,11 @@ def babel(inp):
 
 
 @hook.command
-def babelext(inp):
+def babelext(inp, bot=None):
     ".babelext <sentence> -- like .babel, but with more detailed output"
+
+    if not hasapikey(bot):
+        return None
 
     try:
         babels = list(babel_gen(inp))
@@ -123,6 +141,9 @@ def babelext(inp):
 
     return out
 
+def hasapikey(bot):
+    api_key = bot.config.get("api_keys", {}).get("googletranslate", None)
+    return api_key
 
 lang_pairs = [
     ("no", "Norwegian"),

@@ -19,7 +19,7 @@ def suggest(inp, inp_unstripped=''):
     else:
         num = 0
 
-    page = http.get('http://google.com/complete/search', q=inp)
+    page = http.get('http://google.com/complete/search', output='json', client='hp', q=inp)
     page_json = page.split('(', 1)[1][:-1]
     suggestions = json.loads(page_json)[1]
     if not suggestions:
@@ -30,4 +30,4 @@ def suggest(inp, inp_unstripped=''):
         out = suggestions[num - 1]
     else:
         out = random.choice(suggestions)
-    return '#%d: %s' % (int(out[2][0]) + 1, out[0])
+    return '#%d: %s' % (int(out[2][0]) + 1, out[0].replace('<b>', '').replace('</b>', ''))
