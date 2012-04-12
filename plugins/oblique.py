@@ -19,6 +19,9 @@ def update_commands(force=False):
             if not line.strip():
                 continue
 
+            if line.strip().find(" ") == -1:
+                continue
+
             name, url = line.strip().split(None, 1)
             commands[name] = url
 
