@@ -2,8 +2,10 @@
 
 import os
 import Queue
+import subprocess
 import sys
 import time
+
 
 sys.path += ['plugins']  # So 'import hook' works without duplication
 sys.path += ['lib']
@@ -15,6 +17,21 @@ class Bot(object):
 
 
 bot = Bot()
+
+# Retrieve version using git
+bot.version = {"REV_NUMBER": 0, "SHORT_HASH": "unknown"}
+try:
+    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
+    stdout, _ = p.communicate()
+    p.wait()
+
+    bot.version["REV_NUMBER"] = len(stdout.splitlines())
+    bot.version["SHORT_HASH"] = stdout.split(None, 1)[0]
+except OSError:
+    print "### INFO: git could not be used to retrieve version"
+
+print 'Skybot (r%d %s) - http://github.com/rmmh/skybot' % (
+                        bot.version["REV_NUMBER"], bot.version["SHORT_HASH"])
 
 print 'Loading plugins'
 
