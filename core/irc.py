@@ -26,13 +26,14 @@ def censor(text):
 
 
 class crlf_tcp(object):
-    "Handles tcp connections that consist of utf-8 lines ending with crlf"
+
+    """Handles TCP connections consisting of UFT-8 lines ended by CRLF."""
 
     def __init__(self, host, port, timeout=300):
         self.ibuffer = ""
         self.obuffer = ""
-        self.oqueue = Queue.Queue()  # lines to be sent out
-        self.iqueue = Queue.Queue()  # lines that were received
+        self.oqueue = Queue.Queue()  # Lines to be sent out
+        self.iqueue = Queue.Queue()  # Lines that were received
         self.socket = self.create_socket()
         self.host = host
         self.port = port
@@ -93,15 +94,17 @@ class crlf_tcp(object):
 
 
 class crlf_ssl_tcp(crlf_tcp):
-    "Handles ssl tcp connetions that consist of utf-8 lines ending with crlf"
+
+    """Handles SSL TCP connections consisting of UTF-8 lines ended by CRLF."""
+
     def __init__(self, host, port, ignore_cert_errors, timeout=300):
         self.ignore_cert_errors = ignore_cert_errors
         crlf_tcp.__init__(self, host, port, timeout)
 
     def create_socket(self):
-        return wrap_socket(crlf_tcp.create_socket(self), server_side=False,
-                cert_reqs=CERT_NONE if self.ignore_cert_errors else
-                CERT_REQUIRED)
+        return wrap_socket(
+             crlf_tcp.create_socket(self), server_side=False,
+             cert_reqs=CERT_NONE if self.ignore_cert_errors else CERT_REQUIRED)
 
     def recv_from_socket(self, nbytes):
         return self.socket.read(nbytes)
@@ -110,7 +113,7 @@ class crlf_ssl_tcp(crlf_tcp):
         return SSLError
 
     def handle_receive_exception(self, error, last_timestamp):
-        # this is terrible
+        # TODO: This is terrible
         if not "timed out" in error.args[0]:
             raise
         return crlf_tcp.handle_receive_exception(self, error, last_timestamp)
@@ -122,8 +125,13 @@ irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 
 
 class IRC(object):
-    "handles the IRC protocol"
-    #see the docs/ folder for more information on the protocol
+
+    """Handles the IRC protocol.
+
+    See the docs/rfc/ folder for more information on the protocol.
+
+    """
+
     def __init__(self, server, nick, port=6667, channels=[], conf={}):
         self.channels = channels
         self.conf = conf
@@ -131,9 +139,11 @@ class IRC(object):
         self.port = port
         self.nick = nick
 
-        self.out = Queue.Queue()  # responses from the server are placed here
-        # format: [rawline, prefix, command, params,
-        # nick, user, host, paramlist, msg]
+        # Responses from the server are placed here.
+        # Format: [rawline, prefix, command, params,
+        #          nick, user, host, paramlist, msg]
+        self.out = Queue.Queue()
+
         self.connect()
 
         thread.start_new_thread(self.parse_loop, ())
@@ -147,8 +157,9 @@ class IRC(object):
         self.set_pass(self.conf.get('server_password'))
         self.set_nick(self.nick)
         self.cmd("USER",
-            [conf.get('user', 'skybot'), "3", "*", conf.get('realname',
-                'Python bot - http://github.com/rmmh/skybot')])
+                 [conf.get('user', 'skybot'), "3", "*",
+                  conf.get('realname',
+                           'Python bot - http://github.com/rmmh/skybot')])
 
     def parse_loop(self):
         while True:
@@ -158,7 +169,7 @@ class IRC(object):
                 self.connect()
                 continue
 
-            if msg.startswith(":"):  # has a prefix
+            if msg.startswith(":"):  # Has a prefix
                 prefix, command, params = irc_prefix_rem(msg).groups()
             else:
                 prefix, command, params = irc_noprefix_rem(msg).groups()
@@ -206,7 +217,7 @@ class FakeIRC(IRC):
         self.port = port
         self.nick = nick
 
-        self.out = Queue.Queue()  # responses from the server are placed here
+        self.out = Queue.Queue()  # Responses from the server are placed here
 
         self.f = open(fn, 'rb')
 
@@ -217,10 +228,10 @@ class FakeIRC(IRC):
             msg = decode(self.f.readline()[9:])
 
             if msg == '':
-                print "!!!!DONE READING FILE!!!!"
+                print "DONE READING FILE"
                 return
 
-            if msg.startswith(":"):  # has a prefix
+            if msg.startswith(":"):  # Has a prefix
                 prefix, command, params = irc_prefix_rem(msg).groups()
             else:
                 prefix, command, params = irc_noprefix_rem(msg).groups()
@@ -232,7 +243,7 @@ class FakeIRC(IRC):
                     paramlist[-1] = paramlist[-1][1:]
                 lastparam = paramlist[-1]
             self.out.put([msg, prefix, command, params, nick, user, host,
-                    paramlist, lastparam])
+                          paramlist, lastparam])
             if command == "PING":
                 self.cmd("PONG", [params])
 

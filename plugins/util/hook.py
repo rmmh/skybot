@@ -21,20 +21,20 @@ def _hook_add(func, add, name=''):
             if argspec.varargs:
                 n_args -= 1
             if n_args != 1:
-                err = '%ss must take 1 non-keyword argument (%s)' % (name,
-                            func.__name__)
+                err = ('%ss must take 1 non-keyword argument (%s)' %
+                       (name, func.__name__))
                 raise ValueError(err)
 
         args = []
         if argspec.defaults:
             end = bool(argspec.keywords) + bool(argspec.varargs)
             args.extend(argspec.args[-len(argspec.defaults):
-                        end if end else None])
+                                     end if end else None])
         if argspec.keywords:
-            args.append(0)  # means kwargs present
+            args.append(0)  # Means kwargs present
         func._args = args
 
-    if not hasattr(func, '_thread'):  # does function run in its own thread?
+    if not hasattr(func, '_thread'):  # Does function run in its own thread?
         func._thread = False
 
 

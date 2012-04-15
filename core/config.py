@@ -39,14 +39,14 @@ if not os.path.exists('config'):
 
 
 def config():
-    # reload config from file if file has changed
+    """Reload config from file if it has changed."""
     config_mtime = os.stat('config').st_mtime
     if bot._config_mtime != config_mtime:
         try:
             bot.config = json.load(open('config'))
             bot._config_mtime = config_mtime
         except ValueError, e:
-            print 'ERROR: malformed config!', e
+            print 'ERROR: malformed config file', e
 
 
 bot._config_mtime = 0

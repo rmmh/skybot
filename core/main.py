@@ -2,15 +2,15 @@ import thread
 import traceback
 
 
-thread.stack_size(1024 * 512)  # reduce vm size
+thread.stack_size(1024 * 512)  # Reduce VM size
 
 
 class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
-                    nick, user, host, paraml, msg):
+                 nick, user, host, paraml, msg):
 
         chan = paraml[0].lower()
-        if chan == conn.nick.lower():  # is a PM
+        if chan == conn.nick.lower():  # Is a PM
             chan = nick
 
         def say(msg):
@@ -35,12 +35,12 @@ class Input(dict):
             conn.cmd('NOTICE', [nick, msg])
 
         dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
-                    params=params, nick=nick, user=user, host=host,
-                    paraml=paraml, msg=msg, server=conn.server, chan=chan,
-                    notice=notice, say=say, reply=reply, pm=pm, bot=bot,
-                    me=me, set_nick=set_nick, lastparam=paraml[-1])
+                      params=params, nick=nick, user=user, host=host,
+                      paraml=paraml, msg=msg, server=conn.server, chan=chan,
+                      notice=notice, say=say, reply=reply, pm=pm, bot=bot,
+                      me=me, set_nick=set_nick, lastparam=paraml[-1])
 
-    # make dict keys accessible as attributes
+    # Make dict keys accessible as attributes
     def __getattr__(self, key):
         return self[key]
 
@@ -80,7 +80,9 @@ def do_sieve(sieve, bot, input, func, type, args):
 
 
 class Handler(object):
-    '''Runs plugins in their own threads (ensures order)'''
+
+    """Runs plugins in their own threads (ensures order)."""
+    
     def __init__(self, func):
         self.func = func
         self.input_queue = Queue.Queue()
@@ -117,8 +119,8 @@ def dispatch(input, kind, func, args, autohelp=False):
         if input == None:
             return
 
-    if autohelp and args.get('autohelp', True) and not input.inp \
-      and func.__doc__ is not None:
+    if (autohelp and args.get('autohelp', True) and
+                     not input.inp and func.__doc__ is not None):
         input.reply(func.__doc__)
         return
 
@@ -131,7 +133,7 @@ def dispatch(input, kind, func, args, autohelp=False):
 def match_command(command):
     commands = list(bot.commands)
 
-    # do some fuzzy matching
+    # Do some fuzzy matching
     prefix = filter(lambda x: x.startswith(command), commands)
     if len(prefix) == 1:
         return prefix[0]
@@ -150,7 +152,7 @@ def main(conn, out):
 
     if inp.command == 'PRIVMSG':
         # COMMANDS
-        if inp.chan == inp.nick:  # private message, no command prefix
+        if inp.chan == inp.nick:  # Private message, no command prefix
             prefix = r'^(?:[.]?|'
         else:
             prefix = r'^(?:[.]|'
@@ -164,7 +166,7 @@ def main(conn, out):
             trigger = m.group(1).lower()
             command = match_command(trigger)
 
-            if isinstance(command, list):  # multiple potential matches
+            if isinstance(command, list):  # Multiple potential matches
                 input = Input(conn, *out)
                 input.reply("did you mean %s or %s?" %
                             (', '.join(command[:-1]), command[-1]))

@@ -5,9 +5,9 @@ import Queue
 import sys
 import time
 
-sys.path += ['plugins']  # so 'import hook' works without duplication
+sys.path += ['plugins']  # So 'import hook' works without duplication
 sys.path += ['lib']
-os.chdir(sys.path[0] or '.')  # do stuff relative to the install directory
+os.chdir(sys.path[0] or '.')  # Set the current working directory
 
 
 class Bot(object):
@@ -18,9 +18,9 @@ bot = Bot()
 
 print 'Loading plugins'
 
-# bootstrap the reloader
+# Bootstrap the reloader
 eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
-    os.path.join('core', 'reload.py'), 'exec'))
+             os.path.join('core', 'reload.py'), 'exec'))
 reload(init=True)
 
 config()
@@ -34,11 +34,14 @@ bot.conns = {}
 try:
     for name, conf in bot.config['connections'].iteritems():
         if conf.get('ssl'):
-            bot.conns[name] = SSLIRC(conf['server'], conf['nick'], conf=conf,
-                    port=conf.get('port', 6667), channels=conf['channels'],
+            bot.conns[name] = SSLIRC(
+                    conf['server'], conf['nick'], conf=conf,
+                    port=conf.get('port', 6667),
+                    channels=conf['channels'],
                     ignore_certificate_errors=conf.get('ignore_cert', True))
         else:
-            bot.conns[name] = IRC(conf['server'], conf['nick'], conf=conf,
+            bot.conns[name] = IRC(
+                    conf['server'], conf['nick'], conf=conf,
                     port=conf.get('port', 6667), channels=conf['channels'])
 except Exception, e:
     print 'ERROR: malformed config file', e
@@ -51,8 +54,9 @@ if not os.path.exists(bot.persist_dir):
 print 'Running main loop'
 
 while True:
-    reload()  # these functions only do things
-    config()  # if changes have occured
+    # These functions only do things if changes have occured
+    reload()
+    config()
 
     for conn in bot.conns.itervalues():
         try:
