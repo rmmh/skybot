@@ -49,11 +49,14 @@ def reload(init=False):
 
             try:
                 eval(compile(open(filename, 'U').read(), filename, 'exec'),
-                        globals())
+                     globals())
             except Exception:
                 traceback.print_exc()
-                if init:        # stop if there's an error (syntax?) in a core
-                    sys.exit()  # script on startup
+
+                # Stop if there's an error in a core script on startup
+                if init:
+                    sys.exit()
+
                 continue
 
             if filename == os.path.join('core', 'reload.py'):
@@ -62,7 +65,7 @@ def reload(init=False):
 
     fileset = set(glob.glob(os.path.join('plugins', '*.py')))
 
-    # remove deleted/moved plugins
+    # Remove deleted/moved plugins
     for name, data in bot.plugs.iteritems():
         bot.plugs[name] = [x for x in data if x[0]._filename in fileset]
 
@@ -75,7 +78,7 @@ def reload(init=False):
             handler.stop()
             del bot.threads[func]
 
-    # compile new plugins
+    # Compile new plugins
     for filename in fileset:
         mtime = os.stat(filename).st_mtime
         if mtime != mtimes.get(filename):
@@ -91,7 +94,7 @@ def reload(init=False):
                 traceback.print_exc()
                 continue
 
-            # remove plugins already loaded from this filename
+            # Remove plugins already loaded from this filename
             for name, data in bot.plugs.iteritems():
                 bot.plugs[name] = [x for x in data
                                    if x[0]._filename != filename]
@@ -102,7 +105,7 @@ def reload(init=False):
                     del bot.threads[func]
 
             for obj in namespace.itervalues():
-                if hasattr(obj, '_hook'):  # check for magic
+                if hasattr(obj, '_hook'):  # Check for magic
                     if obj._thread:
                         bot.threads[obj] = Handler(obj)
 
@@ -110,21 +113,21 @@ def reload(init=False):
                         bot.plugs[type] += [data]
 
                         if not init:
-                            print '### new plugin (type: %s) loaded:' % \
-                                    type, format_plug(data)
+                            print ('### new plugin (type: %s) loaded:' %
+                                   type, format_plug(data))
 
     if changed:
         bot.commands = {}
         for plug in bot.plugs['command']:
             name = plug[1]['name'].lower()
             if not re.match(r'^\w+$', name):
-                print '### ERROR: invalid command name "%s" (%s)' % (name,
-                  format_plug(plug))
+                print ('### ERROR: invalid command name "%s" (%s)' %
+                       (name, format_plug(plug)))
                 continue
             if name in bot.commands:
-                print "### ERROR: command '%s' already registered (%s, %s)" % \
-                    (name, format_plug(bot.commands[name]),
-                     format_plug(plug))
+                print ("### ERROR: command '%s' already registered (%s, %s)" %
+                       (name, format_plug(bot.commands[name]),
+                        format_plug(plug)))
                 continue
             bot.commands[name] = plug
 
@@ -137,8 +140,7 @@ def reload(init=False):
         print '  plugin listing:'
 
         if bot.commands:
-            # hack to make commands with multiple aliases
-            # print nicely
+            # Hack to make commands with multiple aliases print nicely
 
             print '    command:'
             commands = collections.defaultdict(list)
@@ -147,7 +149,7 @@ def reload(init=False):
                 commands[make_signature(func)].append(name)
 
             for sig, names in sorted(commands.iteritems()):
-                names.sort(key=lambda x: (-len(x), x))  # long names first
+                names.sort(key=lambda x: (-len(x), x))  # Long names first
                 out = ' ' * 6 + '%s:%s:%s' % sig
                 out += ' ' * (50 - len(out)) + ', '.join(names)
                 print out

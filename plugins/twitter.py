@@ -10,14 +10,19 @@ from time import strptime, strftime
 from util import hook, http
 
 
-def unescape_xml(string):
-    # unescape the 5 chars that might be escaped in xml
+# Conversion table to prevent locale issues
+abbreviated_month_name = {"Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04",
+                          "May": "05", "Jun": "06", "Jul": "07", "Aug": "08",
+                          "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"}
 
-    # gratuitously functional
+
+def unescape_xml(string):
+    """Unescape the 5 chars that might be escaped in xml"""
+    # Gratuitously functional
     # return reduce(lambda x, y: x.replace(*y), (string,
     #     zip('&gt; &lt; &apos; &quote; &amp'.split(), '> < \' " &'.split()))
 
-    # boring, normal
+    # Boring, normal
     return string.replace('&gt;', '>').replace('&lt;', '<').replace('&apos;',
                     "'").replace('&quote;', '"').replace('&amp;', '&')
 
@@ -47,13 +52,15 @@ def twitter(inp):
             return 'error: no replies to %s found' % inp
         inp = reply_inp
 
-    url = 'http://twitter.com'
+    url = 'http://api.twitter.com'
     getting_nth = False
     getting_id = False
     searching_hashtag = False
 
     time = 'status/created_at'
     text = 'status/text'
+    retweeted_text = 'status/retweeted_status/text'
+    retweeted_screen_name = 'status/retweeted_status/user/screen_name'
     reply_name = 'status/in_reply_to_screen_name'
     reply_id = 'status/in_reply_to_status_id'
     reply_user = 'status/in_reply_to_user_id'
@@ -67,15 +74,17 @@ def twitter(inp):
         reply_name = 'in_reply_to_screen_name'
         reply_id = 'in_reply_to_status_id'
         reply_user = 'in_reply_to_user_id'
-    elif re.match(r'^\w{1,15}$', inp):
-        url += '/users/show/%s.xml' % inp
-        screen_name = 'screen_name'
-    elif re.match(r'^\w{1,15}\s+\d+$', inp):
+    elif re.match(r'^\w{1,15}$', inp) or re.match(r'^\w{1,15}\s+\d+$', inp):
         getting_nth = True
-        name, num = inp.split()
+        if inp.find(' ') == -1:
+            name = inp
+            num = 1
+        else:
+            name, num = inp.split()
         if int(num) > 3200:
             return 'error: only supports up to the 3200th tweet'
-        url += '/statuses/user_timeline/%s.xml?count=1&page=%s' % (name, num)
+        url += ('/1/statuses/user_timeline.xml?include_rts=true&'
+                'screen_name=%s&count=1&page=%s' % (name, num))
         screen_name = 'status/user/screen_name'
     elif re.match(r'^#\w+$', inp):
         url = 'http://search.twitter.com/search.atom?q=%23' + inp[1:]
@@ -98,7 +107,7 @@ def twitter(inp):
         if e.code in errors:
             return 'error: ' + errors[e.code]
         return 'error: unknown %s' % e.code
-    except http.URLerror, e:
+    except http.URLError, e:
         return 'error: timeout'
 
     if searching_hashtag:
@@ -122,13 +131,22 @@ def twitter(inp):
     reply_id = tweet.find(reply_id).text
     reply_user = tweet.find(reply_user).text
     if reply_name is not None and (reply_id is not None or
-            reply_user is not None):
+                                   reply_user is not None):
         add_reply(reply_name, reply_id or -1)
 
+    # Retrieving the full tweet in case of a native retweet
+    if tweet.find(retweeted_text) is not None:
+        text = 'RT @' + tweet.find(retweeted_screen_name).text + ': '
+        text += unescape_xml(tweet.find(retweeted_text).text.replace('\n', ''))
+    else:
+        text = unescape_xml(tweet.find(text).text.replace('\n', ''))
+
+    # Using a conversion table to do a locale-independent date parsing
+    time_parts = time.text.split(' ', 2)
+    time = abbreviated_month_name[time_parts[1]] + ' ' + time_parts[2]
     time = strftime('%Y-%m-%d %H:%M:%S',
-             strptime(time.text,
-             '%a %b %d %H:%M:%S +0000 %Y'))
-    text = unescape_xml(tweet.find(text).text.replace('\n', ''))
+                    strptime(time, '%m %d %H:%M:%S +0000 %Y'))
+
     screen_name = tweet.find(screen_name).text
 
     return "%s %s: %s" % (time, screen_name, text)

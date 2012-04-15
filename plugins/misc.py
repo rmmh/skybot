@@ -1,45 +1,29 @@
-import re
 import socket
-import subprocess
 import time
 
 from util import hook, http
 
-socket.setdefaulttimeout(10)  # global setting
+
+socket.setdefaulttimeout(10)  # Global setting
 
 
-def get_version():
-    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-    p.wait()
-
-    revnumber = len(stdout.splitlines())
-
-    shorthash = stdout.split(None, 1)[0]
-
-    http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
-                        % (revnumber, shorthash)
-
-    return shorthash, revnumber
-
-
-#autorejoin channels
 @hook.event('KICK')
 def rejoin(paraml, conn=None):
+    """Autorejoin channels."""
     if paraml[1] == conn.nick:
         if paraml[0].lower() in conn.channels:
             conn.join(paraml[0])
 
 
-#join channels when invited
 @hook.event('INVITE')
 def invite(paraml, conn=None):
+    """Join channels when invited."""
     conn.join(paraml[-1])
 
 
 @hook.event('004')
-def onjoin(paraml, conn=None):
-    # identify to services
+def onjoin(paraml, conn=None, bot=None):
+    # Identify to services
     nickserv_password = conn.conf.get('nickserv_password', '')
     nickserv_name = conn.conf.get('nickserv_name', 'nickserv')
     nickserv_command = conn.conf.get('nickserv_command', 'IDENTIFY %s')
@@ -47,22 +31,24 @@ def onjoin(paraml, conn=None):
         conn.msg(nickserv_name, nickserv_command % nickserv_password)
         time.sleep(1)
 
-    # set mode on self
+    # Set mode on self
     mode = conn.conf.get('mode')
     if mode:
         conn.cmd('MODE', [conn.nick, mode])
 
-    # join channels
+    # Join channels
     for channel in conn.channels:
         conn.join(channel)
-        time.sleep(1)  # don't flood JOINs
+        time.sleep(1)  # Don't flood JOINs
 
-    # set user-agent
-    ident, rev = get_version()
+    # Set HTTP User-Agent
+    # TODO: The http library should retrieve the user-agent and not the other
+    # way around.
+    http.ua_skybot = ('Skybot/r%d %s (http://github.com/rmmh/skybot)' %
+                      (bot.version["REV_NUMBER"], bot.version["SHORT_HASH"]))
 
 
 @hook.regex(r'^\x01VERSION\x01$')
-def version(inp, notice=None):
-    ident, rev = get_version()
-    notice('\x01VERSION skybot %s r%d - http://github.com/rmmh/'
-           'skybot/\x01' % (ident, rev))
+def version(inp, notice=None, bot=None):
+    notice('\x01VERSION Skybot (r%d %s) - http://github.com/rmmh/skybot/\x01' %
+           (bot.version["REV_NUMBER"], bot.version["SHORT_HASH"]))
