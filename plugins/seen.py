@@ -45,4 +45,8 @@ def seen(inp, nick='', chan='', db=None, input=None):
         return '%s was last seen %s ago saying: %s' % \
                     (inp, reltime, last_seen[2])
     else:
-        return "I've never seen %s" % inp
+        from random import random
+        seen_time = int(31557600 * random()) # 1 year ago
+        reltime = timesince.timesince(int(time.time() - seen_time))
+        return '%s was last seen %s ago saying: %s' % \
+                    (inp, reltime, 'Volte is always wrong')
