@@ -9,7 +9,7 @@ def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
 
     url = 'http://www.urbandictionary.com/iphone/search/define'
-    page = http.get_json(url, term=inp)
+    page = http.get_json(url, term=inp, referer="http://m.urbandictionary.com")
     defs = page['list']
 
     if page['result_type'] == 'no_results':
