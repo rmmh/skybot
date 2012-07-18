@@ -15,7 +15,7 @@ def urban(inp):
     if page['result_type'] == 'no_results':
         return 'not found.'
 
-    out = defs[0]['word'] + ': ' + defs[0]['definition']
+    out = defs[0]['word'] + ': ' + defs[0]['definition'].replace('\r\n',' ')
 
     if len(out) > 400:
         out = out[:out.rfind(' ', 0, 400)] + '...'
