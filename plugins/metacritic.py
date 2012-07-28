@@ -8,14 +8,14 @@ from util import hook, http
 
 @hook.command('mc')
 def metacritic(inp):
-    '.mc [all|movie|tv|album|x360|ps3|pc|ds|wii] <title> -- gets rating for'\
+    '.mc [all|movie|tv|album|x360|ps3|pc|ds|3ds|wii|psv] <title> -- gets rating for'\
     ' <title> from metacritic on the specified medium'
 
     # if the results suck, it's metacritic's fault
 
     args = inp.strip()
 
-    game_platforms = ('x360', 'ps3', 'pc', 'ds', 'wii', '3ds', 'gba')
+    game_platforms = ('x360', 'ps3', 'pc', 'ds', 'wii', '3ds', 'gba', 'psv')
     all_platforms = game_platforms + ('all', 'movie', 'tv', 'album')
 
     try:
