@@ -1,11 +1,16 @@
-"weather, thanks to google"
+"weather, thanks to wunderground"
 
 from util import hook, http
 
 
 @hook.command(autohelp=False)
-def weather(inp, nick='', server='', reply=None, db=None):
-    ".weather <location> [dontsave] -- gets weather data from Google"
+def weather(inp, nick='', server='', reply=None, db=None, bot=None):
+    ".weather <location> [dontsave] -- gets weather data from Wunderground "\
+            "http://wunderground.com/weather/api"
+
+    api_key = bot.config.get("api_keys", {}).get("wunderground", None)
+    if not api_key:
+        return None
 
     loc = inp
 
@@ -22,20 +27,75 @@ def weather(inp, nick='', server='', reply=None, db=None):
             return weather.__doc__
         loc = loc[0]
 
-    w = http.get_xml('http://www.google.com/ig/api', weather=loc)
-    w = w.find('weather')
+    loc, _, state = loc.partition(', ')
 
-    if w.find('problem_cause') is not None:
-        return "Couldn't fetch weather data for '%s', try using a zip or " \
-                "postal code." % inp
+    # Check to see if a lat, long pair is being passed. This could be done more
+    # completely with regex, and converting from DMS to decimal degrees. This
+    # is nice and simple, however.
+    try:
+        float(loc)
+        float(state)
 
-    info = dict((e.tag, e.get('data')) for e in w.find('current_conditions'))
-    info['city'] = w.find('forecast_information/city').get('data')
-    info['high'] = w.find('forecast_conditions/high').get('data')
-    info['low'] = w.find('forecast_conditions/low').get('data')
+        loc = loc + ',' + state
+        state = ''
+    except ValueError:
+        if state:
+            state = http.quote_plus(state)
+            state += '/'
 
-    reply('%(city)s: %(condition)s, %(temp_f)sF/%(temp_c)sC (H:%(high)sF'\
-            ', L:%(low)sF), %(humidity)s, %(wind_condition)s.' % info)
+        loc = http.quote_plus(loc)
+
+    url = 'http://api.wunderground.com/api/'
+    query = '{key}/geolookup/conditions/forecast/q/{state}{loc}.json' \
+            .format(key=api_key, state=state, loc=loc)
+    url += query
+
+    try:
+        parsed_json = http.get_json(url)
+    except IOError:
+        print 'Could not get data from Wunderground'
+        return None
+
+    info = {}
+    if 'current_observation' not in parsed_json:
+        resp = 'Could not find weather for {inp}. '.format(inp=inp)
+
+        # In the case of no observation, but results, print some possible
+        # location matches
+        if 'results' in parsed_json['response']:
+            resp += 'Possible matches include: '
+            results = parsed_json['response']['results']
+
+            for place in results[:6]:
+                resp += '{city} '.format(**place)
+
+                if place['state']:
+                    resp += '{state} '.format(**place)
+
+                if place['country_name']:
+                    resp += '{country_name}, '.format(**place)
+
+            resp = resp[:-2]
+
+        reply(resp)
+        return
+
+    obs = parsed_json['current_observation']
+    sf = parsed_json['forecast']['simpleforecast']['forecastday'][0]
+    info['city'] = obs['display_location']['full']
+    info['t_f'] = obs['temp_f']
+    info['t_c'] = obs['temp_c']
+    info['weather'] = obs['weather']
+    info['h_f'] = sf['high']['fahrenheit']
+    info['h_c'] = sf['high']['celsius']
+    info['l_f'] = sf['low']['fahrenheit']
+    info['l_c'] = sf['low']['celsius']
+    info['humid'] = obs['relative_humidity']
+    info['wind'] = 'Wind: {mph}mph/{kph}kph'\
+            .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
+    reply('{city}: {weather}, {t_f}F/{t_c}C'\
+            '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)' \
+            ', Humidity: {humid}, {wind}'.format(**info))
 
     if inp and not dontsave:
         db.execute("insert or replace into weather(nick, loc) values (?,?)",
