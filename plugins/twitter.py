@@ -47,7 +47,7 @@ def twitter(inp):
             return 'error: no replies to %s found' % inp
         inp = reply_inp
 
-    url = 'http://twitter.com'
+    url = 'http://api.twitter.com/1'
     getting_nth = False
     getting_id = False
     searching_hashtag = False
