@@ -9,13 +9,13 @@ def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
 
     url = 'http://www.urbandictionary.com/iphone/search/define'
-    page = http.get_json(url, term=inp)
+    page = http.get_json(url, term=inp, referer="http://m.urbandictionary.com")
     defs = page['list']
 
     if page['result_type'] == 'no_results':
         return 'not found.'
 
-    out = defs[0]['word'] + ': ' + defs[0]['definition']
+    out = defs[0]['word'] + ': ' + defs[0]['definition'].replace('\r\n',' ')
 
     if len(out) > 400:
         out = out[:out.rfind(' ', 0, 400)] + '...'
