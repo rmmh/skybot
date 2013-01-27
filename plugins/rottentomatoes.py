@@ -5,17 +5,13 @@ movie_search_url = api_root + 'movies.json'
 movie_reviews_url = api_root + 'movies/%s/reviews.json'
 
 
+@hook.api_key('rottentomatoes')
 @hook.command('rt')
-def rottentomatoes(inp, bot=None):
+@hook.command
+def rottentomatoes(inp, api_key=None):
     '.rt <title> -- gets ratings for <title> from Rotten Tomatoes'
 
-    api_key = bot.config.get("api_keys", {}).get("rottentomatoes", None)
-    if not api_key:
-        return
-
-    title = inp.strip()
-
-    results = http.get_json(movie_search_url, q=title, apikey=api_key)
+    results = http.get_json(movie_search_url, q=inp, apikey=api_key)
     if results['total'] == 0:
         return 'no results'
 

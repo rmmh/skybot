@@ -85,6 +85,13 @@ def singlethread(func):
     return func
 
 
+def api_key(key):
+    def annotate(func):
+        func._apikey = key
+        return func
+    return annotate
+
+
 def regex(regex, flags=0, **kwargs):
     args = kwargs
 

@@ -7,13 +7,9 @@ from util import hook, http
 
 api_url = "http://ws.audioscrobbler.com/2.0/?format=json"
 
-
-@hook.command
-def lastfm(inp, nick='', say=None, bot=None):
-    api_key = bot.config.get("api_keys", {}).get("lastfm", None)
-    if not api_key:
-        return None
-
+@hook.api_key('lastfm')
+@hook.command(autohelp=False)
+def lastfm(inp, nick='', say=None, api_key=None):
     if inp:
         user = inp
     else:

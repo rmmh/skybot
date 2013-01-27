@@ -3,12 +3,12 @@
 from util import hook, http
 
 
+@hook.api_key('wunderground')
 @hook.command(autohelp=False)
-def weather(inp, nick='', server='', reply=None, db=None, bot=None):
+def weather(inp, nick='', server='', reply=None, db=None, api_key=None):
     ".weather <location> [dontsave] -- gets weather data from Wunderground "\
             "http://wunderground.com/weather/api"
 
-    api_key = bot.config.get("api_keys", {}).get("wunderground", None)
     if not api_key:
         return None
 
