@@ -41,7 +41,7 @@ def forum_link(inp, bot=None):
     poster = thread.xpath('//dt[contains(@class, author)]//text()')[0]
 
     # 1 post per page => n_pages = n_posts
-    num_posts = thread.xpath('//a[@title="last page"]/@href')
+    num_posts = thread.xpath('//a[@title="Last page"]/@href')
 
     if not num_posts:
         num_posts = 1
