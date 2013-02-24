@@ -42,7 +42,11 @@ def seen(inp, nick='', chan='', db=None, input=None):
         reltime = timesince.timesince(last_seen[1])
         if last_seen[0] != inp.lower():  # for glob matching
             inp = last_seen[0]
-        return '%s was last seen %s ago saying: %s' % \
+        if last_seen[2][0:1]=="\x01":
+            return '%s was last seen %s ago: *%s %s*' % \
+                    (inp, reltime, inp, last_seen[2][8:-1])
+        else:
+            return '%s was last seen %s ago saying: %s' % \
                     (inp, reltime, last_seen[2])
     else:
         return "I've never seen %s" % inp
