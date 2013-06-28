@@ -4,6 +4,9 @@ from util import hook, http
 
 
 def api_get(kind, query):
+    if(kind=='images'):
+        url = 'https://www.googleapis.com/customsearch/v1?key=%s&cx=%s&searchType=image&safe=off'
+        return http.get_json(url % ('APIKEY','CSE_ID'),q=query)
     url = 'http://ajax.googleapis.com/ajax/services/search/%s?' \
           'v=1.0&safe=off'
     return http.get_json(url % kind, q=query)
