@@ -1,21 +1,19 @@
 import random
 import re
 from time import strptime, strftime
+from xml.sax.saxutils import unescape
+
 from util import hook, http
 
+
+@hook.api_key('twitter')
 @hook.command
-def twitter(inp, bot=None):
+def twitter(inp, api_key=None):
     ".twitter <user>/<id> -- get <user>'s last tweet/get tweet <id>"
 
-    api_keys = {}
-    api_keys['consumer'] = bot.config.get("api_keys", {}).get("twitter_consumer", None)
-    api_keys['consumer_secret'] = bot.config.get("api_keys", {}).get("twitter_consumer_secret", None)
-    api_keys['access'] = bot.config.get("api_keys", {}).get("twitter_access", None)
-    api_keys['access_secret'] = bot.config.get("api_keys", {}).get("twitter_access_secret", None)
-    
-    for k in api_keys:
-        if api_keys[k] is None:
-            return "error: api keys not set"
+    if not isinstance(api_key, dict) or any(key not in api_key for key in
+            ('consumer', 'consumer_secret', 'access', 'access_secret')):
+        return "error: api keys not set"
 
     getting_id = False
 
@@ -24,9 +22,9 @@ def twitter(inp, bot=None):
         request_url = "https://api.twitter.com/1.1/statuses/show.json?id=%s" % inp
     else:
         request_url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s" % inp
-    
+
     try:
-        tweet = http.get_json(request_url, oauth=True, oauth_keys=api_keys)
+        tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key)
     except http.HTTPError, e:
         errors = {400: 'bad request (ratelimited?)',
                 401: 'unauthorized',
@@ -42,17 +40,14 @@ def twitter(inp, bot=None):
             return 'error: ' + errors[e.code]
         return 'error: unknown %s' % e.code
 
-    if getting_id:
-        text = tweet["text"]
-        screen_name = tweet["user"]["screen_name"]
-        time = tweet["created_at"]
-    else:
-        text = tweet[0]["text"]
-        screen_name = tweet[0]["user"]["screen_name"]
-        time = tweet[0]["created_at"]
-    
-    text = text.replace('&gt;', '>').replace('&lt;', '<').replace('&apos;',"'").replace('&quote;', '"').replace('&amp;', '&')
+    if not getting_id:
+        tweet = tweet[0]
+
+    text = tweet["text"]
+    screen_name = tweet["user"]["screen_name"]
+    time = tweet["created_at"]
+
+    text = unescape(text, {'&apos;': "'", "&quot;": '"'})
     time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
     return "%s %s: %s" % (time, screen_name, text)
-
