@@ -47,7 +47,7 @@ def twitter(inp, api_key=None):
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
-    text = unescape(text, {'&apos;': "'", "&quot;": '"'})
+    text = unescape(text, {'&apos;': "'", "&quot;": '"'}).replace('\n', ' ')
     time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
     return "%s %s: %s" % (time, screen_name, text)
