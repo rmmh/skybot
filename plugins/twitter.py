@@ -9,7 +9,8 @@ from util import hook, http
 @hook.api_key('twitter')
 @hook.command
 def twitter(inp, api_key=None):
-    ".twitter <user>/<id> -- get <user>'s last tweet/get tweet <id>"
+    ".twitter <user>/<user> <n>/<id> -- " \
+    "get <user>'s last/<n>th tweet/get tweet <id>"
 
     if not isinstance(api_key, dict) or any(key not in api_key for key in
             ('consumer', 'consumer_secret', 'access', 'access_secret')):
@@ -21,6 +22,15 @@ def twitter(inp, api_key=None):
         getting_id = True
         request_url = "https://api.twitter.com/1.1/statuses/show.json?id=%s" % inp
     else:
+        try:
+            inp, index = re.split('\s+', inp, 1)
+            index = int(index)
+        except ValueError:
+            index = 0
+        if index < 0:
+            index = 0
+        if index >= 20:
+            return 'error: only supports up to the 20th tweet'
         request_url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s" % inp
 
     try:
@@ -41,7 +51,10 @@ def twitter(inp, api_key=None):
         return 'error: unknown %s' % e.code
 
     if not getting_id:
-        tweet = tweet[0]
+        try:
+            tweet = tweet[index]
+        except IndexError:
+            return 'error: user does not have that many tweets'
 
     text = tweet["text"]
     screen_name = tweet["user"]["screen_name"]
