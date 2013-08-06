@@ -3,6 +3,7 @@
 import re
 
 from util import hook
+import random
 
 
 @hook.command
@@ -105,6 +106,9 @@ def tag(inp, chan='', db=None):
         if not tags:
             return get_nicks_by_tag(db, chan, inp)
         else:
+            # Some tags never get shown if there are too many of
+            # them. Shuffling resolves this.
+            random.shuffle(tags)
             return 'tags for "%s": ' % munge(inp, 1) + ', '.join(
                 tag[0] for tag in tags)
 
