@@ -99,5 +99,5 @@ def weather(inp, nick='', server='', reply=None, db=None, api_key=None):
 
     if inp and not dontsave:
         db.execute("insert or replace into weather(nick, loc) values (?,?)",
-                     (nick.lower(), loc))
+                     (nick.lower(), inp))
         db.commit()
