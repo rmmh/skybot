@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from cStringIO import StringIO
 
 from lxml import etree
-from util import hook, http
+from util import hook, http, timesince
 
 
 base_url = "http://thetvdb.com/api/"
@@ -110,7 +110,7 @@ def tv_next(inp):
         (first_aired, airdate, episode_desc) = ep_info
 
         if airdate > today:
-            next_eps = ['%s (%s)' % (first_aired, episode_desc)]
+            next_eps = ['%s (%s) (%s)' % (first_aired, timesince.timeuntil(datetime.datetime.strptime(first_aired, "%Y-%m-%d")), episode_desc)]
         elif airdate == today:
             next_eps = ['Today (%s)' % episode_desc] + next_eps
         else:
