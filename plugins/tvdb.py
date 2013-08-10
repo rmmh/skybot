@@ -60,10 +60,10 @@ def get_episodes_for_series(seriesname):
 
 
 def get_episode_info(episode):
-    first_aired = episode.findtext("FirstAired")
+    episode_air_date = episode.findtext("FirstAired")
 
     try:
-        airdate = datetime.date(*map(int, first_aired.split('-')))
+        airdate = datetime.date(*map(int, episode_air_date.split('-')))
     except (ValueError, TypeError):
         return None
 
@@ -79,7 +79,7 @@ def get_episode_info(episode):
     episode_desc = '%s' % episode_num
     if episode_name:
         episode_desc += ' - %s' % episode_name
-    return (first_aired, airdate, episode_desc)
+    return (episode_air_date, airdate, episode_desc)
 
 
 @hook.command
@@ -107,10 +107,10 @@ def tv_next(inp):
         if ep_info is None:
             continue
 
-        (first_aired, airdate, episode_desc) = ep_info
+        (episode_air_date, airdate, episode_desc) = ep_info
 
         if airdate > today:
-            next_eps = ['%s (%s) (%s)' % (first_aired, timesince.timeuntil(datetime.datetime.strptime(first_aired, "%Y-%m-%d")), episode_desc)]
+            next_eps = ['%s (%s) (%s)' % (episode_air_date, timesince.timeuntil(datetime.datetime.strptime(episode_air_date, "%Y-%m-%d")), episode_desc)]
         elif airdate == today:
             next_eps = ['Today (%s)' % episode_desc] + next_eps
         else:
@@ -150,12 +150,12 @@ def tv_last(inp):
         if ep_info is None:
             continue
 
-        (first_aired, airdate, episode_desc) = ep_info
+        (episode_air_date, airdate, episode_desc) = ep_info
 
         if airdate < today:
             #iterating in reverse order, so the first episode encountered
             #before today was the most recently aired
-            prev_ep = '%s (%s)' % (first_aired, episode_desc)
+            prev_ep = '%s (%s)' % (episode_air_date, episode_desc)
             break
 
     if not prev_ep:
