@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import random
 import re
 
 from util import hook
@@ -16,6 +17,15 @@ def munge(inp, munge_count=0):
             if reps == munge_count:
                 break
     return inp
+
+def winnow(inputs, limit=400):
+    "remove random elements from the list until it's short enough"
+    combiner = lambda l: ', '.join(l)
+    suffix = ''
+    while len(combiner(inputs)) >= limit:
+        inputs.pop(random.randint(0, len(inputs) - 1))
+        suffix = ' ...'
+    return combiner(inputs) + suffix
 
 
 def add_tag(db, chan, nick, subject):
@@ -73,7 +83,7 @@ def get_nicks_by_tag(db, chan, subject):
     nicks = [munge(x[0], 1) for x in nicks]
     if not nicks:
         return 'tag not found'
-    return 'nicks tagged "%s": ' % subject + ', '.join(nicks)
+    return 'nicks tagged "%s": ' % subject + winnow(nicks)
 
 
 @hook.command
@@ -105,8 +115,8 @@ def tag(inp, chan='', db=None):
         if not tags:
             return get_nicks_by_tag(db, chan, inp)
         else:
-            return 'tags for "%s": ' % munge(inp, 1) + ', '.join(
-                tag[0] for tag in tags)
+            return 'tags for "%s": ' % munge(inp, 1) + winnow([
+                tag[0] for tag in tags])
 
 
 character_replacements = {
