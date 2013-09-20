@@ -26,17 +26,19 @@ def seeninput(paraml, input=None, db=None, bot=None):
 def seen(inp, nick='', chan='', db=None, input=None):
     ".seen <nick> -- Tell when a nickname was last in active in irc"
 
-    if input.conn.nick.lower() == inp.lower():
+    inp = inp.lower()
+
+    if input.conn.nick.lower() == inp:
         # user is looking for us, being a smartass
         return "You need to get your eyes checked."
 
-    if inp.lower() == nick.lower():
+    if inp == nick.lower():
         return "Have you looked in a mirror lately?"
 
     db_init(db)
 
-    last_seen = db.execute("select name, time, quote from seen where name"
-                           " like ? and chan = ?", (inp, chan)).fetchone()
+    last_seen = db.execute("select name, time, quote from seen where"
+                           " name = ? and chan = ?", (inp, chan)).fetchone()
 
     if last_seen:
         reltime = timesince.timesince(last_seen[1])
