@@ -3,49 +3,34 @@ import random
 from util import hook, http
 
 
-def api_get(kind, query):
-    url = 'http://ajax.googleapis.com/ajax/services/search/%s?' \
-          'v=1.0&safe=off'
-    return http.get_json(url % kind, q=query)
+def api_get(query, key, is_image=None, num=1):
+    url = ('https://www.googleapis.com/customsearch/v1?cx=007629729846476161907:ud5nlxktgcw'
+            '&fields=items(title,link,snippet)&safe=off' + ('&searchType=image' if is_image else ''))
+    return http.get_json(url, key=key, q=query, num=num)
 
 
+@hook.api_key('google')
 @hook.command
-def gis(inp):
-    '''.gis <term> -- returns first google image result (safesearch off)'''
+def gis(inp, api_key=None):
+    '''.gis <term> -- finds an image using google images (safesearch off)'''
 
-    parsed = api_get('images', inp)
-    if not 200 <= parsed['responseStatus'] < 300:
-        raise IOError('error searching for images: %d: %s' % (
-                parsed['responseStatus'], ''))
-    if not parsed['responseData']['results']:
+    parsed = api_get(inp, api_key, is_image=True, num=10)
+    if 'items' not in parsed:
         return 'no images found'
-    return random.choice(parsed['responseData']['results'][:10]) \
-            ['unescapedUrl']  # squares is dumb
+    return random.choice(parsed['items'])['link']
 
 
+@hook.api_key('google')
 @hook.command('g')
 @hook.command
-def google(inp):
+def google(inp, api_key=None):
     '''.g/.google <query> -- returns first google search result'''
 
-    parsed = api_get('web', inp)
-    if not 200 <= parsed['responseStatus'] < 300:
-        raise IOError('error searching for pages: %d: %s' % (
-                parsed['responseStatus'], ''))
-    if not parsed['responseData']['results']:
+    parsed = api_get(inp, api_key)
+    if 'items' not in parsed:
         return 'no results found'
 
-    result = parsed['responseData']['results'][0]
-
-    title = http.unescape(result['titleNoFormatting'])
-    content = http.unescape(result['content'])
-
-    if len(content) == 0:
-        content = "No description available"
-    else:
-        content = http.html.fromstring(content).text_content()
-
-    out = '%s -- \x02%s\x02: "%s"' % (result['unescapedUrl'], title, content)
+    out = u'{link} -- \x02{title}\x02: "{snippet}"'.format(**parsed['items'][0])
     out = ' '.join(out.split())
 
     if len(out) > 300:
