@@ -1,22 +1,22 @@
 import random
 import re
 from time import strptime, strftime
-from xml.sax.saxutils import unescape
+from urllib import quote
 
 from util import hook, http
-
 
 @hook.api_key('twitter')
 @hook.command
 def twitter(inp, api_key=None):
-    ".twitter <user>/<user> <n>/<id> -- " \
-    "get <user>'s last/<n>th tweet/get tweet <id>"
+    ".twitter <user>/<user> <n>/<id>/#<search>/#<search> <n> -- " \
+    "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
 
     if not isinstance(api_key, dict) or any(key not in api_key for key in
             ('consumer', 'consumer_secret', 'access', 'access_secret')):
         return "error: api keys not set"
 
     getting_id = False
+    doing_search = False
 
     if re.match(r'^\d+$', inp):
         getting_id = True
@@ -31,7 +31,12 @@ def twitter(inp, api_key=None):
             index = 0
         if index >= 20:
             return 'error: only supports up to the 20th tweet'
-        request_url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s" % inp
+
+        if re.match(r'^#', inp):
+            doing_search = True
+            request_url = "https://api.twitter.com/1.1/search/tweets.json?q=%s" % quote(inp)
+        else:
+            request_url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s" % inp
 
     try:
         tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key)
@@ -50,17 +55,22 @@ def twitter(inp, api_key=None):
             return 'error: ' + errors[e.code]
         return 'error: unknown %s' % e.code
 
+    if doing_search:
+        try:
+            tweet = tweet["statuses"]
+        except KeyError:
+            return 'error: no results'
+
     if not getting_id:
         try:
             tweet = tweet[index]
         except IndexError:
-            return 'error: user does not have that many tweets'
+            return 'error: not that many tweets found'
 
     text = tweet["text"]
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
-    text = unescape(text, {'&apos;': "'", "&quot;": '"'})
     time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
     return "%s %s: %s" % (time, screen_name, text)
