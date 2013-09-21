@@ -17,6 +17,7 @@ def twitter(inp, api_key=None):
 
     getting_id = False
     doing_search = False
+    index_specified = False
 
     if re.match(r'^\d+$', inp):
         getting_id = True
@@ -25,6 +26,7 @@ def twitter(inp, api_key=None):
         try:
             inp, index = re.split('\s+', inp, 1)
             index = int(index)
+            index_specified = True
         except ValueError:
             index = 0
         if index < 0:
@@ -58,6 +60,8 @@ def twitter(inp, api_key=None):
     if doing_search:
         try:
             tweet = tweet["statuses"]
+            if not index_specified:
+                index = random.randint(0, len(tweet) - 1)
         except KeyError:
             return 'error: no results'
 
