@@ -77,4 +77,9 @@ def twitter(inp, api_key=None):
 
     time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
-    return "%s %s: %s" % (time, screen_name, text)
+    return "%s \x02%s\x02: %s" % (time, screen_name, text)
+
+@hook.api_key('twitter')
+@hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
+def show_tweet(match, api_key=None):
+    return twitter(match.group(3),api_key)
