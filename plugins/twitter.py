@@ -1,9 +1,9 @@
 import random
 import re
-from time import strptime, strftime
+from datetime import datetime
 from urllib import quote
 
-from util import hook, http
+from util import hook, http, timesince
 
 @hook.api_key('twitter')
 @hook.command
@@ -73,11 +73,13 @@ def twitter(inp, api_key=None):
 
     text = http.unescape(tweet["text"])
     screen_name = tweet["user"]["screen_name"]
+    friendly_name = tweet["user"]["name"]
     time = tweet["created_at"]
 
-    time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    time = timesince.timesince(datetime.strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    #Friendly Name - @usename timeago
+    return u"%s - \u000312@\x02%s\x02\u000f: %s ago ::\r\n %s" % (friendly_name, screen_name, time, text)
 
-    return "%s \x02%s\x02: %s" % (time, screen_name, text)
 
 @hook.api_key('twitter')
 @hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
