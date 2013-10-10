@@ -7,7 +7,7 @@ from util import hook, http, timesince
 
 @hook.api_key('twitter')
 @hook.command
-def twitter(inp, api_key=None):
+def twitter(inp, api_key=None, say=None):
     ".twitter <user>/<user> <n>/<id>/#<search>/#<search> <n> -- " \
     "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
 
@@ -78,10 +78,11 @@ def twitter(inp, api_key=None):
 
     time = timesince.timesince(datetime.strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
     #Friendly Name - @usename timeago
-    return u"%s - \u000312@\x02%s\x02\u000f: %s ago ::\r\n %s" % (friendly_name, screen_name, time, text)
+    say(u"%s - \u000312@\x02%s\x02\u000f: %s ago" % (friendly_name, screen_name, time))
+    say(text)
 
 
 @hook.api_key('twitter')
 @hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
-def show_tweet(match, api_key=None):
-    return twitter(match.group(3),api_key)
+def show_tweet(match, api_key=None, say=None):
+    return twitter(match.group(3),api_key, say)
