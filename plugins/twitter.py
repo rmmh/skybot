@@ -5,6 +5,8 @@ from urllib import quote
 
 from util import hook, http
 
+twitter_re_status = r"(?i)twitter\.com(/!#)?/(\S+)/(statuses|status)/(\S+)"
+
 @hook.api_key('twitter')
 @hook.command
 def twitter(inp, api_key=None):
@@ -75,6 +77,12 @@ def twitter(inp, api_key=None):
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
-    time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    time = strftime('%I:%M:%S%p on %B %d, %Y', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
-    return "%s %s: %s" % (time, screen_name, text)
+    return "%s: %s (tweeted at %s)" % (screen_name, text, time)
+
+@hook.api_key('twitter')
+@hook.regex(twitter_re_status)
+def twitter_status(match, api_key=None):
+    status_id = match.group(4)
+    return twitter(status_id, api_key)
