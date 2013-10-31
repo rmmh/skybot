@@ -19,13 +19,13 @@ def login(user, password):
         post_data="action=login&username=%s&password=%s" % (user, password))
 
 
+@hook.api_key('somethingawful')
 @hook.regex(thread_re)
-def forum_link(inp, bot=None):
-    if 'sa_user' not in bot.config or \
-       'sa_password' not in bot.config:
+def forum_link(inp, api_key=None):
+    if api_key is None or 'user' not in api_key or 'password' not in api_key:
         return
 
-    login(bot.config['sa_user'], bot.config['sa_password'])
+    login(api_key['user'], api_key['password'])
 
     thread = http.get_html(showthread, threadid=inp.group(1), perpage='1',
                            cookies=True)
