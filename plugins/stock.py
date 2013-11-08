@@ -19,16 +19,18 @@ def stock(inp):
     if quote['Change'] is None:
         return "unknown ticker symbol %s" % inp
 
-    if quote['Change'][0] == '-':
+    change = float(quote['Change'])
+    price = float(quote['LastTradePriceOnly'])
+
+    if change < 0:
         quote['color'] = "5"
     else:
         quote['color'] = "3"
 
-    quote['Percent_Change'] = (100 * float(quote['Change']) /
-                               float(quote['LastTradePriceOnly']))
+    quote['PercentChange'] = 100 * change / (price - change)
 
     ret = "%(Name)s - %(LastTradePriceOnly)s "                   \
-          "\x03%(color)s%(Change)s (%(Percent_Change).2f%%)\x03 "        \
+          "\x03%(color)s%(Change)s (%(PercentChange).2f%%)\x03 "        \
           "Day Range: %(DaysRange)s " \
           "MCAP: %(MarketCapitalization)s" % quote
 
