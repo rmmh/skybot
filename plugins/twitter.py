@@ -1,13 +1,13 @@
 import random
 import re
-from time import strptime, strftime
+from datetime import datetime
 from urllib import quote
 
-from util import hook, http
+from util import hook, http, timesince
 
 @hook.api_key('twitter')
 @hook.command
-def twitter(inp, api_key=None):
+def twitter(inp, api_key=None, say=None):
     ".twitter <user>/<user> <n>/<id>/#<search>/#<search> <n> -- " \
     "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
 
@@ -73,8 +73,16 @@ def twitter(inp, api_key=None):
 
     text = http.unescape(tweet["text"])
     screen_name = tweet["user"]["screen_name"]
+    friendly_name = tweet["user"]["name"]
     time = tweet["created_at"]
 
-    time = strftime('%Y-%m-%d %H:%M:%S', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    time = timesince.timesince(datetime.strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    #Friendly Name - @usename timeago
+    say(u"%s - \u000312@\x02%s\x02\u000f: %s ago" % (friendly_name, screen_name, time))
+    say(text)
 
-    return "%s %s: %s" % (time, screen_name, text)
+
+@hook.api_key('twitter')
+@hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
+def show_tweet(match, api_key=None, say=None):
+    return twitter(match.group(3),api_key, say)
