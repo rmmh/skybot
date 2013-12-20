@@ -20,7 +20,7 @@ def munge(inp, munge_count=0):
 
 def winnow(inputs, limit=400):
     "remove random elements from the list until it's short enough"
-    combiner = lambda l: ', '.join(l)
+    combiner = lambda l: u', '.join(l)
     suffix = ''
     while len(combiner(inputs)) >= limit:
         inputs.pop(random.randint(0, len(inputs) - 1))
@@ -122,7 +122,7 @@ def tag(inp, chan='', db=None):
         tags = get_tags_by_nick(db, chan, inp)
 
         if not tags:
-            return get_nicks_by_tag(db, chan, inp)
+            return get_nicks_by_tagset(db, chan, inp)
         else:
             return 'tags for "%s": ' % munge(inp, 1) + winnow([
                 tag[0] for tag in tags])
