@@ -97,7 +97,7 @@ def get_nicks_by_tagset(db, chan, tagset):
 
 @hook.command
 def tag(inp, chan='', db=None):
-    '.tag <nick>/[add|del] <nick> <tag>/list [tag] [& tag...] -- get list of tags on ' \
+    '.tag list <nick>/[add|del] <nick> <tag>/[tag] [& tag...] -- get list of tags on ' \
     '<nick>/(un)marks <nick> as <tag>/gets list of tags/nicks marked as [tag]'
 
     db.execute('create table if not exists tag(chan, subject, nick)')
@@ -107,25 +107,26 @@ def tag(inp, chan='', db=None):
     retrieve = re.match(r'l(?:ist)(?: (.+))?\s*$', inp)
 
     if retrieve:
-        search_tag = retrieve.group(1)
-        if search_tag:
-            return get_nicks_by_tagset(db, chan, search_tag)
+        nick = retrieve.group(1)
+        if nick:
+            # '.tag list nick' lists all tags for nick
+            tags = get_tags_by_nick(db, chan, nick)
+            return 'tags for "%s": ' % munge(nick, 1) + winnow([
+                tag[0] for tag in tags])
         else:
+            # '.tag list' lists all tags
             return get_tag_counts_by_chan(db, chan)
     if delete:
+        # '.tag del nick tag' unmarks tag for nick
         nick, del_tag = delete.groups()
         return delete_tag(db, chan, nick, del_tag)
     if add:
+        # '.tag add nick tag' marks tag for nick
         nick, subject = add.groups()
         return add_tag(db, chan, nick, subject)
     else:
-        tags = get_tags_by_nick(db, chan, inp)
-
-        if not tags:
-            return get_nicks_by_tag(db, chan, inp)
-        else:
-            return 'tags for "%s": ' % munge(inp, 1) + winnow([
-                tag[0] for tag in tags])
+        # '.tag tag [& tag]' lists nicks for tags
+        get_nicks_by_tagset(db, chan, inp)
 
 
 character_replacements = {
