@@ -2,6 +2,7 @@
 
 import random
 import re
+import threading
 
 from util import hook
 
@@ -18,15 +19,46 @@ def munge(inp, munge_count=0):
                 break
     return inp
 
-def winnow(inputs, limit=400):
-    "remove random elements from the list until it's short enough"
-    combiner = lambda l: u', '.join(l)
-    suffix = ''
-    while len(combiner(inputs)) >= limit:
-        inputs.pop(random.randint(0, len(inputs) - 1))
-        suffix = ' ...'
-    return combiner(inputs) + suffix
+class PaginatingWinnower(object):
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.last_input = []
+        self.recent = set()
 
+    def winnow(self, inputs, limit=400, ordered=False):
+        "remove random elements from the list until it's short enough"
+        with self.lock:
+            # try to remove elements that were *not* removed recently
+            inputs_sorted = sorted(inputs)
+            if inputs_sorted == self.last_input:
+                same_input = True
+            else:
+                same_input = False
+                self.last_input = inputs_sorted
+                self.recent.clear()
+
+            combiner = lambda l: u', '.join(l)
+            suffix = ''
+
+            while len(combiner(inputs)) >= limit:
+                if same_input and any(inp in self.recent for inp in inputs):
+                    if ordered:
+                        for inp in self.recent:
+                            if inp in inputs:
+                                inputs.remove(inp)
+                    else:
+                        inputs.remove(random.choice([inp for inp in inputs if inp in self.recent]))
+                else:
+                    if ordered:
+                        inputs.pop()
+                    else:
+                        inputs.pop(random.randint(0, len(inputs) - 1))
+                suffix = ' ...'
+
+            self.recent.update(inputs)
+            return combiner(inputs) + suffix
+
+winnow = PaginatingWinnower().winnow
 
 def add_tag(db, chan, nick, subject):
     match = db.execute('select * from tag where lower(nick)=lower(?) and'
@@ -63,13 +95,18 @@ def get_tag_counts_by_chan(db, chan):
     if not tags:
         return 'no tags in %s' % chan
     ret = '%s tags: ' % chan
-    return winnow(['%s (%d)' % row for row in tags])
+    return winnow(['%s (%d)' % row for row in tags], ordered=True)
 
 
 def get_tags_by_nick(db, chan, nick):
-    return db.execute("select subject from tag where lower(nick)=lower(?)"
+    tags = db.execute("select subject from tag where lower(nick)=lower(?)"
                       " and chan=?"
                       " order by lower(subject)", (nick, chan)).fetchall()
+    if tags:
+        return 'tags for "%s": ' % munge(nick, 1) + winnow([
+                tag[0] for tag in tags])
+    else:
+        return ''
 
 
 def get_nicks_by_tagset(db, chan, tagset):
@@ -97,21 +134,13 @@ def get_nicks_by_tagset(db, chan, tagset):
 
 @hook.command
 def tag(inp, chan='', db=None):
-    '.tag <nick>/[add|del] <nick> <tag>/list [tag] [& tag...] -- get list of tags on ' \
-    '<nick>/(un)marks <nick> as <tag>/gets list of tags/nicks marked as [tag]'
+    '.tag [add|del] <nick> <tag> -- marks/unmarks <nick> as <tag> {related: .tags, .tagged}'
 
     db.execute('create table if not exists tag(chan, subject, nick)')
 
     add = re.match(r'(?:a(?:dd)? )?(\S+) (.+)', inp)
     delete = re.match(r'd(?:el(?:ete)?)? (\S+) (.+)\s*$', inp)
-    retrieve = re.match(r'l(?:ist)(?: (.+))?\s*$', inp)
 
-    if retrieve:
-        search_tag = retrieve.group(1)
-        if search_tag:
-            return get_nicks_by_tagset(db, chan, search_tag)
-        else:
-            return get_tag_counts_by_chan(db, chan)
     if delete:
         nick, del_tag = delete.groups()
         return delete_tag(db, chan, nick, del_tag)
@@ -120,12 +149,29 @@ def tag(inp, chan='', db=None):
         return add_tag(db, chan, nick, subject)
     else:
         tags = get_tags_by_nick(db, chan, inp)
-
-        if not tags:
-            return get_nicks_by_tagset(db, chan, inp)
+        if tags:
+            return tags
         else:
-            return 'tags for "%s": ' % munge(inp, 1) + winnow([
-                tag[0] for tag in tags])
+            return tag.__doc__
+
+@hook.command
+def tags(inp, chan='', db=None):
+    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .tagged}'
+    if inp == 'list':
+        return get_tag_counts_by_chan(db, chan)
+
+    tags = get_tags_by_nick(db, chan, inp)
+    if tags:
+        return tags
+    else:
+        return get_nicks_by_tagset(db, chan, inp)
+
+
+@hook.command
+def tagged(inp, chan='', db=None):
+    '.tagged <tag> [& tag...] -- get nicks marked as <tag> (separate multiple tags with &) {related: .tag, .tags}'
+
+    return get_nicks_by_tagset(db, chan, inp)
 
 
 character_replacements = {
