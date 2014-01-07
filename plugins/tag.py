@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import math
 import random
 import re
 import threading
@@ -128,7 +129,7 @@ def get_nicks_by_tagset(db, chan, tagset):
 
     nicks = [munge(x[0], 1) for x in sorted(nicks)]
     if not nicks:
-        return 'no tags found in intersection of "%s"' % tagset
+        return 'no nicks found with tags "%s"' % tagset
     return 'nicks tagged "%s": ' % tagset + winnow(nicks)
 
 
@@ -172,6 +173,40 @@ def tagged(inp, chan='', db=None):
     '.tagged <tag> [& tag...] -- get nicks marked as <tag> (separate multiple tags with &) {related: .tag, .tags}'
 
     return get_nicks_by_tagset(db, chan, inp)
+
+def distance(lat1, lon1, lat2, lon2):
+    deg_to_rad = math.pi / 180
+    lat1 *= deg_to_rad
+    lat2 *= deg_to_rad
+    lon1 *= deg_to_rad
+    lon2 *= deg_to_rad
+
+    R = 6371 # km
+    d = math.acos(math.sin(lat1)*math.sin(lat2) +
+                  math.cos(lat1)*math.cos(lat2) *
+                  math.cos(lon2-lon1)) * R
+    return d
+
+
+@hook.command(autohelp=False)
+def near(inp, nick='', chan='', db=None):
+    init_db(db)
+
+    try:
+        loc = db.execute("select lat, lon from location where chan=? and lower(nick)=lower(?)", (chan, nick)).fetchone()
+    except db.OperationError:
+        loc = None
+
+    if loc is None:
+        return 'use .weather <loc> first to set your location'
+
+    lat, lon = loc
+
+    db.create_function('distance', 4, distance)
+    nearby = db.execute("select nick, distance(lat, lon, ?, ?) as dist from location where chan=?"
+                         " limit 20", (lat, lon, chan)).fetchall()
+
+    return nearby
 
 
 character_replacements = {

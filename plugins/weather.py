@@ -1,16 +1,23 @@
 "weather, thanks to wunderground"
 
+import math
+
 from util import hook, http
+
 
 
 @hook.api_key('wunderground')
 @hook.command(autohelp=False)
-def weather(inp, nick='', server='', reply=None, db=None, api_key=None):
+def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     ".weather <location> [dontsave] -- gets weather data from Wunderground "\
             "http://wunderground.com/weather/api"
 
     if not api_key:
         return None
+
+    # this database is used by other plugins interested in user's locations,
+    # like .near in tag.py
+    db.execute("create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, lower(nick)))")
 
     loc = inp
 
@@ -18,13 +25,19 @@ def weather(inp, nick='', server='', reply=None, db=None, api_key=None):
     if dontsave:
         loc = loc[:-9].strip().lower()
 
-    db.execute("create table if not exists weather(nick primary key, loc)")
 
     if not loc:  # blank line
-        loc = db.execute("select loc from weather where nick=lower(?)",
-                            (nick,)).fetchone()
+        loc = db.execute("select loc from location where chan=? and lower(nick)=lower(?)",
+                            (chan, nick)).fetchone()
         if not loc:
-            return weather.__doc__
+            try:
+                # grab from old-style weather database
+                loc = db.execute("select loc from weather where nick=lower(?)",
+                                 (nick,)).fetchone()
+            except db.OperationalError:
+                pass    # no such table
+            if not loc:
+                return weather.__doc__
         loc = loc[0]
 
     loc, _, state = loc.partition(', ')
@@ -91,13 +104,18 @@ def weather(inp, nick='', server='', reply=None, db=None, api_key=None):
     info['l_f'] = sf['low']['fahrenheit']
     info['l_c'] = sf['low']['celsius']
     info['humid'] = obs['relative_humidity']
-    info['wind'] = 'Wind: {mph}mph/{kph}kph'\
+    info['wind'] = 'Wind: {mph}mph/{kph}kph' \
             .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
-    reply('{city}: {weather}, {t_f}F/{t_c}C'\
+    reply('{city}: {weather}, {t_f}F/{t_c}C' \
             '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)' \
             ', Humidity: {humid}, {wind}'.format(**info))
 
+    lat = float(obs['display_location']['latitude'])
+    lon = float(obs['display_location']['longitude'])
+
     if inp and not dontsave:
-        db.execute("insert or replace into weather(nick, loc) values (?,?)",
-                     (nick.lower(), inp))
+        db.execute("insert or replace into location(chan, nick, loc, lat, lon) "
+                   "values (?, ?, ?, ?,?)",        (chan, nick, inp, lat, lon))
         db.commit()
+
+
