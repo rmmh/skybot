@@ -20,7 +20,9 @@ def munge(inp, munge_count=0):
                 break
     return inp
 
+
 class PaginatingWinnower(object):
+
     def __init__(self):
         self.lock = threading.Lock()
         self.last_input = []
@@ -48,7 +50,8 @@ class PaginatingWinnower(object):
                             if inp in inputs:
                                 inputs.remove(inp)
                     else:
-                        inputs.remove(random.choice([inp for inp in inputs if inp in self.recent]))
+                        inputs.remove(
+                            random.choice([inp for inp in inputs if inp in self.recent]))
                 else:
                     if ordered:
                         inputs.pop()
@@ -60,6 +63,7 @@ class PaginatingWinnower(object):
             return combiner(inputs) + suffix
 
 winnow = PaginatingWinnower().winnow
+
 
 def add_tag(db, chan, nick, subject):
     match = db.execute('select * from tag where lower(nick)=lower(?) and'
@@ -95,7 +99,6 @@ def get_tag_counts_by_chan(db, chan):
     tags.sort(key=lambda x: x[1], reverse=True)
     if not tags:
         return 'no tags in %s' % chan
-    ret = '%s tags: ' % chan
     return winnow(['%s (%d)' % row for row in tags], ordered=True)
 
 
@@ -105,7 +108,7 @@ def get_tags_by_nick(db, chan, nick):
                       " order by lower(subject)", (nick, chan)).fetchall()
     if tags:
         return 'tags for "%s": ' % munge(nick, 1) + winnow([
-                tag[0] for tag in tags])
+            tag[0] for tag in tags])
     else:
         return ''
 
@@ -151,6 +154,7 @@ def tag(inp, chan='', db=None):
         else:
             return tag.__doc__
 
+
 @hook.command
 def untag(inp, chan='', db=None):
     '.untag <nick> <tag> -- unmarks <nick> as <tag> {related: .tag, .tags, .tagged}'
@@ -162,6 +166,7 @@ def untag(inp, chan='', db=None):
         return delete_tag(db, chan, nick, del_tag)
     else:
         return untag.__doc__
+
 
 @hook.command
 def tags(inp, chan='', db=None):
@@ -182,6 +187,7 @@ def tagged(inp, chan='', db=None):
 
     return get_nicks_by_tagset(db, chan, inp)
 
+
 def distance(lat1, lon1, lat2, lon2):
     deg_to_rad = math.pi / 180
     lat1 *= deg_to_rad
@@ -189,17 +195,18 @@ def distance(lat1, lon1, lat2, lon2):
     lon1 *= deg_to_rad
     lon2 *= deg_to_rad
 
-    R = 6371 # km
-    d = math.acos(math.sin(lat1)*math.sin(lat2) +
-                  math.cos(lat1)*math.cos(lat2) *
-                  math.cos(lon2-lon1)) * R
+    R = 6371  # km
+    d = math.acos(math.sin(lat1) * math.sin(lat2) +
+                  math.cos(lat1) * math.cos(lat2) *
+                  math.cos(lon2 - lon1)) * R
     return d
 
 
 @hook.command(autohelp=False)
 def near(inp, nick='', chan='', db=None):
     try:
-        loc = db.execute("select lat, lon from location where chan=? and nick=lower(?)", (chan, nick)).fetchone()
+        loc = db.execute("select lat, lon from location where chan=? and nick=lower(?)",
+                (chan, nick)).fetchone()
     except db.OperationError:
         loc = None
 
@@ -210,10 +217,9 @@ def near(inp, nick='', chan='', db=None):
 
     db.create_function('distance', 4, distance)
     nearby = db.execute("select nick, distance(lat, lon, ?, ?) as dist from location where chan=?"
-                         " and nick != lower(?) order by dist limit 20", (lat, lon, chan, nick)).fetchall()
+                        " and nick != lower(?) order by dist limit 20", (lat, lon, chan, nick)).fetchall()
 
     out = '(km) '
-    last_dist = 10
     while nearby and len(out) < 200:
         nick, dist = nearby.pop(0)
         out += '%s:%.0f ' % (munge(nick, 1), dist)

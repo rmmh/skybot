@@ -13,7 +13,7 @@ def db_init(db):
 
 def get_memory(db, chan, word):
     row = db.execute("select data from memory where chan=? and word=lower(?)",
-                      (chan, word)).fetchone()
+                     (chan, word)).fetchone()
     if row:
         return row[0]
     else:
@@ -56,7 +56,7 @@ def remember(inp, nick='', chan='', db=None):
             return "appending %s to %s" % (new, data.replace('"', "''"))
         else:
             return 'forgetting "%s", remembering this instead.' % \
-                    data.replace('"', "''")
+                data.replace('"', "''")
     else:
         return 'done.'
 

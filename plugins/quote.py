@@ -8,7 +8,7 @@ from util import hook
 def add_quote(db, chan, nick, add_nick, msg):
     db.execute('''insert or fail into quote (chan, nick, add_nick,
                     msg, time) values(?,?,?,?,?)''',
-                    (chan, nick, add_nick, msg, time.time()))
+               (chan, nick, add_nick, msg, time.time()))
     db.commit()
 
 
@@ -20,19 +20,19 @@ def del_quote(db, chan, nick, add_nick, msg):
 
 def get_quotes_by_nick(db, chan, nick):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
-            "and chan=? and lower(nick)=lower(?) order by time",
-            (chan, nick)).fetchall()
+                      "and chan=? and lower(nick)=lower(?) order by time",
+                      (chan, nick)).fetchall()
 
 
 def get_quotes_by_chan(db, chan):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
-           "and chan=? order by time", (chan,)).fetchall()
+                      "and chan=? order by time", (chan,)).fetchall()
 
 
 def format_quote(q, num, n_quotes):
     ctime, nick, msg = q
     return "[%d/%d] %s <%s> %s" % (num, n_quotes,
-        time.strftime("%Y-%m-%d", time.gmtime(ctime)), nick, msg)
+                                   time.strftime("%Y-%m-%d", time.gmtime(ctime)), nick, msg)
 
 
 @hook.command('q')
@@ -42,8 +42,8 @@ def quote(inp, nick='', chan='', db=None):
         "random or [#n]th quote by <nick> or from <#chan>/adds quote"
 
     db.execute("create table if not exists quote"
-        "(chan, nick, add_nick, msg, time real, deleted default 0, "
-        "primary key (chan, nick, msg))")
+               "(chan, nick, add_nick, msg, time real, deleted default 0, "
+               "primary key (chan, nick, msg))")
     db.commit()
 
     add = re.match(r"add[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
@@ -61,9 +61,7 @@ def quote(inp, nick='', chan='', db=None):
     elif retrieve:
         select, num = retrieve.groups()
 
-        by_chan = False
         if select.startswith('#'):
-            by_chan = True
             quotes = get_quotes_by_chan(db, select)
         else:
             quotes = get_quotes_by_nick(db, chan, select)
@@ -85,7 +83,7 @@ def quote(inp, nick='', chan='', db=None):
     if num:
         if num > n_quotes or (num < 0 and num < -n_quotes):
             return "I only have %d quote%s for %s" % (n_quotes,
-                        ('s', '')[n_quotes == 1], select)
+                                                      ('s', '')[n_quotes == 1], select)
         elif num < 0:
             selected_quote = quotes[num]
             num = n_quotes + num + 1

@@ -44,7 +44,7 @@ def bf(inp):
     # the main program loop:
     while ip < len(program):
         c = program[ip]
-        if   c == '+':
+        if c == '+':
             memory[mp] = memory[mp] + 1 % 256
         elif c == '-':
             memory[mp] = memory[mp] - 1 % 256

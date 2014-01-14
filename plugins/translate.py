@@ -40,13 +40,14 @@ def unescape(text):
 
 def goog_trans(text, slang, tlang):
     url = 'https://www.googleapis.com/language/translate/v2'
-    parsed = http.get_json(url, key=api_key, q=text, source=slang, target=tlang)
+    parsed = http.get_json(
+        url, key=api_key, q=text, source=slang, target=tlang)
     if not 200 <= parsed['responseStatus'] < 300:
         raise IOError('error with the translation server: %d: %s' % (
-                parsed['responseStatus'], parsed['responseDetails']))
+            parsed['responseStatus'], parsed['responseDetails']))
     if not slang:
         return unescape('(%(detectedSourceLanguage)s) %(translatedText)s' %
-                (parsed['responseData']['data']['translations'][0]))
+                        (parsed['responseData']['data']['translations'][0]))
     return unescape('%(translatedText)s' % parsed['responseData']['data']['translations'][0])
 
 
@@ -66,8 +67,8 @@ def match_language(fragment):
 @hook.command
 def translate(inp, bot=None):
     '.translate [source language [target language]] <sentence> -- translates' \
-    ' <sentence> from source language (default autodetect) to target' \
-    ' language (default English) using Google Translate'
+        ' <sentence> from source language (default autodetect) to target' \
+        ' language (default English) using Google Translate'
 
     if not hasapikey(bot):
         return None
@@ -140,6 +141,7 @@ def babelext(inp, bot=None):
         out = out[:150] + ' ... ' + out[-150:]
 
     return out
+
 
 def hasapikey(bot):
     api_key = bot.config.get("api_keys", {}).get("googletranslate", None)

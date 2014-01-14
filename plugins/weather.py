@@ -1,23 +1,21 @@
 "weather, thanks to wunderground"
 
-import math
-
 from util import hook, http
-
 
 
 @hook.api_key('wunderground')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     ".weather <location> [dontsave] -- gets weather data from Wunderground "\
-            "http://wunderground.com/weather/api"
+        "http://wunderground.com/weather/api"
 
     if not api_key:
         return None
 
     # this database is used by other plugins interested in user's locations,
     # like .near in tag.py
-    db.execute("create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, nick))")
+    db.execute(
+        "create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, nick))")
 
     loc = inp
 
@@ -25,10 +23,10 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     if dontsave:
         loc = loc[:-9].strip().lower()
 
-
     if not loc:  # blank line
-        loc = db.execute("select loc from location where chan=? and nick=lower(?)",
-                            (chan, nick)).fetchone()
+        loc = db.execute(
+            "select loc from location where chan=? and nick=lower(?)",
+            (chan, nick)).fetchone()
         if not loc:
             try:
                 # grab from old-style weather database
@@ -104,10 +102,10 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     info['l_c'] = sf['low']['celsius']
     info['humid'] = obs['relative_humidity']
     info['wind'] = 'Wind: {mph}mph/{kph}kph' \
-            .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
-    reply('{city}: {weather}, {t_f}F/{t_c}C' \
-            '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)' \
-            ', Humidity: {humid}, {wind}'.format(**info))
+        .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
+    reply('{city}: {weather}, {t_f}F/{t_c}C'
+          '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)'
+          ', Humidity: {humid}, {wind}'.format(**info))
 
     lat = float(obs['display_location']['latitude'])
     lon = float(obs['display_location']['longitude'])
@@ -116,5 +114,3 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
         db.execute("insert or replace into location(chan, nick, loc, lat, lon) "
                    "values (?, ?, ?, ?,?)",        (chan, nick.lower(), inp, lat, lon))
         db.commit()
-
-

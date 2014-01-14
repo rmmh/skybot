@@ -15,15 +15,15 @@ log_fds = {}  # '%(net)s %(chan)s' : (filename, fd)
 timestamp_format = '%H:%M:%S'
 
 formats = {'PRIVMSG': '<%(nick)s> %(msg)s',
-    'PART': '-!- %(nick)s [%(user)s@%(host)s] has left %(chan)s',
-    'JOIN': '-!- %(nick)s [%(user)s@%(host)s] has joined %(param0)s',
-    'MODE': '-!- mode/%(chan)s [%(param_tail)s] by %(nick)s',
-    'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
-    'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',
-    'QUIT': '-!- %(nick)s has quit [%(msg)s]',
-    'PING': '',
-    'NOTICE': ''
-}
+           'PART': '-!- %(nick)s [%(user)s@%(host)s] has left %(chan)s',
+           'JOIN': '-!- %(nick)s [%(user)s@%(host)s] has joined %(param0)s',
+           'MODE': '-!- mode/%(chan)s [%(param_tail)s] by %(nick)s',
+           'KICK': '-!- %(param1)s was kicked from %(chan)s by %(nick)s [%(msg)s]',
+           'TOPIC': '-!- %(nick)s changed the topic of %(chan)s to: %(msg)s',
+           'QUIT': '-!- %(nick)s has quit [%(msg)s]',
+           'PING': '',
+           'NOTICE': ''
+           }
 
 ctcp_formats = {'ACTION': '* %(nick)s %(ctcpmsg)s'}
 
@@ -32,7 +32,7 @@ irc_color_re = re.compile(r'(\x03(\d+,\d+|\d)|[\x0f\x02\x16\x1f])')
 
 def get_log_filename(dir, server, chan):
     return os.path.join(dir, 'log', gmtime('%Y'), server,
-            (gmtime('%%s.%m-%d.log') % chan).lower())
+                        (gmtime('%%s.%m-%d.log') % chan).lower())
 
 
 def gmtime(format):
@@ -57,8 +57,8 @@ def beautify(input):
             ctcp += ['']
         args['ctcpcmd'], args['ctcpmsg'] = ctcp
         format = ctcp_formats.get(args['ctcpcmd'],
-                '%(nick)s [%(user)s@%(host)s] requested unknown CTCP '
-                '%(ctcpcmd)s from %(chan)s: %(ctcpmsg)s')
+                                  '%(nick)s [%(user)s@%(host)s] requested unknown CTCP '
+                                  '%(ctcpcmd)s from %(chan)s: %(ctcpmsg)s')
 
     return format % args
 

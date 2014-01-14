@@ -16,7 +16,7 @@ def login(user, password):
     user = http.quote(user)
     password = http.quote(password)
     http.get("http://forums.somethingawful.com/account.php", cookies=True,
-        post_data="action=login&username=%s&password=%s" % (user, password))
+             post_data="action=login&username=%s&password=%s" % (user, password))
 
 
 @hook.api_key('somethingawful')
@@ -49,8 +49,8 @@ def forum_link(inp, api_key=None):
         num_posts = int(num_posts[0].rsplit('=', 1)[1])
 
     return '\x02%s\x02 > \x02%s\x02 by \x02%s\x02, %s post%s' % (
-            forum_title, thread_title, poster, num_posts,
-            's' if num_posts > 1 else '')
+        forum_title, thread_title, poster, num_posts,
+        's' if num_posts > 1 else '')
 
 
 forum_abbrevs = {

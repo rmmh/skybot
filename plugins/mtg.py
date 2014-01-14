@@ -33,7 +33,7 @@ def mtg(inp):
 
     printing_out = ', '.join('%s (%s)' % (set_abbrevs.get(x[0], x[0]),
                                           rarity_abbrevs.get(x[1], x[1]))
-                                          for x in printings)
+                             for x in printings)
 
     name.make_links_absolute(base_url=url)
     link = name.attrib['href']

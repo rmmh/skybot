@@ -5,7 +5,6 @@ modified by rmmh 2010, 2013
 
 import datetime
 
-from lxml import etree
 from util import hook, http, timesince
 
 
@@ -31,7 +30,8 @@ def get_episodes_for_series(seriesname):
     series_id = series_id[0]
 
     try:
-        series = http.get_xml(base_url + '%s/series/%s/all/en.xml' % (api_key, series_id))
+        series = http.get_xml(base_url + '%s/series/%s/all/en.xml' %
+                              (api_key, series_id))
     except http.URLError:
         res["error"] = "error contacting thetvdb.com"
         return res
@@ -97,12 +97,13 @@ def tv_next(inp):
         (episode_air_date, airdate, episode_desc) = ep_info
 
         if airdate > today:
-            next_eps = ['%s (%s) (%s)' % (episode_air_date, timesince.timeuntil(datetime.datetime.strptime(episode_air_date, "%Y-%m-%d")), episode_desc)]
+            next_eps = ['%s (%s) (%s)' % (episode_air_date, timesince.timeuntil(
+                datetime.datetime.strptime(episode_air_date, "%Y-%m-%d")), episode_desc)]
         elif airdate == today:
             next_eps = ['Today (%s)' % episode_desc] + next_eps
         else:
-            #we're iterating in reverse order with newest episodes last
-            #so, as soon as we're past today, break out of loop
+            # we're iterating in reverse order with newest episodes last
+            # so, as soon as we're past today, break out of loop
             break
 
     if not next_eps:
@@ -140,8 +141,8 @@ def tv_last(inp):
         (episode_air_date, airdate, episode_desc) = ep_info
 
         if airdate < today:
-            #iterating in reverse order, so the first episode encountered
-            #before today was the most recently aired
+            # iterating in reverse order, so the first episode encountered
+            # before today was the most recently aired
             prev_ep = '%s (%s)' % (episode_air_date, episode_desc)
             break
 

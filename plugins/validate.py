@@ -22,4 +22,4 @@ def validate(inp):
         errorcount = info['x-w3c-validator-errors']
         warningcount = info['x-w3c-validator-warnings']
         return "%s was found to be %s with %s errors and %s warnings." \
-                " see: %s" % (inp, status, errorcount, warningcount, url)
+            " see: %s" % (inp, status, errorcount, warningcount, url)

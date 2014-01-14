@@ -15,7 +15,7 @@ def urban(inp):
     if page['result_type'] == 'no_results':
         return 'not found.'
 
-    out = defs[0]['word'] + ': ' + defs[0]['definition'].replace('\r\n',' ')
+    out = defs[0]['word'] + ': ' + defs[0]['definition'].replace('\r\n', ' ')
 
     if len(out) > 400:
         out = out[:out.rfind(' ', 0, 400)] + '...'
@@ -61,7 +61,7 @@ def define(inp):
             result += article[0]
             if len(article) > 2:
                 result += ' '.join('%d. %s' % (n + 1, section)
-                                    for n, section in enumerate(article[1:]))
+                                   for n, section in enumerate(article[1:]))
             else:
                 result += article[1] + ' '
 
