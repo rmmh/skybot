@@ -17,7 +17,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
 
     # this database is used by other plugins interested in user's locations,
     # like .near in tag.py
-    db.execute("create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, lower(nick)))")
+    db.execute("create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, nick))")
 
     loc = inp
 
@@ -27,7 +27,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
 
 
     if not loc:  # blank line
-        loc = db.execute("select loc from location where chan=? and lower(nick)=lower(?)",
+        loc = db.execute("select loc from location where chan=? and nick=lower(?)",
                             (chan, nick)).fetchone()
         if not loc:
             try:
@@ -66,8 +66,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     try:
         parsed_json = http.get_json(url)
     except IOError:
-        print 'Could not get data from Wunderground'
-        return None
+        return 'Could not get data from Wunderground'
 
     info = {}
     if 'current_observation' not in parsed_json:
@@ -115,7 +114,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
 
     if inp and not dontsave:
         db.execute("insert or replace into location(chan, nick, loc, lat, lon) "
-                   "values (?, ?, ?, ?,?)",        (chan, nick, inp, lat, lon))
+                   "values (?, ?, ?, ?,?)",        (chan, nick.lower(), inp, lat, lon))
         db.commit()
 
 

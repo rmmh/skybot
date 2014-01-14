@@ -198,10 +198,8 @@ def distance(lat1, lon1, lat2, lon2):
 
 @hook.command(autohelp=False)
 def near(inp, nick='', chan='', db=None):
-    init_db(db)
-
     try:
-        loc = db.execute("select lat, lon from location where chan=? and lower(nick)=lower(?)", (chan, nick)).fetchone()
+        loc = db.execute("select lat, lon from location where chan=? and nick=lower(?)", (chan, nick)).fetchone()
     except db.OperationError:
         loc = None
 
@@ -212,9 +210,15 @@ def near(inp, nick='', chan='', db=None):
 
     db.create_function('distance', 4, distance)
     nearby = db.execute("select nick, distance(lat, lon, ?, ?) as dist from location where chan=?"
-                         " limit 20", (lat, lon, chan)).fetchall()
+                         " and nick != lower(?) order by dist limit 20", (lat, lon, chan, nick)).fetchall()
 
-    return nearby
+    out = '(km) '
+    last_dist = 10
+    while nearby and len(out) < 200:
+        nick, dist = nearby.pop(0)
+        out += '%s:%.0f ' % (munge(nick, 1), dist)
+
+    return out
 
 
 character_replacements = {
