@@ -135,16 +135,12 @@ def get_nicks_by_tagset(db, chan, tagset):
 
 @hook.command
 def tag(inp, chan='', db=None):
-    '.tag [add|del] <nick> <tag> -- marks/unmarks <nick> as <tag> {related: .tags, .tagged}'
+    '.tag <nick> <tag> -- marks <nick> as <tag> {related: .untag, .tags, .tagged}'
 
     db.execute('create table if not exists tag(chan, subject, nick)')
 
-    add = re.match(r'(?:a(?:dd)? )?(\S+) (.+)', inp)
-    delete = re.match(r'd(?:el(?:ete)?)? (\S+) (.+)\s*$', inp)
+    add = re.match(r'(\S+) (.+)', inp)
 
-    if delete:
-        nick, del_tag = delete.groups()
-        return delete_tag(db, chan, nick, del_tag)
     if add:
         nick, subject = add.groups()
         return add_tag(db, chan, nick, subject)
@@ -156,8 +152,20 @@ def tag(inp, chan='', db=None):
             return tag.__doc__
 
 @hook.command
+def untag(inp, chan='', db=None):
+    '.untag <nick> <tag> -- unmarks <nick> as <tag> {related: .tag, .tags, .tagged}'
+
+    delete = re.match(r'(\S+) (.+)$', inp)
+
+    if delete:
+        nick, del_tag = delete.groups()
+        return delete_tag(db, chan, nick, del_tag)
+    else:
+        return untag.__doc__
+
+@hook.command
 def tags(inp, chan='', db=None):
-    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .tagged}'
+    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged}'
     if inp == 'list':
         return get_tag_counts_by_chan(db, chan)
 
@@ -170,7 +178,7 @@ def tags(inp, chan='', db=None):
 
 @hook.command
 def tagged(inp, chan='', db=None):
-    '.tagged <tag> [& tag...] -- get nicks marked as <tag> (separate multiple tags with &) {related: .tag, .tags}'
+    '.tagged <tag> [& tag...] -- get nicks marked as <tag> (separate multiple tags with &) {related: .tag, .untag, .tags}'
 
     return get_nicks_by_tagset(db, chan, inp)
 
