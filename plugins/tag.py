@@ -219,10 +219,17 @@ def near(inp, nick='', chan='', db=None):
     nearby = db.execute("select nick, distance(lat, lon, ?, ?) as dist from location where chan=?"
                         " and nick != lower(?) order by dist limit 20", (lat, lon, chan, nick)).fetchall()
 
+    in_miles = 'mi' in inp.lower()
+
     out = '(km) '
+    factor = 1.0
+    if in_miles:
+        out = '(mi) '
+        factor = 0.621
+
     while nearby and len(out) < 200:
         nick, dist = nearby.pop(0)
-        out += '%s:%.0f ' % (munge(nick, 1), dist)
+        out += '%s:%.0f ' % (munge(nick, 1), dist * factor)
 
     return out
 
