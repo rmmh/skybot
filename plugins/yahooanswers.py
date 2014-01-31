@@ -23,6 +23,6 @@ def answer(inp, api_key=None):
 
     chosen = choice(answered)
     answer, link = chosen["ChosenAnswer"], chosen["Link"]
-    response = "%s -- %s" % (link, answer)
+    response = "%s -- %s" % (answer, link)
 
     return " ".join(response.split())
