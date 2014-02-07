@@ -27,7 +27,7 @@ def get_memory(db, chan, word):
 @hook.command("r")
 def remember(inp, nick='', chan='', db=None):
     ".remember <word> [+]<data> s/<before>/<after> -- maps word to data in the memory, or "
-    " does string replacement (not regex)"
+    " does a string replacement (not regex)"
     db_init(db)
 
     append = False
@@ -58,7 +58,7 @@ def remember(inp, nick='', chan='', db=None):
         if len(args) == 3:
             replacement = True
             _, src, dst = args
-            new_data = _tail.replace(src, dst)
+            new_data = _tail.replace(src, dst, 1)
             if new_data == _tail:
                 return 'replacement left data unchanged'
             tail = new_data
