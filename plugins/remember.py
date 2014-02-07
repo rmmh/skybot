@@ -2,6 +2,9 @@
 remember.py: written by Scaevolus 2010
 """
 
+import string
+import re
+
 from util import hook
 
 
@@ -23,10 +26,12 @@ def get_memory(db, chan, word):
 @hook.command
 @hook.command("r")
 def remember(inp, nick='', chan='', db=None):
-    ".remember <word> [+]<data> -- maps word to data in the memory"
+    ".remember <word> [+]<data> s/<before>/<after> -- maps word to data in the memory, or "
+    " does string replacement (not regex)"
     db_init(db)
 
     append = False
+    replacement = False
 
     try:
         head, tail = inp.split(None, 1)
@@ -34,18 +39,31 @@ def remember(inp, nick='', chan='', db=None):
         return remember.__doc__
 
     data = get_memory(db, chan, head)
+    _head, _tail = data.split(None, 1)
 
     if tail[0] == '+':
         append = True
         # ignore + symbol
         new = tail[1:]
-        _head, _tail = data.split(None, 1)
         # data is stored with the input so ignore it when re-adding it
-        import string
         if len(tail) > 1 and tail[1] in (string.punctuation + ' '):
             tail = _tail + new
         else:
             tail = _tail + ' ' + new
+
+    if len(tail) > 2 and tail[0] == 's' and tail[1] in string.punctuation:
+        args = tail.split(tail[1])
+        if len(args) == 4 and args[3] == '':
+            args = args[:-1]
+        if len(args) == 3:
+            replacement = True
+            _, src, dst = args
+            new_data = _tail.replace(src, dst)
+            if new_data == _tail:
+                return 'replacement left data unchanged'
+            tail = new_data
+        else:
+            return 'invalid replacement syntax -- try s$foo$bar instead?'
 
     db.execute("replace into memory(chan, word, data, nick) values"
                " (?,lower(?),?,?)", (chan, head, head + ' ' + tail, nick))
@@ -54,6 +72,8 @@ def remember(inp, nick='', chan='', db=None):
     if data:
         if append:
             return "appending %s to %s" % (new, data.replace('"', "''"))
+        elif replacement:
+            return "replacing '%s' with '%s' in %s" % (src, dst, _tail)
         else:
             return 'forgetting "%s", remembering this instead.' % \
                 data.replace('"', "''")
