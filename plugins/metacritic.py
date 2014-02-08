@@ -9,7 +9,7 @@ from util import hook, http
 @hook.command('mc')
 def metacritic(inp):
     '.mc [all|movie|tv|album|x360|ps3|pc|ds|3ds|wii|psv] <title> -- gets rating for'\
-    ' <title> from metacritic on the specified medium'
+        ' <title> from metacritic on the specified medium'
 
     # if the results suck, it's metacritic's fault
 
@@ -130,6 +130,6 @@ def metacritic(inp):
         score = None
 
     return '[%s] %s - %s, %s -- %s' % (plat.upper(), name,
-            score or 'no score',
-            'release: %s' % release if release else 'unreleased',
-            link)
+                                       score or 'no score',
+                                       'release: %s' % release if release else 'unreleased',
+                                       link)

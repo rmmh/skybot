@@ -25,11 +25,13 @@ def rottentomatoes(inp, api_key=None):
     if critics_score == -1:
         return
 
-    reviews = http.get_json(movie_reviews_url % id, apikey=api_key, review_type='all')
+    reviews = http.get_json(movie_reviews_url %
+                            id, apikey=api_key, review_type='all')
     review_count = reviews['total']
 
     fresh = critics_score * review_count / 100
     rotten = review_count - fresh
 
     return u"%s - critics: \x02%d%%\x02 (%d\u2191%d\u2193)" \
-            " audience: \x02%d%%\x02 - %s" % (title, critics_score, fresh, rotten, audience_score, url)
+        " audience: \x02%d%%\x02 - %s" % (title, critics_score,
+                                          fresh, rotten, audience_score, url)

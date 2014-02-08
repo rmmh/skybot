@@ -5,16 +5,15 @@ from urllib import quote
 
 from util import hook, http
 
-twitter_re_status = r"(?i)twitter\.com(/!#)?/(\S+)/(statuses|status)/(\S+)"
 
 @hook.api_key('twitter')
 @hook.command
 def twitter(inp, api_key=None):
     ".twitter <user>/<user> <n>/<id>/#<search>/#<search> <n> -- " \
-    "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
+        "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
 
     if not isinstance(api_key, dict) or any(key not in api_key for key in
-            ('consumer', 'consumer_secret', 'access', 'access_secret')):
+                                            ('consumer', 'consumer_secret', 'access', 'access_secret')):
         return "error: api keys not set"
 
     getting_id = False
@@ -46,13 +45,13 @@ def twitter(inp, api_key=None):
         tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key)
     except http.HTTPError, e:
         errors = {400: 'bad request (ratelimited?)',
-                401: 'unauthorized',
-                403: 'forbidden',
-                404: 'invalid user/id',
-                500: 'twitter is broken',
-                502: 'twitter is down ("getting upgraded")',
-                503: 'twitter is overloaded (lol, RoR)',
-                410: 'twitter shut off api v1.' }
+                  401: 'unauthorized',
+                  403: 'forbidden',
+                  404: 'invalid user/id',
+                  500: 'twitter is broken',
+                  502: 'twitter is down ("getting upgraded")',
+                  503: 'twitter is overloaded (lol, RoR)',
+                  410: 'twitter shut off api v1.'}
         if e.code == 404:
             return 'error: invalid ' + ['username', 'tweet id'][getting_id]
         if e.code in errors:
@@ -73,16 +72,17 @@ def twitter(inp, api_key=None):
         except IndexError:
             return 'error: not that many tweets found'
 
-    text = http.unescape(tweet["text"])
+    text = http.unescape(tweet["text"]).replace('\n', ' ')
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
-    time = strftime('%I:%M:%S%p on %B %d, %Y', strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    time = strftime('%Y-%m-%d %H:%M:%S',
+                    strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
 
-    return "%s: %s (tweeted at %s)" % (screen_name, text, time)
+    return "%s \x02%s\x02: %s" % (time, screen_name, text)
+
 
 @hook.api_key('twitter')
-@hook.regex(twitter_re_status)
-def twitter_status(match, api_key=None):
-    status_id = match.group(4)
-    return twitter(status_id, api_key)
+@hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
+def show_tweet(match, api_key=None):
+    return twitter(match.group(3), api_key)

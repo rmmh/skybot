@@ -9,8 +9,8 @@ from util import hook, timesince
 def db_init(db):
     "check to see that our db has the tell table and return a dbection."
     db.execute("create table if not exists tell"
-                "(user_to, user_from, message, chan, time,"
-                "primary key(user_to, message))")
+               "(user_to, user_from, message, chan, time,"
+               "primary key(user_to, message))")
     db.commit()
 
     return db
@@ -18,8 +18,8 @@ def db_init(db):
 
 def get_tells(db, user_to):
     return db.execute("select user_from, message, time, chan from tell where"
-                         " user_to=lower(?) order by time",
-                         (user_to.lower(),)).fetchall()
+                      " user_to=lower(?) order by time",
+                      (user_to.lower(),)).fetchall()
 
 
 @hook.singlethread
@@ -42,7 +42,7 @@ def tellinput(paraml, input=None, db=None, bot=None):
             reply += " (+%d more, .showtells to view)" % (len(tells) - 1)
 
         db.execute("delete from tell where user_to=lower(?) and message=?",
-                     (input.nick, message))
+                   (input.nick, message))
         db.commit()
         input.notice(reply)
 
@@ -65,7 +65,7 @@ def showtells(inp, nick='', chan='', notice=None, db=None):
         notice("%s said %s ago in %s: %s" % (user_from, past, chan, message))
 
     db.execute("delete from tell where user_to=lower(?)",
-                  (nick,))
+               (nick,))
     db.commit()
 
 
@@ -91,13 +91,13 @@ def tell(inp, nick='', chan='', db=None):
     db_init(db)
 
     if db.execute("select count() from tell where user_to=?",
-                    (user_to,)).fetchone()[0] >= 5:
+                  (user_to,)).fetchone()[0] >= 5:
         return "That person has too many things queued."
 
     try:
         db.execute("insert into tell(user_to, user_from, message, chan,"
-                     "time) values(?,?,?,?,?)", (user_to, user_from, message,
-                     chan, time.time()))
+                   "time) values(?,?,?,?,?)", (user_to, user_from, message,
+                                               chan, time.time()))
         db.commit()
     except db.IntegrityError:
         return "Message has already been queued."

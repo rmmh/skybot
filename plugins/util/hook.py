@@ -22,7 +22,7 @@ def _hook_add(func, add, name=''):
                 n_args -= 1
             if n_args != 1:
                 err = '%ss must take 1 non-keyword argument (%s)' % (name,
-                            func.__name__)
+                                                                     func.__name__)
                 raise ValueError(err)
 
         args = []
@@ -41,7 +41,7 @@ def _hook_add(func, add, name=''):
 def sieve(func):
     if func.func_code.co_argcount != 5:
         raise ValueError(
-                'sieves must take 5 arguments: (bot, input, func, type, args)')
+            'sieves must take 5 arguments: (bot, input, func, type, args)')
     _hook_add(func, ['sieve', (func,)])
     return func
 

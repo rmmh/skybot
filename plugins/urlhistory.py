@@ -1,5 +1,4 @@
 import math
-import re
 import time
 
 from util import hook, urlnorm, timesince
@@ -12,22 +11,21 @@ ignored_urls = [urlnorm.normalize("http://google.com")]
 
 def db_init(db):
     db.execute("create table if not exists urlhistory"
-                 "(chan, url, nick, time)")
+               "(chan, url, nick, time)")
     db.commit()
 
 
 def insert_history(db, chan, url, nick):
-    now = time.time()
     db.execute("insert into urlhistory(chan, url, nick, time) "
-                 "values(?,?,?,?)", (chan, url, nick, time.time()))
+               "values(?,?,?,?)", (chan, url, nick, time.time()))
     db.commit()
 
 
 def get_history(db, chan, url):
     db.execute("delete from urlhistory where time < ?",
-                 (time.time() - expiration_period,))
+               (time.time() - expiration_period,))
     return db.execute("select nick, time from urlhistory where "
-            "chan=? and url=? order by time desc", (chan, url)).fetchall()
+                      "chan=? and url=? order by time desc", (chan, url)).fetchall()
 
 
 def nicklist(nicks):
@@ -60,7 +58,7 @@ def format_reply(history):
         last = "last linked by %s %s ago" % (last_nick, last_time)
 
     return "that url has been posted %s in the past %s by %s (%s)." % (ordinal,
-            hour_span, nicklist(history), last)
+                                                                       hour_span, nicklist(history), last)
 
 
 @hook.regex(r'([a-zA-Z]+://|www\.)[^ ]+')

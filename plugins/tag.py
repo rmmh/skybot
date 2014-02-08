@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import math
 import random
 import re
+import threading
 
 from util import hook
 
@@ -18,14 +20,49 @@ def munge(inp, munge_count=0):
                 break
     return inp
 
-def winnow(inputs, limit=400):
-    "remove random elements from the list until it's short enough"
-    combiner = lambda l: ', '.join(l)
-    suffix = ''
-    while len(combiner(inputs)) >= limit:
-        inputs.pop(random.randint(0, len(inputs) - 1))
-        suffix = ' ...'
-    return combiner(inputs) + suffix
+
+class PaginatingWinnower(object):
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.last_input = []
+        self.recent = set()
+
+    def winnow(self, inputs, limit=400, ordered=False):
+        "remove random elements from the list until it's short enough"
+        with self.lock:
+            # try to remove elements that were *not* removed recently
+            inputs_sorted = sorted(inputs)
+            if inputs_sorted == self.last_input:
+                same_input = True
+            else:
+                same_input = False
+                self.last_input = inputs_sorted
+                self.recent.clear()
+
+            combiner = lambda l: u', '.join(l)
+            suffix = ''
+
+            while len(combiner(inputs)) >= limit:
+                if same_input and any(inp in self.recent for inp in inputs):
+                    if ordered:
+                        for inp in self.recent:
+                            if inp in inputs:
+                                inputs.remove(inp)
+                    else:
+                        inputs.remove(
+                            random.choice([inp for inp in inputs if inp in self.recent]))
+                else:
+                    if ordered:
+                        inputs.pop()
+                    else:
+                        inputs.pop(random.randint(0, len(inputs) - 1))
+                suffix = ' ...'
+
+            self.recent.update(inputs)
+            return combiner(inputs) + suffix
+
+winnow = PaginatingWinnower().winnow
 
 
 def add_tag(db, chan, nick, subject):
@@ -62,61 +99,143 @@ def get_tag_counts_by_chan(db, chan):
     tags.sort(key=lambda x: x[1], reverse=True)
     if not tags:
         return 'no tags in %s' % chan
-    ret = '%s tags: ' % chan
-    ret += ', '.join('%s (%d)' % row for row in tags)
-    if len(ret) > 400:
-        ret = ret[:ret.rfind(' ', 0, 400)] + '...'
-    return ret
+    return winnow(['%s (%d)' % row for row in tags], ordered=True)
 
 
 def get_tags_by_nick(db, chan, nick):
-    return db.execute("select subject from tag where lower(nick)=lower(?)"
+    tags = db.execute("select subject from tag where lower(nick)=lower(?)"
                       " and chan=?"
                       " order by lower(subject)", (nick, chan)).fetchall()
+    if tags:
+        return 'tags for "%s": ' % munge(nick, 1) + winnow([
+            tag[0] for tag in tags])
+    else:
+        return ''
 
 
-def get_nicks_by_tag(db, chan, subject):
-    nicks = db.execute("select nick from tag where lower(subject)=lower(?)"
-                       " and chan=?"
-                       " order by lower(nick)", (subject, chan)).fetchall()
+def get_nicks_by_tagset(db, chan, tagset):
+    nicks = None
+    for tag in tagset.split('&'):
+        tag = tag.strip()
 
-    nicks = [munge(x[0], 1) for x in nicks]
+        current_nicks = db.execute("select nick from tag where " +
+                                   "lower(subject)=lower(?)"
+                                   " and chan=?", (tag, chan)).fetchall()
+
+        if not current_nicks:
+            return "tag '%s' not found" % tag
+
+        if nicks is None:
+            nicks = set(current_nicks)
+        else:
+            nicks.intersection_update(current_nicks)
+
+    nicks = [munge(x[0], 1) for x in sorted(nicks)]
     if not nicks:
-        return 'tag not found'
-    return 'nicks tagged "%s": ' % subject + winnow(nicks)
+        return 'no nicks found with tags "%s"' % tagset
+    return 'nicks tagged "%s": ' % tagset + winnow(nicks)
 
 
 @hook.command
 def tag(inp, chan='', db=None):
-    '.tag <nick>/[add|del] <nick> <tag>/list [tag] -- get list of tags on ' \
-    '<nick>/(un)marks <nick> as <tag>/gets list of tags/nicks marked as [tag]'
+    '.tag <nick> <tag> -- marks <nick> as <tag> {related: .untag, .tags, .tagged}'
 
     db.execute('create table if not exists tag(chan, subject, nick)')
 
-    add = re.match(r'(?:a(?:dd)? )?(\S+) (.+)', inp)
-    delete = re.match(r'd(?:el(?:ete)?)? (\S+) (.+)\s*$', inp)
-    retrieve = re.match(r'l(?:ist)(?: (.+))?\s*$', inp)
+    add = re.match(r'(\S+) (.+)', inp)
 
-    if retrieve:
-        search_tag = retrieve.group(1)
-        if search_tag:
-            return get_nicks_by_tag(db, chan, search_tag)
-        else:
-            return get_tag_counts_by_chan(db, chan)
-    if delete:
-        nick, del_tag = delete.groups()
-        return delete_tag(db, chan, nick, del_tag)
     if add:
         nick, subject = add.groups()
+        if nick.lower() == 'list':
+            return 'tag syntax has changed. try .tags or .tagged instead'
+        elif nick.lower() == 'del':
+            return 'tag syntax has changed. try ".untag %s" instead' % subject
         return add_tag(db, chan, nick, subject)
     else:
         tags = get_tags_by_nick(db, chan, inp)
-
-        if not tags:
-            return get_nicks_by_tag(db, chan, inp)
+        if tags:
+            return tags
         else:
-            return 'tags for "%s": ' % munge(inp, 1) + winnow([
-                tag[0] for tag in tags])
+            return tag.__doc__
+
+
+@hook.command
+def untag(inp, chan='', db=None):
+    '.untag <nick> <tag> -- unmarks <nick> as <tag> {related: .tag, .tags, .tagged}'
+
+    delete = re.match(r'(\S+) (.+)$', inp)
+
+    if delete:
+        nick, del_tag = delete.groups()
+        return delete_tag(db, chan, nick, del_tag)
+    else:
+        return untag.__doc__
+
+
+@hook.command
+def tags(inp, chan='', db=None):
+    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged}'
+    if inp == 'list':
+        return get_tag_counts_by_chan(db, chan)
+
+    tags = get_tags_by_nick(db, chan, inp)
+    if tags:
+        return tags
+    else:
+        return get_nicks_by_tagset(db, chan, inp)
+
+
+@hook.command
+def tagged(inp, chan='', db=None):
+    '.tagged <tag> [& tag...] -- get nicks marked as <tag> (separate multiple tags with &) {related: .tag, .untag, .tags}'
+
+    return get_nicks_by_tagset(db, chan, inp)
+
+
+def distance(lat1, lon1, lat2, lon2):
+    deg_to_rad = math.pi / 180
+    lat1 *= deg_to_rad
+    lat2 *= deg_to_rad
+    lon1 *= deg_to_rad
+    lon2 *= deg_to_rad
+
+    R = 6371  # km
+    d = math.acos(math.sin(lat1) * math.sin(lat2) +
+                  math.cos(lat1) * math.cos(lat2) *
+                  math.cos(lon2 - lon1)) * R
+    return d
+
+
+@hook.command(autohelp=False)
+def near(inp, nick='', chan='', db=None):
+    try:
+        loc = db.execute("select lat, lon from location where chan=? and nick=lower(?)",
+                (chan, nick)).fetchone()
+    except db.OperationError:
+        loc = None
+
+    if loc is None:
+        return 'use .weather <loc> first to set your location'
+
+    lat, lon = loc
+
+    db.create_function('distance', 4, distance)
+    nearby = db.execute("select nick, distance(lat, lon, ?, ?) as dist from location where chan=?"
+                        " and nick != lower(?) order by dist limit 20", (lat, lon, chan, nick)).fetchall()
+
+    in_miles = 'mi' in inp.lower()
+
+    out = '(km) '
+    factor = 1.0
+    if in_miles:
+        out = '(mi) '
+        factor = 0.621
+
+    while nearby and len(out) < 200:
+        nick, dist = nearby.pop(0)
+        out += '%s:%.0f ' % (munge(nick, 1), dist * factor)
+
+    return out
 
 
 character_replacements = {
