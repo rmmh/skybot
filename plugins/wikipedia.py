@@ -16,7 +16,7 @@ paren_re = re.compile('\s*\(.*\)$')
 @hook.command
 def wiki(inp):
     '''.w/.wiki <phrase> -- gets first sentence of wikipedia ''' \
-    '''article on <phrase>'''
+        '''article on <phrase>'''
 
     x = http.get_xml(search_url, search=inp)
 
@@ -31,7 +31,7 @@ def wiki(inp):
 
     def extract(item):
         return [item.find(ns + x).text for x in
-                            ('Text', 'Description', 'Url')]
+                ('Text', 'Description', 'Url')]
 
     title, desc, url = extract(items[0])
 

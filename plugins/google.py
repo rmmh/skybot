@@ -5,7 +5,7 @@ from util import hook, http
 
 def api_get(query, key, is_image=None, num=1):
     url = ('https://www.googleapis.com/customsearch/v1?cx=007629729846476161907:ud5nlxktgcw'
-            '&fields=items(title,link,snippet)&safe=off' + ('&searchType=image' if is_image else ''))
+           '&fields=items(title,link,snippet)&safe=off' + ('&searchType=image' if is_image else ''))
     return http.get_json(url, key=key, q=query, num=num)
 
 

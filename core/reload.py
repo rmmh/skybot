@@ -49,7 +49,7 @@ def reload(init=False):
 
             try:
                 eval(compile(open(filename, 'U').read(), filename, 'exec'),
-                        globals())
+                     globals())
             except Exception:
                 traceback.print_exc()
                 if init:        # stop if there's an error (syntax?) in a core
@@ -111,7 +111,7 @@ def reload(init=False):
 
                         if not init:
                             print '### new plugin (type: %s) loaded:' % \
-                                    type, format_plug(data)
+                                type, format_plug(data)
 
     if changed:
         bot.commands = {}
@@ -119,7 +119,7 @@ def reload(init=False):
             name = plug[1]['name'].lower()
             if not re.match(r'^\w+$', name):
                 print '### ERROR: invalid command name "%s" (%s)' % (name,
-                  format_plug(plug))
+                                                                     format_plug(plug))
                 continue
             if name in bot.commands:
                 print "### ERROR: command '%s' already registered (%s, %s)" % \

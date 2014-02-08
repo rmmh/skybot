@@ -19,7 +19,8 @@ def suggest(inp, inp_unstripped=''):
     else:
         num = 0
 
-    page = http.get('http://google.com/complete/search', output='json', client='hp', q=inp)
+    page = http.get('http://google.com/complete/search',
+                    output='json', client='hp', q=inp)
     page_json = page.split('(', 1)[1][:-1]
     suggestions = json.loads(page_json)[1]
     if not suggestions:

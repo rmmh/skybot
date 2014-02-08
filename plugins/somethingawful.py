@@ -16,16 +16,16 @@ def login(user, password):
     user = http.quote(user)
     password = http.quote(password)
     http.get("http://forums.somethingawful.com/account.php", cookies=True,
-        post_data="action=login&username=%s&password=%s" % (user, password))
+             post_data="action=login&username=%s&password=%s" % (user, password))
 
 
+@hook.api_key('somethingawful')
 @hook.regex(thread_re)
-def forum_link(inp, bot=None):
-    if 'sa_user' not in bot.config or \
-       'sa_password' not in bot.config:
+def forum_link(inp, api_key=None):
+    if api_key is None or 'user' not in api_key or 'password' not in api_key:
         return
 
-    login(bot.config['sa_user'], bot.config['sa_password'])
+    login(api_key['user'], api_key['password'])
 
     thread = http.get_html(showthread, threadid=inp.group(1), perpage='1',
                            cookies=True)
@@ -49,8 +49,8 @@ def forum_link(inp, bot=None):
         num_posts = int(num_posts[0].rsplit('=', 1)[1])
 
     return '\x02%s\x02 > \x02%s\x02 by \x02%s\x02, %s post%s' % (
-            forum_title, thread_title, poster, num_posts,
-            's' if num_posts > 1 else '')
+        forum_title, thread_title, poster, num_posts,
+        's' if num_posts > 1 else '')
 
 
 forum_abbrevs = {
