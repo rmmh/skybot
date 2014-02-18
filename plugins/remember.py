@@ -39,7 +39,10 @@ def remember(inp, nick='', chan='', db=None):
         return remember.__doc__
 
     data = get_memory(db, chan, head)
-    _head, _tail = data.split(None, 1)
+    if data is not None:
+        _head, _tail = data.split(None, 1)
+    else:
+        _head, _tail = head, ''
 
     if tail[0] == '+':
         append = True
