@@ -182,8 +182,11 @@ class IRC(object):
     def set_nick(self, nick):
         self.cmd("NICK", [nick])
 
-    def join(self, channel):
-        self.cmd("JOIN", [channel])
+    def join(self, channel, key=None):
+        params = [channel]
+        if key is not None:
+            params.append(key)
+        self.cmd("JOIN", params)
 
     def msg(self, target, text):
         self.cmd("PRIVMSG", [target, text])
