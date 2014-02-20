@@ -6,8 +6,8 @@ from util import hook, http
 @hook.api_key('wunderground')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
-    ".weather <location> [dontsave] -- gets weather data from Wunderground "\
-        "http://wunderground.com/weather/api"
+    ".weather <location> [dontsave] | @<nick> -- gets weather data from Wunderground "\
+            "http://wunderground.com/weather/api"
 
     if not api_key:
         return None
@@ -17,11 +17,16 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     db.execute(
         "create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, nick))")
 
-    loc = inp
+    if inp[0:1] == '@':
+        nick = inp[1:].strip()
+        loc = None
+        dontsave = True
+    else:
+        loc = inp
 
-    dontsave = loc.endswith(" dontsave")
-    if dontsave:
-        loc = loc[:-9].strip().lower()
+        dontsave = loc.endswith(" dontsave")
+        if dontsave:
+            loc = loc[:-9].strip().lower()
 
     if not loc:  # blank line
         loc = db.execute(
