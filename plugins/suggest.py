@@ -1,4 +1,3 @@
-import json
 import random
 import re
 
@@ -6,29 +5,25 @@ from util import hook, http
 
 
 @hook.command
-def suggest(inp, inp_unstripped=''):
+def suggest(inp, inp_unstripped=None):
     ".suggest [#n] <phrase> -- gets a random/the nth suggested google search"
 
-    inp = inp_unstripped
+    if inp_unstripped is not None:
+        inp = inp_unstripped
     m = re.match('^#(\d+) (.+)$', inp)
+    num = 0
     if m:
         num, inp = m.groups()
         num = int(num)
-        if num > 10:
-            return 'can only get first ten suggestions'
-    else:
-        num = 0
 
-    page = http.get('http://google.com/complete/search',
-                    output='json', client='hp', q=inp)
-    page_json = page.split('(', 1)[1][:-1]
-    suggestions = json.loads(page_json)[1]
+    json = http.get_json('http://suggestqueries.google.com/complete/search', client='firefox', q=inp)
+    suggestions = json[1]
     if not suggestions:
         return 'no suggestions found'
-    if num:
-        if len(suggestions) + 1 <= num:
-            return 'only got %d suggestions' % len(suggestions)
-        out = suggestions[num - 1]
-    else:
-        out = random.choice(suggestions)
-    return '#%d: %s' % (int(out[2][0]) + 1, out[0].replace('<b>', '').replace('</b>', ''))
+
+    if not num:
+        num = random.randint(1, len(suggestions))
+    if len(suggestions) + 1 <= num:
+        return 'only got %d suggestions' % len(suggestions)
+    out = suggestions[num - 1]
+    return '#%d: %s' % (num, out)
