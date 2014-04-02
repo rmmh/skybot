@@ -15,3 +15,6 @@
 
 ==Requirements==
 Skybot runs on Python 2.6. Many of the plugins require [[http://codespeak.net/lxml/|lxml]]. It is developed on Ubuntu 9.10 with Python 2.6.4.
+
+==License==
+Skybot is public domain. If you find a way to make money using it, I'll be very impressed.
