@@ -97,11 +97,13 @@ def markov(inp, db=None, bot=None, conn=None):
     if len(inp[1]) > 0 and inp[1][0] != ".":
         less(db, conn, inp[0], inp[1])
     rand = random.random()
+
     settings = get_settings(db)
-    if bool(settings[1]) and rand < (1.0/float(settings[2])) and inp[
-            1][0] != ".":
-        output = get_random_row(db)
-        say_chain(db, output, conn, inp[0])
+    if settings:
+        if bool(settings[1]) and rand < (1.0/float(settings[2])) and inp[
+                1][0] != ".":
+            output = get_random_row(db)
+            say_chain(db, output, conn, inp[0])
 
 
 def find_one(inp, db):
