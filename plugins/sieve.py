@@ -40,6 +40,9 @@ def sieve_suite(bot, input, func, kind, args):
         if 'blacklist' in acl:
             if func.__name__ in acl['whitelist']:
                 return None
+        if 'blacklist-nicks' in acl:
+            if input.nick.lower() in acl['blacklist-nicks']:
+                return None
 
     if args.get('adminonly', False):
         admins = bot.config.get('admins', [])

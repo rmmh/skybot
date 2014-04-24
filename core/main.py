@@ -19,18 +19,18 @@ class Input(dict):
 
         def reply(msg):
             if chan == nick:  # PMs don't need prefixes
-                conn.msg(chan, msg)
+                self.say(msg)
             else:
-                conn.msg(chan, nick + ': ' + msg)
+                self.say(nick + ': ' + msg)
 
-        def pm(msg):
+        def pm(msg, nick=nick):
             conn.msg(nick, msg)
 
         def set_nick(nick):
             conn.set_nick(nick)
 
         def me(msg):
-            conn.msg(chan, "\x01%s %s\x01" % ("ACTION", msg))
+            self.say("\x01%s %s\x01" % ("ACTION", msg))
 
         def notice(msg):
             conn.cmd('NOTICE', [nick, msg])
