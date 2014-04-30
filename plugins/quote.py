@@ -13,11 +13,17 @@ def add_quote(db, chan, nick, add_nick, msg):
 
 
 def del_quote(db, chan, nick, add_nick, msg):
-    db.execute('''update quote set deleted = 1 where
-                  chan=? and lower(nick)=lower(?) and msg=msg''')
+    updated = db.execute('''update quote set deleted = 1 where 
+                  chan=? and lower(nick)=lower(?) and msg=?''',
+                  (chan, nick, msg) )
     db.commit()
-
-
+    
+    if updated.rowcount == 0:
+        return False
+    else:
+        return True
+    
+    
 def get_quotes_by_nick(db, chan, nick):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
                       "and chan=? and lower(nick)=lower(?) order by time",
@@ -38,8 +44,9 @@ def format_quote(q, num, n_quotes):
 @hook.command('q')
 @hook.command
 def quote(inp, nick='', chan='', db=None):
-    ".q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg> -- gets " \
-        "random or [#n]th quote by <nick> or from <#chan>/adds quote"
+    ".q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg>/.quote delete <nick> <msg> -- gets " \
+        "random or [#n]th quote by <nick> or from <#chan>/adds quote" \
+        "/deletes quote"
 
     db.execute("create table if not exists quote"
                "(chan, nick, add_nick, msg, time real, deleted default 0, "
@@ -47,6 +54,7 @@ def quote(inp, nick='', chan='', db=None):
     db.commit()
 
     add = re.match(r"add[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
+    delete = re.match(r"delete[^\w@]+(\S+?)>?\s+(.*)", inp, re.I)
     retrieve = re.match(r"(\S+)(?:\s+#?(-?\d+))?$", inp)
     retrieve_chan = re.match(r"(#\S+)\s+(\S+)(?:\s+#?(-?\d+))?$", inp)
 
@@ -58,6 +66,13 @@ def quote(inp, nick='', chan='', db=None):
         except db.IntegrityError:
             return "message already stored, doing nothing."
         return "quote added."
+    if delete:
+        quoted_nick, msg = delete.groups()
+        didDelete = del_quote(db, chan, quoted_nick, nick, msg)
+        if didDelete:
+            return "deleted quote '" + str(msg) + "'";
+        else:
+            return "found no matching quotes to delete"
     elif retrieve:
         select, num = retrieve.groups()
 
