@@ -26,7 +26,7 @@ def get_version():
 @hook.event('KICK')
 def rejoin(paraml, conn=None):
     if paraml[1] == conn.nick:
-        if paraml[0].lower() in conn.channels:
+        if paraml[0].lower() in conn.conf.get("channels", []):
             conn.join(paraml[0])
 
 
@@ -52,7 +52,7 @@ def onjoin(paraml, conn=None):
         conn.cmd('MODE', [conn.nick, mode])
 
     # join channels
-    for channel in conn.channels:
+    for channel in conn.conf.get("channels", []):
         conn.join(channel)
         time.sleep(1)  # don't flood JOINs
 

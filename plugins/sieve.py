@@ -44,10 +44,11 @@ def sieve_suite(bot, input, func, kind, args):
             if input.nick.lower() in acl['blacklist-nicks']:
                 return None
 
-    if args.get('adminonly', False):
-        admins = bot.config.get('admins', [])
+    admins = input.conn.conf.get('admins', [])
+    input.admin = input.host in admins or input.nick in admins
 
-        if input.host not in admins and input.nick not in admins:
+    if args.get('adminonly', False):
+        if not input.admin:
             return None
 
     return input

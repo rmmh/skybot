@@ -3,6 +3,7 @@
 import os
 import Queue
 import sys
+import traceback
 import time
 
 sys.path += ['plugins']  # so 'import hook' works without duplication
@@ -11,8 +12,11 @@ os.chdir(sys.path[0] or '.')  # do stuff relative to the install directory
 
 
 class Bot(object):
-    pass
-
+    def __init__(self):
+        self.conns = {}
+        self.persist_dir = os.path.abspath('persist')
+        if not os.path.exists(self.persist_dir):
+            os.mkdir(bot.persist_dir)
 
 bot = Bot()
 
@@ -23,30 +27,16 @@ eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
              os.path.join('core', 'reload.py'), 'exec'))
 reload(init=True)
 
-config()
-if not hasattr(bot, 'config'):
-    exit()
-
 print 'Connecting to IRC'
 
-bot.conns = {}
-
 try:
-    for name, conf in bot.config['connections'].iteritems():
-        if conf.get('ssl'):
-            bot.conns[name] = SSLIRC(conf['server'], conf['nick'], conf=conf,
-                                     port=conf.get('port', 6667), channels=conf['channels'],
-                                     ignore_certificate_errors=conf.get('ignore_cert', True))
-        else:
-            bot.conns[name] = IRC(conf['server'], conf['nick'], conf=conf,
-                                  port=conf.get('port', 6667), channels=conf['channels'])
+    config()
+    if not hasattr(bot, 'config'):
+        exit()
 except Exception, e:
-    print 'ERROR: malformed config file', e
+    print 'ERROR: malformed config file:', e
+    traceback.print_exc()
     sys.exit()
-
-bot.persist_dir = os.path.abspath('persist')
-if not os.path.exists(bot.persist_dir):
-    os.mkdir(bot.persist_dir)
 
 print 'Running main loop'
 
