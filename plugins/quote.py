@@ -12,18 +12,18 @@ def add_quote(db, chan, nick, add_nick, msg):
     db.commit()
 
 
-def del_quote(db, chan, nick, add_nick, msg):
-    updated = db.execute('''update quote set deleted = 1 where 
+def del_quote(db, chan, nick, msg):
+    updated = db.execute('''update quote set deleted = 1 where
                   chan=? and lower(nick)=lower(?) and msg=?''',
-                  (chan, nick, msg) )
+                  (chan, nick, msg))
     db.commit()
-    
+
     if updated.rowcount == 0:
         return False
     else:
         return True
-    
-    
+
+
 def get_quotes_by_nick(db, chan, nick):
     return db.execute("select time, nick, msg from quote where deleted!=1 "
                       "and chan=? and lower(nick)=lower(?) order by time",
@@ -43,10 +43,10 @@ def format_quote(q, num, n_quotes):
 
 @hook.command('q')
 @hook.command
-def quote(inp, nick='', chan='', db=None):
-    ".q/.quote [#chan] [nick] [#n]/.quote add <nick> <msg>/.quote delete <nick> <msg> -- gets " \
-        "random or [#n]th quote by <nick> or from <#chan>/adds quote" \
-        "/deletes quote"
+def quote(inp, nick='', chan='', db=None, admin=False):
+    ".q/.quote [#chan] [nick] [#n]/.quote add|delete <nick> <msg> -- gets " \
+        "random or [#n]th quote by <nick> or from <#chan>/adds or deletes " \
+        "quote"
 
     db.execute("create table if not exists quote"
                "(chan, nick, add_nick, msg, time real, deleted default 0, "
@@ -67,10 +67,11 @@ def quote(inp, nick='', chan='', db=None):
             return "message already stored, doing nothing."
         return "quote added."
     if delete:
+        if not admin:
+            return 'only admins can delete quotes'
         quoted_nick, msg = delete.groups()
-        didDelete = del_quote(db, chan, quoted_nick, nick, msg)
-        if didDelete:
-            return "deleted quote '" + str(msg) + "'";
+        if del_quote(db, chan, quoted_nick, msg):
+            return "deleted quote '%s'" % msg
         else:
             return "found no matching quotes to delete"
     elif retrieve:
