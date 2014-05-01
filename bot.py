@@ -16,7 +16,7 @@ class Bot(object):
         self.conns = {}
         self.persist_dir = os.path.abspath('persist')
         if not os.path.exists(self.persist_dir):
-            os.mkdir(bot.persist_dir)
+            os.mkdir(self.persist_dir)
 
 bot = Bot()
 
