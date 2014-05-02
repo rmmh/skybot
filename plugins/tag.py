@@ -8,6 +8,10 @@ import threading
 from util import hook
 
 
+def sanitize(s):
+    return re.sub(r'[\x00-\x1f]', '', s)
+
+
 @hook.command
 def munge(inp, munge_count=0):
     reps = 0
@@ -150,7 +154,7 @@ def tag(inp, chan='', db=None):
             return 'tag syntax has changed. try .tags or .tagged instead'
         elif nick.lower() == 'del':
             return 'tag syntax has changed. try ".untag %s" instead' % subject
-        return add_tag(db, chan, nick, subject)
+        return add_tag(db, chan, sanitize(nick), sanitize(subject))
     else:
         tags = get_tags_by_nick(db, chan, inp)
         if tags:
