@@ -45,9 +45,9 @@ def bf(inp):
     while ip < len(program):
         c = program[ip]
         if c == '+':
-            memory[mp] = memory[mp] + 1 % 256
+            memory[mp] = (memory[mp] + 1) % 256
         elif c == '-':
-            memory[mp] = memory[mp] - 1 % 256
+            memory[mp] = (memory[mp] - 1) % 256
         elif c == '>':
             mp += 1
             if mp > rightmost:
