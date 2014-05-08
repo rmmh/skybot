@@ -163,10 +163,11 @@ def main(conn, out):
 
     if inp.command == 'PRIVMSG':
         # COMMANDS
+        bot_prefix = bot.config.get("prefix", ".")
         if inp.chan == inp.nick:  # private message, no command prefix
-            prefix = r'^(?:[.]?|'
+            prefix = r'^(?:['+bot_prefix+']?|'
         else:
-            prefix = r'^(?:[.]|'
+            prefix = r'^(?:['+bot_prefix+']|'
 
         command_re = prefix + inp.conn.nick
         command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
