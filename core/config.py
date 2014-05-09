@@ -19,6 +19,7 @@ if not os.path.exists('config'):
               "channels": ["#test"]
             }
           },
+          "prefix": ".",
           "disabled_plugins": [],
           "disabled_commands": [],
           "acls": {},
