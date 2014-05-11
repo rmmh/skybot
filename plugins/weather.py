@@ -82,13 +82,13 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
             results = parsed_json['response']['results']
 
             for place in results[:6]:
-                resp += '{city} '.format(**place)
+                resp += '{city}, '.format(**place)
 
                 if place['state']:
-                    resp += '{state} '.format(**place)
+                    resp += '{state}, '.format(**place)
 
                 if place['country_name']:
-                    resp += '{country_name}, '.format(**place)
+                    resp += '{country_name}; '.format(**place)
 
             resp = resp[:-2]
 
