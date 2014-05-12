@@ -18,8 +18,7 @@ from util import hook
 def crowdcontrol(inp, nick='', chan='', host='', bot=None, conn=None):
     inp = inp.group(0)
     for rule in bot.config.get('crowdcontrol', []):
-        pattern = re.compile(rule['re'])
-        if re.search(pattern, inp) is not None:
+        if re.search(rule['re'], inp) is not None:
             if 'ban_length' in rule and rule['ban_length'] != 0:
                 conn.cmd("MODE", [chan, "+b", host])
             if rule['kick']:
