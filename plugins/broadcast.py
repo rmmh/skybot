@@ -5,7 +5,8 @@ import tag
 
 
 def get_nicks_by_tagset(db, chan, tagset):
-    # mostly copied from tag.py. It even uses the tag db!
+    # Mostly copied from tag.py. It even uses the tag db!
+    # Except it returns an unmunged array instead of a munged string.
     nicks = None
     for tags in tagset.split('&'):
         tags = tags.strip()
