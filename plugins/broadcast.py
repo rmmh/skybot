@@ -75,9 +75,9 @@ def broadcast(inp, nick='', chan='', db=None):
 
     result = ""
 
-    if len(successes) > 0:
+    if successes:
         result += "I passed it along to " + oxford(successes) + ". "
-    if len(failures) > 0:
+    if failures:
         result += "I didn't get to send it to " + oxford(failures, "or") + "."
 
     return result
