@@ -15,16 +15,19 @@ from util import hook
 
 
 @hook.regex(r'.*')
-def crowdcontrol(inp, nick='', chan='', host='', bot=None, conn=None):
+def crowdcontrol(inp, kick=None, ban=None, unban=None, reply=None, bot=None):
     inp = inp.group(0)
     for rule in bot.config.get('crowdcontrol', []):
         if re.search(rule['re'], inp) is not None:
-            if 'ban_length' in rule and rule['ban_length'] != 0:
-                conn.cmd("MODE", [chan, "+b", host])
-            if rule['kick']:
-                conn.cmd('KICK', [chan, nick, rule['msg']])
-            if 'ban_length' in rule and rule['ban_length'] > 0:
-                time.sleep(rule['ban_length'])
-                conn.cmd("MODE", [chan, "-b", host])
-            if not rule['kick']:
-                return rule['msg']
+            should_kick = rule.get('kick', 0)
+            ban_length = rule.get('ban_length', 0)
+            reason = rule.get('msg')
+            if ban_length != 0:
+                ban()
+            if should_kick:
+                kick(reason=reason)
+            elif 'msg' in rule:
+                reply(reason)
+            if ban_length > 0:
+                time.sleep(ban_length)
+                unban()
