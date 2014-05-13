@@ -31,8 +31,6 @@ def get_nicks_by_tagset(db, chan, tagset):
 def oxford(names, conjunction="and"):
     if len(names) == 0:
         return "nobody"
-    elif len(names) == 1:
-        return names[0]
     elif len(names) == 2:
         return "%s %s %s" % (names[0], conjunction, names[1])
 
