@@ -24,7 +24,7 @@ def get_tells(db, user_to):
 
 @hook.singlethread
 @hook.event('PRIVMSG')
-def tellinput(paraml, input=None, db=None, bot=None):
+def tellinput(paraml, input=None, db=None):
     if 'showtells' in input.msg.lower():
         return
 
@@ -44,7 +44,7 @@ def tellinput(paraml, input=None, db=None, bot=None):
         db.execute("delete from tell where user_to=lower(?) and message=?",
                    (input.nick, message))
         db.commit()
-        input.notice(reply)
+        input.pm(reply)
 
 
 @hook.command(autohelp=False)
