@@ -11,7 +11,7 @@ import urllib2
 import urlparse
 
 from hashlib import sha1
-from urllib import quote, quote_plus as _quote_plus
+from urllib import quote, unquote, quote_plus as _quote_plus
 from urllib2 import HTTPError, URLError
 
 from lxml import etree, html
