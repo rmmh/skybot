@@ -5,18 +5,22 @@ import re
 
 from util import hook, http
 
-
 api_prefix = "http://en.wikipedia.org/w/api.php"
 search_url = api_prefix + "?action=opensearch&format=xml"
+random_url = api_prefix + "?action=query&format=xml&list=random&rnlimit=1&rnnamespace=0"
 
 paren_re = re.compile('\s*\(.*\)$')
 
 
 @hook.command('w')
-@hook.command
+@hook.command(autohelp=False)
 def wiki(inp):
     '''.w/.wiki <phrase> -- gets first sentence of wikipedia ''' \
         '''article on <phrase>'''
+
+    if inp == "":
+        r = http.get_xml(random_url)
+        inp = r.find('.//page').get('title')
 
     x = http.get_xml(search_url, search=inp)
 
