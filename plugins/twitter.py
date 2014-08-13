@@ -72,7 +72,12 @@ def twitter(inp, api_key=None):
         except IndexError:
             return 'error: not that many tweets found'
 
-    text = http.unescape(tweet["text"]).replace('\n', ' ')
+    if 'retweeted_status' in tweet:
+        rt = tweet["retweeted_status"]
+        rt_text = http.unescape(rt["text"]).replace('\n', ' ')
+        text = "RT @%s %s" % (rt["user"]["screen_name"], rt_text)
+    else:
+        text = http.unescape(tweet["text"]).replace('\n', ' ')
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
