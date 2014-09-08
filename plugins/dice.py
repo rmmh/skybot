@@ -87,3 +87,44 @@ def dice(inp):
         return "%s: %d (%s=%s)" % (desc.strip(),  total, inp, ", ".join(rolls))
     else:
         return "%d (%s=%s)" % (total, inp, ", ".join(rolls))
+
+@hook.command('rollgroups')
+@hook.command
+def groups(inp):
+    ".groups <n#<diceroll>> -- allows execution of a set of dice rolls"
+    times, roll = inp.split('#')
+
+    verbose = False
+    if 'v' in times:
+        verbose = True
+
+    times = times.replace('v','')
+
+    try:
+        (inp, desc) = roll.groups()
+    except AttributeError:
+        (inp, desc) = valid_diceroll_re.match(roll).groups()
+
+    results = []
+    rolls = []
+    for i in range(int(times)):
+        result = dice(inp)
+        results.append(result.split()[0])
+        result = result.replace(')', '')
+        result_rhs = result.split('=')[1]
+        result_rolls = result_rhs.split(',')
+        rolls.append(' '.join(result_rolls)) 
+
+    if not verbose:
+        rolls = ''
+
+    if desc:
+      return desc + ": %s (%s) %s" % (inp, ' '.join(results), rolls)
+    else:
+        return "%s (%s) %s" % (inp, ' '.join(results), rolls)
+
+@hook.command('dnd3d6')
+@hook.command
+def dnd3d6():
+    return groups("6#3d6")
+
