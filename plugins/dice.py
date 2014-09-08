@@ -89,7 +89,6 @@ def dice(inp):
         return "%d (%s=%s)" % (total, inp, ", ".join(rolls))
 
 @hook.command('rollgroups')
-@hook.command
 def groups(inp):
     ".groups <n#<diceroll>> -- allows execution of a set of dice rolls"
     times, roll = inp.split('#')
@@ -124,8 +123,7 @@ def groups(inp):
         return "%s (%s) %s" % (inp, ' '.join(results), rolls)
 
 @hook.command('dnd3d6')
-@hook.command
-def dnd3d6():
+def dnd3d6(inp):
     ' returns an OD&D 3d6 character rollup '
     return groups("6#3d6")
 
