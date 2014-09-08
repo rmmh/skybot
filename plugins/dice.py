@@ -37,7 +37,7 @@ def nrolls(count, n):
 @hook.command
 def dice(inp):
     ".dice <diceroll> -- simulates dicerolls, e.g. .dice 2d20-d5+4 roll 2 " \
-        "D20s, subtract 1D5, add 4"
+        "D20s, subtract 1D5, add 4  - Thomson Comer Edition"
 
     try:  # if inp is a re.match object...
         (inp, desc) = inp.groups()
@@ -126,5 +126,6 @@ def groups(inp):
 @hook.command('dnd3d6')
 @hook.command
 def dnd3d6():
+    ' returns an OD&D 3d6 character rollup '
     return groups("6#3d6")
 
