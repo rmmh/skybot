@@ -4,6 +4,11 @@ import re
 import nose
 from sys import argv
 
+""" Tests for Thomson Comer's additions to the dice.py plugin.
+    Run with nosetests dice_test.py.  Can also be run interactively
+    using python dice_test.py <rollstring>
+"""
+
 def get_from_parens(return_string):
   parens = re.compile("\((.+)\)")
   result = parens.search(return_string)
@@ -36,3 +41,4 @@ def test_garbage():
 def main():
   print(dice.groups(roll))
   roll = argv[1]
+
