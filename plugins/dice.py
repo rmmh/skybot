@@ -91,21 +91,33 @@ def dice(inp):
 @hook.command('rollgroups')
 def groups(inp):
     ".groups <n#<diceroll>> -- allows execution of a set of dice rolls"
-    times, roll = inp.split('#')
+    if '#' in inp:
+      times, roll = inp.split('#')
+    else:
+      times, roll = ('1',inp)
 
     verbose = False
     if 'v' in times:
         verbose = True
-
     times = times.replace('v','')
 
     try:
         (inp, desc) = roll.groups()
     except AttributeError:
-        (inp, desc) = valid_diceroll_re.match(roll).groups()
+        dice_roll = valid_diceroll_re.match(roll)
+        if dice_roll:
+          (inp, desc) = valid_diceroll_re.match(roll).groups()
+        else:
+          return "Bad dice roll syntax - %".format(roll)
 
     results = []
     rolls = []
+
+    try:
+      times = int(times)
+    except ValueError:
+      return "Bad dice roll syntax = %".format(roll)
+
     for i in range(int(times)):
         result = dice(inp)
         results.append(result.split()[0])
