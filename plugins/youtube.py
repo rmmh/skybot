@@ -75,7 +75,7 @@ def youtube(inp):
     if 'error' in j:
         return 'error while performing the search'
 
-    if j['data']['totalItems'] == 0:
+    if j['data']['totalItems'] == 0 or 'items' not in j['data']:
         return 'no results found'
 
     vid_id = j['data']['items'][0]['id']
