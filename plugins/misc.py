@@ -8,13 +8,17 @@ socket.setdefaulttimeout(10)  # global setting
 
 
 def get_version():
-    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-    p.wait()
+    try:
+        p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        p.wait()
 
-    revnumber = len(stdout.splitlines())
+        revnumber = len(stdout.splitlines())
 
-    shorthash = stdout.split(None, 1)[0]
+        shorthash = stdout.split(None, 1)[0]
+    except:
+        revnumber = 0
+        shorthash = "0000000"
 
     http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
         % (revnumber, shorthash)
