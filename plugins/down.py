@@ -5,13 +5,15 @@ from util import hook, http
 
 @hook.command
 def down(inp):
-    '''.down <url> -- checks to see if the site is down'''
+    '''.down <url> -- checks to see if the website is down'''
 
-    if 'http://' not in inp:
-        inp = 'http://' + inp
-
-    inp = 'http://' + urlparse.urlparse(inp).netloc
-
+    urlp = urlparse.urlparse(inp, 'http')
+    
+    if urlp.scheme not in ('http', 'https'):
+        return inp + " is not a valid HTTP URL"
+        
+    inp = "%s://%s" % (urlp.scheme, urlp.netloc)
+    
     # http://mail.python.org/pipermail/python-list/2006-December/589854.html
     try:
         http.get(inp, get_method='HEAD')
