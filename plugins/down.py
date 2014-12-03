@@ -7,6 +7,10 @@ from util import hook, http
 def down(inp):
     '''.down <url> -- checks to see if the website is down'''
 
+    # urlparse follows RFC closely, so we have to check for schema existance and prepend empty schema if necessary
+    if not inp.startswith('//') and '://' not in inp:
+        inp = '//' + inp
+    
     urlp = urlparse.urlparse(inp, 'http')
     
     if urlp.scheme not in ('http', 'https'):
@@ -18,5 +22,5 @@ def down(inp):
     try:
         http.get(inp, get_method='HEAD')
         return inp + ' seems to be up'
-    except http.URLError:
-        return inp + ' seems to be down'
+    except http.URLError as error:
+        return inp + ' seems to be down. Error: %s' % error.reason
