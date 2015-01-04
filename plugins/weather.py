@@ -22,11 +22,12 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
         loc = None
         dontsave = True
     else:
-        loc = inp
-
-        dontsave = loc.endswith(" dontsave")
+        dontsave = inp.endswith(" dontsave")
+        # strip off the " dontsave" text if it exists and set it back to `inp` so we don't report it
+        # back to the user incorrectly
         if dontsave:
-            loc = loc[:-9].strip().lower()
+            inp = inp[:-9].strip().lower()
+        loc = inp
 
     if not loc:  # blank line
         loc = db.execute(
