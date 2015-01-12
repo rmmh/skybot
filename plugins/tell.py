@@ -70,7 +70,7 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
 
 
 @hook.command
-def tell(inp, nick='', chan='', db=None):
+def tell(inp, nick='', chan='', db=None, conn=None):
     ".tell <nick> <message> -- relay <message> to <nick> when <nick> is around"
 
     query = inp.split(' ', 1)
@@ -85,7 +85,7 @@ def tell(inp, nick='', chan='', db=None):
     if chan.lower() == user_from.lower():
         chan = 'a pm'
 
-    if user_to == user_from.lower():
+    if user_to in (user_from.lower(), conn.nick.lower()):
         return "No."
 
     db_init(db)
