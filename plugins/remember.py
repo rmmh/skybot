@@ -2,8 +2,9 @@
 remember.py: written by Scaevolus 2010
 """
 
-import string
 import re
+import string
+import unittest
 
 from util import hook
 
@@ -55,6 +56,8 @@ def remember(inp, nick='', chan='', db=None):
             tail = _tail + ' ' + new
 
     if len(tail) > 2 and tail[0] == 's' and tail[1] in string.punctuation:
+        if _tail == '':
+            return "I don't know about that."
         args = tail.split(tail[1])
         if len(args) == 4 and args[3] == '':
             args = args[:-1]
@@ -92,9 +95,6 @@ def forget(inp, chan='', db=None):
     db_init(db)
     data = get_memory(db, chan, inp)
 
-    if not chan.startswith('#'):
-        return "I won't forget anything in private."
-
     if data:
         db.execute("delete from memory where chan=? and word=lower(?)",
                    (chan, inp))
@@ -112,3 +112,78 @@ def question(inp, chan='', say=None, db=None):
     data = get_memory(db, chan, inp.group(1).strip())
     if data:
         say(data)
+
+
+class MemoryTest(unittest.TestCase):
+    def setUp(self):
+        import sqlite3
+        self.db = sqlite3.connect(':memory:')
+
+    def remember(self, inp, nick='someone', chan='#test'):
+        return remember(inp, nick=nick, chan=chan, db=self.db)
+
+    def forget(self, inp, chan='#test'):
+        return forget(inp, chan=chan, db=self.db)
+
+    def question(self, inp, chan='#test'):
+        output = []
+        question(re.match(r'(.*)', inp),
+                 chan=chan, say=output.append, db=self.db)
+        return output[0] if output else None
+
+    def test_remember(self):
+        assert 'done.' == self.remember('dogs :3')
+        assert 'dogs :3' == self.question('dogs')
+
+    def test_remember_doc(self):
+        assert '.remember <word>' in self.remember('bad_syntax')
+
+    def test_remember_overwrite(self):
+        self.remember('dogs :(')
+        assert 'forgetting "dogs :("' in self.remember('dogs :3')
+        assert 'dogs :3' == self.question('dogs')
+
+    def test_remember_hygiene(self):
+        self.remember('python good', chan='#python')
+        self.remember('python bad', chan='#ruby')
+        assert 'python good' == self.question('python', '#python')
+        assert 'python bad' == self.question('python', '#ruby')
+
+    def test_remember_append(self):
+        self.remember('ball big')
+        self.remember('ball +red')
+        assert 'ball big red' == self.question('ball')
+
+    def test_remember_append_punctuation(self):
+        self.remember('baby young')
+        self.remember('baby +, hungry')
+        assert 'baby young, hungry' == self.question('baby')
+
+    def test_remember_replace(self):
+        self.remember('person is very rich (rich!)')
+        self.remember('person s/rich/poor/')
+        assert 'person is very poor (rich!)' == self.question('person')
+
+    def test_remember_replace_invalid(self):
+        self.remember('fact bar')
+        assert 'invalid replacement' in self.remember('fact s/too/many/seps/!')
+        assert 'invalid replacement' in self.remember('fact s/toofew')
+
+    def test_remember_replace_ineffective(self):
+        self.remember('hay stack')
+        assert 'unchanged' in self.remember('hay s:needle:shiny needle')
+
+    def test_remember_replace_missing(self):
+        assert "I don't know about that" in self.remember('hay s/what/lol')
+
+    def test_question_empty(self):
+        assert self.question('not_in_db') is None
+
+    def test_forget(self):
+        self.remember('meat good', chan='#carnivore')
+        self.remember('meat bad', chan='#vegan')
+        assert 'forgot `meat good`' in self.forget('meat', chan='#carnivore')
+        assert 'meat bad' == self.question('meat', chan='#vegan')
+
+    def test_forget_missing(self):
+        assert "don't know" in self.forget('fakekey')
