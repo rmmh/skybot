@@ -9,7 +9,7 @@ youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
 
 base_url = 'http://gdata.youtube.com/feeds/api/'
 url = base_url + 'videos/%s?v=2&alt=jsonc'
-search_api_url = base_url + 'videos?v=2&alt=jsonc&max-results=1'
+search_api_url = 'https://www.googleapis.com/youtube/v3/search'
 video_url = 'http://youtube.com/watch?v=%s'
 
 
@@ -50,6 +50,7 @@ def get_video_description(vid_id):
 
     return out
 
+
 def group_int_digits(number, delimiter=' ', grouping=3):
     base = str(number).strip()
     builder = []
@@ -59,25 +60,41 @@ def group_int_digits(number, delimiter=' ', grouping=3):
     builder.reverse()
     return delimiter.join(builder)
 
+
 @hook.regex(*youtube_re)
 def youtube_url(match):
     return get_video_description(match.group(1))
 
 
+@hook.api_key('youtube')
 @hook.command('yt')
 @hook.command('y')
 @hook.command
-def youtube(inp):
+def youtube(inp, api_key=None):
     '.youtube <query> -- returns the first YouTube search result for <query>'
 
-    j = http.get_json(search_api_url, q=inp)
+    params = {
+        'key': api_key['key'],
+        'fields': 'items(id,snippet(channelId,title))',
+        'part': 'snippet',
+        'type': 'video',
+        'q': inp
+    }
+
+    print params
+
+    j = http.get_json(search_api_url, **params)
+
+    print j
 
     if 'error' in j:
         return 'error while performing the search'
 
-    if j['data']['totalItems'] == 0 or 'items' not in j['data']:
+    results = j.get("items")
+
+    if not results:
         return 'no results found'
 
-    vid_id = j['data']['items'][0]['id']
+    vid_id = j['items'][0]['id']['videoId']
 
     return get_video_description(vid_id) + " - " + video_url % vid_id
