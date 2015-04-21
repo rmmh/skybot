@@ -81,11 +81,7 @@ def youtube(inp, api_key=None):
         'q': inp
     }
 
-    print params
-
     j = http.get_json(search_api_url, **params)
-
-    print j
 
     if 'error' in j:
         return 'error while performing the search'
