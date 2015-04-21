@@ -66,7 +66,7 @@ def youtube_url(match):
     return get_video_description(match.group(1))
 
 
-@hook.api_key('youtube')
+@hook.api_key('google')
 @hook.command('yt')
 @hook.command('y')
 @hook.command
@@ -74,7 +74,7 @@ def youtube(inp, api_key=None):
     '.youtube <query> -- returns the first YouTube search result for <query>'
 
     params = {
-        'key': api_key['key'],
+        'key': api_key,
         'fields': 'items(id,snippet(channelId,title))',
         'part': 'snippet',
         'type': 'video',
