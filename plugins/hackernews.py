@@ -13,7 +13,7 @@ def hackernews(match):
         return u"{title} by {by} with {score} points and {descendants} comments ({url})".format(**entry)
 
     if entry['type'] == "comment":
-	entry['text'] = http.unescape(entry['text'])
+	entry['text'] = http.unescape(entry['text'].replace('<p>', ' // '))
         return u'"{text}" -- {by}'.format(**entry)
 
 class Test(unittest.TestCase):
