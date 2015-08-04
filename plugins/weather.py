@@ -60,7 +60,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
             state = http.quote_plus(state)
             state += '/'
 
-        loc = http.quote_plus(loc)
+        loc = http.quote(loc)
 
     url = 'http://api.wunderground.com/api/'
     query = '{key}/geolookup/conditions/forecast/q/{state}{loc}.json' \
