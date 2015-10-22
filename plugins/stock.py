@@ -28,7 +28,7 @@ def stock(inp):
         elif price > ask:
             price = ask
         change = price - open_price
-        quote['LastTradePriceOnly'] = price
+        quote['LastTradePriceOnly'] = "%.2f" % price
         quote['Change'] = ("+%.2f" % change) if change >= 0 else change
 
     if change < 0:
@@ -38,7 +38,7 @@ def stock(inp):
 
     quote['PercentChange'] = 100 * change / (price - change)
 
-    ret = "%(Name)s - %(LastTradePriceOnly).2f "                   \
+    ret = "%(Name)s - %(LastTradePriceOnly)s "                   \
           "\x03%(color)s%(Change)s (%(PercentChange).2f%%)\x03 "        \
           "Day Range: %(DaysRange)s " \
           "MCAP: %(MarketCapitalization)s" % quote
