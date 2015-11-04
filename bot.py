@@ -19,7 +19,7 @@ bot = Bot()
 def main():
     sys.path += ['plugins']  # so 'import hook' works without duplication
     sys.path += ['lib']
-    os.chdir(sys.path[0] or '.')  # do stuff relative to the install directory
+    os.chdir(os.path.dirname(__file__) or '.')  # do stuff relative to the install directory
 
     print 'Loading plugins'
 
