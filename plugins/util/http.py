@@ -11,8 +11,7 @@ import urllib2
 import urlparse
 
 from hashlib import sha1
-from urllib import quote, unquote, quote_plus as _quote_plus
-from urllib2 import HTTPError, URLError
+from urllib import quote, quote_plus as _quote_plus
 
 from lxml import etree, html
 
@@ -39,11 +38,16 @@ def get_xml(*args, **kwargs):
 
 
 def get_json(*args, **kwargs):
-    return json.loads(get(*args, **kwargs))
+    data = get(*args, **kwargs)
+    try:
+        return json.loads(data)
+    except UnicodeDecodeError:
+        return json.loads(unicode(data, 'latin-1'))
 
 
 def open(url, query_params=None, post_data=None,
-         get_method=None, cookies=False, oauth=False, oauth_keys=None, headers=None, **kwargs):
+         get_method=None, cookies=False, oauth=False, oauth_keys=None,
+         headers=None, **kwargs):
     if query_params is None:
         query_params = {}
 
@@ -68,13 +72,16 @@ def open(url, query_params=None, post_data=None,
         timestamp = oauth_timestamp()
         api_url, req_data = string.split(url, "?")
         unsigned_request = oauth_unsigned_request(
-            nonce, timestamp, req_data, oauth_keys['consumer'], oauth_keys['access'])
+            nonce, timestamp, req_data, oauth_keys['consumer'],
+            oauth_keys['access'])
 
-        signature = oauth_sign_request("GET", api_url, req_data, unsigned_request, oauth_keys[
-            'consumer_secret'], oauth_keys['access_secret'])
+        signature = oauth_sign_request(
+            "GET", api_url, req_data, unsigned_request,
+            oauth_keys['consumer_secret'], oauth_keys['access_secret'])
 
         header = oauth_build_header(
-            nonce, signature, timestamp, oauth_keys['consumer'], oauth_keys['access'])
+            nonce, signature, timestamp, oauth_keys['consumer'],
+            oauth_keys['access'])
         request.add_header('Authorization', header)
 
     if cookies:
@@ -155,7 +162,8 @@ def oauth_build_header(nonce, signature, timestamp, consumer, token):
     return header[:-1]
 
 
-def oauth_sign_request(method, url, params, unsigned_request, consumer_secret, token_secret):
+def oauth_sign_request(method, url, params, unsigned_request, consumer_secret,
+                       token_secret):
     key = consumer_secret + "&" + token_secret
 
     base = method + "&" + quote(url, '') + "&" + unsigned_request
