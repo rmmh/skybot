@@ -114,9 +114,6 @@ class crlf_ssl_tcp(crlf_tcp):
         return SSLError
 
     def handle_receive_exception(self, error, last_timestamp):
-        # this is terrible
-        if not "timed out" in error.args[0]:
-            raise
         return crlf_tcp.handle_receive_exception(self, error, last_timestamp)
 
 irc_prefix_rem = re.compile(r'(.*?) (.*?) (.*)').match
