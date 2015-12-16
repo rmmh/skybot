@@ -6,16 +6,16 @@ from util import hook, http
 @hook.api_key('wunderground')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
-    ".weather <location> [dontsave] | @<nick> -- gets weather data from Wunderground "\
-            "http://wunderground.com/weather/api"
+    ".weather <location> [dontsave] | @<nick> -- gets weather data from " \
+        "Wunderground http://wunderground.com/weather/api"
 
     if not api_key:
         return None
 
     # this database is used by other plugins interested in user's locations,
     # like .near in tag.py
-    db.execute(
-        "create table if not exists location(chan, nick, loc, lat, lon, primary key(chan, nick))")
+    db.execute("create table if not exists "
+               "location(chan, nick, loc, lat, lon, primary key(chan, nick))")
 
     if inp[0:1] == '@':
         nick = inp[1:].strip()
@@ -23,8 +23,8 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
         dontsave = True
     else:
         dontsave = inp.endswith(" dontsave")
-        # strip off the " dontsave" text if it exists and set it back to `inp` so we don't report it
-        # back to the user incorrectly
+        # strip off the " dontsave" text if it exists and set it back to `inp`
+        # so we don't report it back to the user incorrectly
         if dontsave:
             inp = inp[:-9].strip().lower()
         loc = inp
@@ -44,23 +44,34 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
                 return weather.__doc__
         loc = loc[0]
 
-    loc, _, state = loc.partition(', ')
+    params = [http.quote(p.strip()) for p in loc.split(',')]
 
-    # Check to see if a lat, long pair is being passed. This could be done more
-    # completely with regex, and converting from DMS to decimal degrees. This
-    # is nice and simple, however.
-    try:
-        float(loc)
-        float(state)
+    loc = params[0]
+    state = ''
 
-        loc = loc + ',' + state
-        state = ''
-    except ValueError:
-        if state:
-            state = http.quote_plus(state)
+    # Try to interpret the query based on the number of commas.
+    # Two commas might be city-state  city-country, or lat-long pair
+    if len(params) == 2:
+
+        state = params[1]
+
+        # Check to see if a lat, long pair is being passed. This could be done
+        # more completely with regex, and converting from DMS to decimal
+        # degrees. This is nice and simple, however.
+        try:
+            float(loc)
+            float(state)
+
+            loc = loc + ',' + state
+            state = ''
+        except ValueError:
             state += '/'
 
-        loc = http.quote(loc)
+    # Assume three commas is a city-state-country triplet. Discard the state
+    # portion because that's what the API expects
+    elif len(params) == 3:
+        loc = params[0]
+        state = params[2] + '/'
 
     url = 'http://api.wunderground.com/api/'
     query = '{key}/geolookup/conditions/forecast/q/{state}{loc}.json' \
@@ -117,6 +128,8 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     lon = float(obs['display_location']['longitude'])
 
     if inp and not dontsave:
-        db.execute("insert or replace into location(chan, nick, loc, lat, lon) "
-                   "values (?, ?, ?, ?,?)",        (chan, nick.lower(), inp, lat, lon))
+        db.execute("insert or replace into "
+                   "location(chan, nick, loc, lat, lon) "
+                   "values (?, ?, ?, ?, ?)",
+                   (chan, nick.lower(), inp, lat, lon))
         db.commit()
