@@ -71,7 +71,7 @@ def translate(inp, bot=None):
         ' language (default English) using Google Translate'
 
     if not hasapikey(bot):
-        return None
+        return 'unable to translate, no API key'
 
     args = inp.split(' ', 2)
 
@@ -111,7 +111,7 @@ def babel(inp, bot=None):
     ".babel <sentence> -- translates <sentence> through multiple languages"
 
     if not hasapikey(bot):
-        return None
+        return 'unable to translate, no API key'
 
     try:
         return list(babel_gen(inp))[-1][2]
@@ -124,7 +124,7 @@ def babelext(inp, bot=None):
     ".babelext <sentence> -- like .babel, but with more detailed output"
 
     if not hasapikey(bot):
-        return None
+        return 'unable to translate, no API key'
 
     try:
         babels = list(babel_gen(inp))
