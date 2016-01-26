@@ -16,9 +16,9 @@ def mtg(inp, say=None):
     '''.mtg <name> - Searches for Magic the Gathering card given <name>
     '''
 
-    card = card_search(inp)[0]
-
-    if not card:
+    try:
+        card = card_search(inp)[0]
+    except IndexError:
         return "Card not found."
 
     results = {
