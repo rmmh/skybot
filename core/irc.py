@@ -121,6 +121,26 @@ irc_noprefix_rem = re.compile(r'()(.*?) (.*)').match
 irc_netmask_rem = re.compile(r':?([^!@]*)!?([^@]*)@?(.*)').match
 irc_param_ref = re.compile(r'(?:^|(?<= ))(:.*|[^ ]+)').findall
 
+def zip_channels(channels):
+    channels.sort(key=lambda x: ' ' not in x)  # keyed channels first
+    chans = []
+    keys = []
+    for channel in channels:
+        if ' ' in channel:
+            chan, key = channel.split(' ')
+            chans.append(chan)
+            keys.append(key)
+        else:
+            chans.append(channel)
+    chans = ','.join(chans)
+    if keys:
+        return [chans, ','.join(keys)]
+    else:
+        return [chans]
+
+def test_zip_channels():
+    assert zip_channels(['#a', '#b c', '#d']) == ['#b,#a,#d', 'c']
+    assert zip_channels(['#a', '#b']) == ['#a,#b']
 
 class IRC(object):
 
@@ -128,6 +148,7 @@ class IRC(object):
     # see the docs/ folder for more information on the protocol
 
     def __init__(self, conf):
+        self.conn = None
         self.set_conf(conf)
 
         self.out = Queue.Queue()  # responses from the server are placed here
@@ -141,6 +162,8 @@ class IRC(object):
         self.conf = conf
         self.nick = self.conf['nick']
         self.server = self.conf['server']
+        if self.conn is not None:
+            self.join_channels()
 
     def create_connection(self):
         return crlf_tcp(self.server, self.conf.get('port', 6667))
@@ -176,11 +199,18 @@ class IRC(object):
                 lastparam = paramlist[-1]
             self.out.put([msg, prefix, command, params, nick, user, host,
                           paramlist, lastparam])
+
             if command == "PING":
                 self.cmd("PONG", paramlist)
 
     def join(self, channel):
         self.cmd("JOIN", channel.split(" "))  # [chan, password]
+
+    def join_channels(self):
+        channels = self.conf.get('channels', [])
+        if channels:
+            # TODO: send multiple join commands for large channel lists
+            self.cmd("JOIN", zip_channels(channels))
 
     def msg(self, target, text):
         self.cmd("PRIVMSG", [target, text])

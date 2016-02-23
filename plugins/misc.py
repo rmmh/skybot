@@ -53,13 +53,10 @@ def onjoin(paraml, conn=None):
     if mode:
         conn.cmd('MODE', [conn.nick, mode])
 
-    # join channels
-    for channel in conn.conf.get("channels", []):
-        conn.join(channel)
-        time.sleep(1)  # don't flood JOINs
+    conn.join_channels()
 
-    # set user-agent
-    ident, rev = get_version()
+    # set user-agent as a side effect of reading the version
+    get_version()
 
 
 @hook.regex(r'^\x01VERSION\x01$')
