@@ -1,7 +1,7 @@
 # Configuration #
 
 
-Skybot uses a JSON configuration file to hold settings: `/config`
+Skybot uses a JSON configuration file to hold settings: `config.json`
 
 On first run this file is created with default settings:
 
