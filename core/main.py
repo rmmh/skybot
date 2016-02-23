@@ -165,14 +165,14 @@ def match_command(command):
 
     return command
 
-def make_command_re(config_prefix, is_private, bot_nick):
-    bot_prefix = re.escape(config_prefix)
+def make_command_re(bot_prefix, is_private, bot_nick):
+    if not isinstance(bot_prefix, list):
+        bot_prefix = [bot_prefix]
     if is_private:
-        prefix = r'^(?:(?:'+bot_prefix+')?|'
-    else:
-        prefix = r'^(?:'+bot_prefix+'|'
-    command_re = prefix + bot_nick
-    command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
+        bot_prefix.append('')  # empty prefix
+    bot_prefix = '|'.join(re.escape(p) for p in bot_prefix)
+    bot_prefix += '|' + bot_nick + r'[:,]+\s+'
+    command_re = r'(?:%s)(\w+)(?:$|\s+)(.*)' % bot_prefix
     return re.compile(command_re)
 
 def test_make_command_re():
@@ -184,6 +184,8 @@ def test_make_command_re():
         assert match('bot: foo args').groups() == ('foo', 'args')
         match = make_command_re('.', True, 'bot').match
     assert match('foo').groups() == ('foo', '')
+    match = make_command_re(['.', '!'], False, 'bot').match
+    assert match('!foo args').groups() == ('foo', 'args')
 
 def main(conn, out):
     inp = Input(conn, *out)
