@@ -1,3 +1,4 @@
+import re
 import thread
 import traceback
 
@@ -164,6 +165,25 @@ def match_command(command):
 
     return command
 
+def make_command_re(config_prefix, is_private, bot_nick):
+    bot_prefix = re.escape(config_prefix)
+    if is_private:
+        prefix = r'^(?:(?:'+bot_prefix+')?|'
+    else:
+        prefix = r'^(?:'+bot_prefix+'|'
+    command_re = prefix + bot_nick
+    command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
+    return re.compile(command_re)
+
+def test_make_command_re():
+    match = make_command_re('.', False, 'bot').match
+    assert not match('foo')
+    assert not match('bot foo')
+    for _ in xrange(2):
+        assert match('.test').groups() == ('test', '')
+        assert match('bot: foo args').groups() == ('foo', 'args')
+        match = make_command_re('.', True, 'bot').match
+    assert match('foo').groups() == ('foo', '')
 
 def main(conn, out):
     inp = Input(conn, *out)
@@ -174,16 +194,11 @@ def main(conn, out):
 
     if inp.command == 'PRIVMSG':
         # COMMANDS
-        bot_prefix = re.escape(bot.config.get("prefix", "."))
-        if inp.chan == inp.nick:  # private message, no command prefix required
-            prefix = r'^(?:(?:'+bot_prefix+')?|'
-        else:
-            prefix = r'^(?:'+bot_prefix+'|'
+        config_prefix = bot.config.get("prefix", ".")
+        is_private = inp.chan == inp.nick  # no prefix required
+        command_re = make_command_re(config_prefix, is_private, inp.conn.nick)
 
-        command_re = prefix + inp.conn.nick
-        command_re += r'[:,]+\s+)(\w+)(?:$|\s+)(.*)'
-
-        m = re.match(command_re, inp.lastparam)
+        m = command_re.match(inp.lastparam)
 
         if m:
             trigger = m.group(1).lower()
