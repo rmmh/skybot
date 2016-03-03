@@ -23,16 +23,13 @@ def mtg(inp, say=None):
 
     results = {
         "name": card["name"],
-        "colors": ", ".join([c.capitalize() for c in card.get("colors", ("None",))]),
         "types": ", ".join(t.capitalize() for t in card["types"]),
         "cost": card["cost"],
-        "text": card["text"],
-        "formats": ", ".join([f.capitalize() for f in card["formats"]]),
-        "price": "$"+card["editions"][0]["price"].get("average", "0"),
-        "url": card["editions"][0]["store_url"],
+        "text": card["text"].rstrip(),
+        "multiverse_id": card["editions"][0]["multiverse_id"],
     }
-
-    return "{name} | {text} | Cost: {cost} | Colors: {colors} | Types: {types} | Formats: {formats} | {price} | {url}".format(**results)
+    
+    return "{name} - {cost} | {types} - {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
 
 
 if __name__ == "__main__":
