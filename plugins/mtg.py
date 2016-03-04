@@ -24,18 +24,16 @@ def mtg(inp, say=None):
     for valid_edition in range(len(card["editions"])):
         if card["editions"][valid_edition]["multiverse_id"] != 0 :
             break
-        else:
-            continue
 
     results = {
         "name": card["name"],
         "types": ", ".join(t.capitalize() for t in card["types"]),
         "cost": card["cost"].replace('{','').replace('}',''),
-        "text": card["text"].replace('\n',' '),
+        "text": card["text"].replace('\n',' ').replace('{T}',u'\u27F3').replace('{S}',u'\u2744'),
         "multiverse_id": card["editions"][valid_edition]["multiverse_id"],
     }
     
-    return u"{name} - {types} - {cost} | {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
+    return u"{name} - {cost} - {types} | {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
 
 
 if __name__ == "__main__":
