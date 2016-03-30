@@ -391,8 +391,6 @@ Heaven's Tao Benefits and does not harm. The Sage's Tao Acts and does not conten
 def tao(inp):
     ".tao <chapter:line> -- gets line <line> from chapter <chapter> of the Tao Te Ching (Addiss)"
 
-    resp = ""
-
     if ':' not in inp:
         return tao.__doc__
 
@@ -404,13 +402,12 @@ def tao(inp):
     except ValueError:
         return tao.__doc__
 
-    if chapter <= 81:
-        target_chapter = tao_text[chapter - 1].split("\n")
-        try:
-            resp = target_chapter[line - 1]
-        except IndexError:
-            resp = "Line not found. Valid lines: 1-%(lines)" % {"lines": len(target_chapter) + 1}
-    else:
-        resp = "Chapter not found. Valid chapters: 1-81"
+    if chapter > len(tao_text):
+        return "Chapter {} not found. Valid chapters: 1-{}".format(chapter, len(tao_text))
 
-    return resp
+    target_chapter = tao_text[chapter - 1].split("\n")
+
+    if line > len(target_chapter):
+        return "Line not found. Valid lines: 1-%(lines)" % {"lines": len(target_chapter)}
+
+    return target_chapter[line - 1]
