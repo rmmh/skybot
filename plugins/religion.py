@@ -37,7 +37,7 @@ def koran(inp):  # Koran look-up plugin by Ghetto Wizard
 
     return results[0].text_content()
 
-tao = ["""Tao called Tao is not Tao. Names can name no lasting name. 
+tao_text = ["""Tao called Tao is not Tao. Names can name no lasting name. 
 Nameless: the origin of heaven and earth. Naming: the mother of ten thousand things. 
 Empty of desire, perceive mystery. Filled with desire, perceive manifestations. 
 These have the same source, but different names. 
@@ -405,7 +405,7 @@ def tao(inp):
         return tao.__doc__
 
     if chapter <= 81:
-        target_chapter = tao[chapter - 1].split("\n")
+        target_chapter = tao_text[chapter - 1].split("\n")
         try:
             resp = target_chapter[line - 1]
         except IndexError:
