@@ -393,12 +393,21 @@ def tao(inp):
 
     resp = ""
 
-    chapter, line = inp.split(':')
+    if ':' not in inp:
+        return tao.__doc__
 
-    if int(chapter) <= 81:
-        target_chapter = tao[int(chapter) - 1].split("\n")
+    chapter, line = inp.split(':', 1)
+
+    try:
+        chapter = int(chapter)
+        line = int(line)
+    except ValueError:
+        return tao.__doc__
+
+    if chapter <= 81:
+        target_chapter = tao[chapter - 1].split("\n")
         try:
-            resp = target_chapter[int(line) - 1]
+            resp = target_chapter[line - 1]
         except IndexError:
             resp = "Line not found. Valid lines: 1-%(lines)" % {"lines": len(target_chapter) + 1}
     else:
