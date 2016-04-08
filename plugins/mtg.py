@@ -93,6 +93,7 @@ def mtg(inp, say=None):
         "text": card["text"],
         "power": card["power"] if card.get("power") is not None else None,
         "toughness": card["toughness"] if card.get("toughness") is not None else None,
+	"loyalty": card["loyalty"] if card.get("loyalty") is not None else None,
         "multiverse_id": card["editions"][valid_edition]["multiverse_id"],
     }
     results["supertypes"] = ", ".join(t.capitalize() for t in card["supertypes"]) if card.get("supertypes") is not None else None
@@ -109,6 +110,7 @@ def mtg(inp, say=None):
     response.append(u"{types}".format(**results))
     response.append(u"{subtypes}".format(**results)) if results["subtypes"] is not None else None
     response.append(u"- {cost} |".format(**results))
+    response.append(u"{loyalty} Loyalty |".format(**results)) if results["loyalty"] is not None else None
     response.append(u"{power}/{toughness} |".format(**results)) if results["power"] is not None else None
     response.append(u"{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results))
     
