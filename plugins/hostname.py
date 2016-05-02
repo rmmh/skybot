@@ -17,7 +17,7 @@ def insert(db, chan, nick, hostname_cleaned):
 @hook.command
 def hostname(inp, hostname='', db=None, input=None):
    ".hostname <hostname> -- returns nick by hostname"
-   match = db.execute("select nick from nicktracker where "
+   match = db.execute("select DISTINCT nick from nicktracker where "
                       "hostname=?", (inp,)).fetchall()
    if not match:
       return "No match found."
