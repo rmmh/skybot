@@ -91,13 +91,15 @@ def mtg(inp, say=None):
         "types": ", ".join(t.capitalize() for t in card["types"]),
         "cost": card["cost"],
         "text": card["text"],
-        "power": card["power"] if card.get("power") is not None else None,
-        "toughness": card["toughness"] if card.get("toughness") is not None else None,
-	"loyalty": card["loyalty"] if card.get("loyalty") is not None else None,
+        "power": card.get("power"),
+        "toughness": card.get("toughness"),
+	"loyalty": card.get("loyalty"),
         "multiverse_id": card["editions"][valid_edition]["multiverse_id"],
     }
-    results["supertypes"] = ", ".join(t.capitalize() for t in card["supertypes"]) if card.get("supertypes") is not None else None
-    results["subtypes"] = ", ".join(t.capitalize() for t in card["subtypes"]) if card.get("subtypes") is not None else None
+    if card.get("supertypes") is not None :
+    	results["supertypes"] = ", ".join(t.capitalize() for t in card["supertypes"])
+    if card.get("subtypes") is not None :
+    	results["subtypes"] = ", ".join(t.capitalize() for t in card["subtypes"])
 
     for str,rep in symbols.items():
         new_text = results["text"].replace(str,rep)
@@ -106,12 +108,16 @@ def mtg(inp, say=None):
         results["cost"] = new_cost
     
     response = [u"{name} -".format(**results)]
-    response.append(u"{supertypes}".format(**results)) if results["supertypes"] is not None else None
+    if results["supertypes"] is not None :
+    	response.append(u"{supertypes}".format(**results))
     response.append(u"{types}".format(**results))
-    response.append(u"{subtypes}".format(**results)) if results["subtypes"] is not None else None
+    if results["subtypes"] is not None :
+    	response.append(u"{subtypes}".format(**results))
     response.append(u"- {cost} |".format(**results))
-    response.append(u"{loyalty} Loyalty |".format(**results)) if results["loyalty"] is not None else None
-    response.append(u"{power}/{toughness} |".format(**results)) if results["power"] is not None else None
+    if results["loyalty"] is not None :
+    	response.append(u"{loyalty} Loyalty |".format(**results))
+    if results["power"] is not None :
+    	response.append(u"{power}/{toughness} |".format(**results)) else None
     response.append(u"{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results))
     
     return " ".join(response)
