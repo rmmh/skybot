@@ -78,11 +78,12 @@ def mtg(inp, say=None):
         '{B}'   : 'B' , 
         '{R}'   : 'R' , 
         '{G}'   : 'G' , 
-        '{W/P}' : u'\u03A6' , 
-        '{U/P}' : u'\u03A6' , 
-        '{B/P}' : u'\u03A6' , 
-        '{R/P}' : u'\u03A6' , 
-        '{G/P}' : u'\u03A6' ,
+        '{W/P}' : u'\u03D5' , 
+        '{U/P}' : u'\u03D5' , 
+        '{B/P}' : u'\u03D5' , 
+        '{R/P}' : u'\u03D5' , 
+        '{G/P}' : u'\u03D5' ,
+        '{X}'   : 'X' ,
         '\n' : ' ' ,
     }
     results = {
@@ -90,15 +91,37 @@ def mtg(inp, say=None):
         "types": ", ".join(t.capitalize() for t in card["types"]),
         "cost": card["cost"],
         "text": card["text"],
+        "power": card.get("power"),
+        "toughness": card.get("toughness"),
+	"loyalty": card.get("loyalty"),
         "multiverse_id": card["editions"][valid_edition]["multiverse_id"],
     }
+    if card.get("supertypes") is not None :
+    	results["supertypes"] = ", ".join(t.capitalize() for t in card["supertypes"])
+    if card.get("subtypes") is not None :
+    	results["subtypes"] = ", ".join(t.capitalize() for t in card["subtypes"])
+
     for str,rep in symbols.items():
         new_text = results["text"].replace(str,rep)
         new_cost = results["cost"].replace(str,rep)
         results["text"] = new_text
         results["cost"] = new_cost
-
-    return u"{name} - {types} - {cost} | {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
+    
+    response = [u"{name} -".format(**results)]
+    if results["supertypes"] is not None :
+    	response.append(u"{supertypes}".format(**results))
+    response.append(u"{types}".format(**results))
+    if results["subtypes"] is not None :
+    	response.append(u"{subtypes}".format(**results))
+    response.append(u"- {cost} |".format(**results))
+    if results["loyalty"] is not None :
+    	response.append(u"{loyalty} Loyalty |".format(**results))
+    if results["power"] is not None :
+    	response.append(u"{power}/{toughness} |".format(**results)) else None
+    response.append(u"{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results))
+    
+    return " ".join(response)
+    #return u"{name} - {types} - {cost} | {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
 
 
 if __name__ == "__main__":
