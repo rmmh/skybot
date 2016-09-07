@@ -1,14 +1,8 @@
-import urllib
-
 from util import hook, http
 
 
-def card_search(query):
-    base_url = "https://api.deckbrew.com"
-    name = urllib.quote_plus(query)
-    search_url = base_url + "/mtg/cards?name=" + name
-
-    return http.get_json(search_url)
+def card_search(name):
+    return http.get_json('https://api.deckbrew.com/mtg/cards', name=name)
 
 
 @hook.command
@@ -19,10 +13,10 @@ def mtg(inp, say=None):
     try:
         card = card_search(inp)[0]
     except IndexError:
-        return "Card not found."
+        return 'Card not found.'
 
-    for valid_edition in range(len(card["editions"])):
-        if card["editions"][valid_edition]["multiverse_id"] != 0 :
+    for valid_edition in range(len(card['editions'])):
+        if card['editions'][valid_edition]['multiverse_id'] != 0 :
             break
     
     #symbols = {'{T}' : u'\u27F3' , '{S}' : u'\u2744' , '{Q}' : u'\u21BA', '\n' : ' ' , '{' : '', '}' : ''} 
@@ -87,43 +81,40 @@ def mtg(inp, say=None):
         '\n' : ' ' ,
     }
     results = {
-        "name": card["name"],
-        "types": ", ".join(t.capitalize() for t in card["types"]),
-        "cost": card["cost"],
-        "text": card["text"],
-        "power": card.get("power"),
-        "toughness": card.get("toughness"),
-	"loyalty": card.get("loyalty"),
-        "multiverse_id": card["editions"][valid_edition]["multiverse_id"],
+        'name': card['name'],
+        'types': ', '.join(t.capitalize() for t in card['types']),
+        'cost': card['cost'],
+        'text': card['text'],
+        'power': card.get('power'),
+        'toughness': card.get('toughness'),
+        'loyalty': card.get('loyalty'),
+        'multiverse_id': card['editions'][valid_edition]['multiverse_id'],
     }
-    if card.get("supertypes") is not None :
-    	results["supertypes"] = ", ".join(t.capitalize() for t in card["supertypes"])
-    if card.get("subtypes") is not None :
-    	results["subtypes"] = ", ".join(t.capitalize() for t in card["subtypes"])
+    if card.get('supertypes'):
+        results['supertypes'] = ', '.join(card['supertypes']).title()
+    if card.get('subtypes'):
+        results['subtypes'] = ', '.join(card['subtypes']).title()
 
-    for str,rep in symbols.items():
-        new_text = results["text"].replace(str,rep)
-        new_cost = results["cost"].replace(str,rep)
-        results["text"] = new_text
-        results["cost"] = new_cost
+    for fragment, rep in symbols.items():
+        results['text'] = results['text'].replace(fragment, rep)
+        results['cost'] = results['cost'].replace(fragment, rep)
     
-    response = [u"{name} -".format(**results)]
-    if results["supertypes"] is not None :
-    	response.append(u"{supertypes}".format(**results))
-    response.append(u"{types}".format(**results))
-    if results["subtypes"] is not None :
-    	response.append(u"{subtypes}".format(**results))
-    response.append(u"- {cost} |".format(**results))
-    if results["loyalty"] is not None :
-    	response.append(u"{loyalty} Loyalty |".format(**results))
-    if results["power"] is not None :
-    	response.append(u"{power}/{toughness} |".format(**results)) else None
-    response.append(u"{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results))
+    template = ['{name} -']
+    if results.get('supertypes'):
+        template.append('{supertypes}')
+    template.append('{types}')
+    if results.get('subtypes'):
+        template.append('{subtypes}')
+    template.append('- {cost} |')
+    if results['loyalty']:
+        template.append('{loyalty} Loyalty |')
+    if results['power']:
+        template.append('{power}/{toughness} |')
+    template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}')
     
-    return " ".join(response)
-    #return u"{name} - {types} - {cost} | {text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}".format(**results)
+    return u' '.join(template).format(**results)
 
 
-if __name__ == "__main__":
-    print card_search("Black Lotus")
-    print mtg("Black Lotus")
+if __name__ == '__main__':
+    print card_search('Black Lotus')
+    print mtg('Black Lotus')
