@@ -25,6 +25,8 @@ ua_internetexplorer = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
 
 jar = cookielib.CookieJar()
 
+latin1 = 'ISO-8859-1'
+utf8 = 'utf-8'
 
 def get(*args, **kwargs):
     return open(*args, **kwargs).read()
@@ -33,6 +35,11 @@ def get(*args, **kwargs):
 def get_html(*args, **kwargs):
     return html.fromstring(get(*args, **kwargs))
 
+def get_utf8_html(*args, **kwargs):
+    return html.fromstring(get(*args, **kwargs), parser=etree.HTMLParser(encoding=utf8))
+
+def get_latin_html(*args, **kwargs):
+    return html.fromstring(get(*args, **kwargs), parser=etree.HTMLParser(encoding=latin1))
 
 def get_xml(*args, **kwargs):
     return etree.fromstring(get(*args, **kwargs))
