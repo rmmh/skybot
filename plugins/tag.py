@@ -122,7 +122,7 @@ def get_nicks_by_tagset(db, chan, tagset):
     for tag in tagset.split('&'):
         tag = tag.strip()
 
-        current_nicks = db.execute("select nick from tag where " +
+        current_nicks = db.execute("select lower(nick) from tag where " +
                                    "lower(subject)=lower(?)"
                                    " and chan=?", (tag, chan)).fetchall()
 
@@ -130,9 +130,9 @@ def get_nicks_by_tagset(db, chan, tagset):
             return "tag '%s' not found" % tag
 
         if nicks is None:
-            nicks = { x.lower() for x in current_nicks }
+            nicks = set(current_nicks)
         else:
-            nicks.intersection_update({ x.lower() for x in current_nicks })
+            nicks.intersection_update(current_nicks)
 
     nicks = [munge(x[0], 1) for x in sorted(nicks)]
     if not nicks:
