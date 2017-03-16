@@ -130,9 +130,9 @@ def get_nicks_by_tagset(db, chan, tagset):
             return "tag '%s' not found" % tag
 
         if nicks is None:
-            nicks = set([x.lower for x in current_nicks])
+            nicks = { x.lower() for x in current_nicks }
         else:
-            nicks.intersection_update([x.lower for x in current_nicks])
+            nicks.intersection_update({ x.lower() for x in current_nicks })
 
     nicks = [munge(x[0], 1) for x in sorted(nicks)]
     if not nicks:
