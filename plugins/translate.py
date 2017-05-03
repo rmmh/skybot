@@ -8,8 +8,6 @@ import re
 
 from util import hook, http
 
-api_key = ""
-
 ########### from http://effbot.org/zone/re-sub.htm#unescape-html #############
 
 
@@ -38,7 +36,7 @@ def unescape(text):
 ##############################################################################
 
 
-def goog_trans(text, slang, tlang):
+def goog_trans(api_key, text, slang, tlang):
     url = 'https://www.googleapis.com/language/translate/v2'
     parsed = http.get_json(
         url, key=api_key, q=text, source=slang, target=tlang)
@@ -64,14 +62,12 @@ def match_language(fragment):
     return None
 
 
+@hook.api_key('google')
 @hook.command
-def translate(inp, bot=None):
+def translate(inp, api_key=''):
     '.translate [source language [target language]] <sentence> -- translates' \
         ' <sentence> from source language (default autodetect) to target' \
         ' language (default English) using Google Translate'
-
-    if not hasapikey(bot):
-        return None
 
     args = inp.split(' ', 2)
 
@@ -79,17 +75,17 @@ def translate(inp, bot=None):
         if len(args) >= 2:
             sl = match_language(args[0])
             if not sl:
-                return goog_trans(inp, '', 'en')
+                return goog_trans(api_key, inp, '', 'en')
             if len(args) == 2:
-                return goog_trans(args[1], sl, 'en')
+                return goog_trans(api_key, args[1], sl, 'en')
             if len(args) >= 3:
                 tl = match_language(args[1])
                 if not tl:
                     if sl == 'en':
                         return 'unable to determine desired target language'
-                    return goog_trans(args[1] + ' ' + args[2], sl, 'en')
-                return goog_trans(args[2], sl, tl)
-        return goog_trans(inp, '', 'en')
+                    return goog_trans(api_key, args[1] + ' ' + args[2], sl, 'en')
+                return goog_trans(api_key, args[2], sl, tl)
+        return goog_trans(api_key, inp, '', 'en')
     except IOError, e:
         return e
 
@@ -101,33 +97,29 @@ language_pairs = zip(languages[:-1], languages[1:])
 def babel_gen(inp):
     for language in languages:
         inp = inp.encode('utf8')
-        trans = goog_trans(inp, 'en', language).encode('utf8')
-        inp = goog_trans(trans, language, 'en')
+        trans = goog_trans(api_key, inp, 'en', language).encode('utf8')
+        inp = goog_trans(api_key, trans, language, 'en')
         yield language, trans, inp
 
 
+@hook.api_key('google')
 @hook.command
-def babel(inp, bot=None):
+def babel(inp, api_key=''):
     ".babel <sentence> -- translates <sentence> through multiple languages"
 
-    if not hasapikey(bot):
-        return None
-
     try:
-        return list(babel_gen(inp))[-1][2]
+        return list(babel_gen(api_key, inp))[-1][2]
     except IOError, e:
         return e
 
 
+@hook.api_key('google')
 @hook.command
-def babelext(inp, bot=None):
+def babelext(inp, api_key=''):
     ".babelext <sentence> -- like .babel, but with more detailed output"
 
-    if not hasapikey(bot):
-        return None
-
     try:
-        babels = list(babel_gen(inp))
+        babels = list(babel_gen(api_key, inp))
     except IOError, e:
         return e
 
@@ -142,10 +134,6 @@ def babelext(inp, bot=None):
 
     return out
 
-
-def hasapikey(bot):
-    api_key = bot.config.get("api_keys", {}).get("googletranslate", None)
-    return api_key
 
 lang_pairs = [
     ("no", "Norwegian"),
