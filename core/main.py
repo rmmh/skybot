@@ -19,6 +19,10 @@ class Input(dict):
             conn.msg(chan, msg)
 
         def reply(msg):
+            if self.reply_notice:
+                self.notice(msg)
+                return
+
             if chan == nick:  # PMs don't need prefixes
                 self.say(msg)
             else:
@@ -146,6 +150,8 @@ def dispatch(input, kind, func, args, autohelp=False):
             input.reply('error: missing api key')
             return
         input.api_key = key
+
+    input.reply_notice = args.get('notice', False)
 
     if func._thread:
         bot.threads[func].put(input)
