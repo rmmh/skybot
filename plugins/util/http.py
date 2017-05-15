@@ -9,11 +9,13 @@ import time
 import urllib
 import urllib2
 import urlparse
+import gzip
 
+
+from StringIO import StringIO
 from hashlib import sha1
-from urllib import quote, unquote, quote_plus as _quote_plus
+from urllib import quote, quote_plus as _quote_plus
 from urllib2 import HTTPError, URLError
-
 from lxml import etree, html
 
 
@@ -27,7 +29,14 @@ jar = cookielib.CookieJar()
 
 
 def get(*args, **kwargs):
-    return open(*args, **kwargs).read()
+    checkgzip = open(*args, **kwargs)
+    if checkgzip.headers.getheader('content-encoding') == "gzip":
+        buf = StringIO(checkgzip.read())
+        f = gzip.GzipFile(fileobj=buf)
+        return f.read()
+    else:
+        return checkgzip.read()
+    # return open(*args, **kwargs).read()
 
 
 def get_html(*args, **kwargs):
