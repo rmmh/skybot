@@ -5,6 +5,7 @@ remember.py: written by Scaevolus 2010
 import re
 import string
 import unittest
+from math import ceil
 
 from util import hook
 
@@ -104,14 +105,36 @@ def forget(inp, chan='', db=None):
         return "I don't know about that."
 
 
-@hook.regex(r'^\? ?(.+)')
+@hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
-    "?<word> -- shows what data is associated with word"
+    "?<word> <page?>-- shows what data is associated with word"
     db_init(db)
 
-    data = get_memory(db, chan, inp.group(1).strip())
+    more_message = " (%s page(s) left)"
+    message_len_limit = 512 - len(more_message) - 75 # fudge factor for protocol overhead
+
+    word = inp.group(1)
+    page = inp.group(2)
+
+    if page is None:
+        page = 1
+
+    data = get_memory(db, chan, word.strip())
     if data:
-        say(data)
+        page_start = (int(page) - 1) * message_len_limit # 1-indexed
+        page_end = page_start + message_len_limit
+        page_data = data[page_start:page_end]
+
+        if page_data == "":
+            return
+
+        on_last_page = page_end >= len(data)
+        if on_last_page:
+            say(page_data)
+            return
+
+        pages_left = ceil(len(data) / float(message_len_limit)) - 1
+        say(page_data + (more_message % int(pages_left)))
 
 
 class MemoryTest(unittest.TestCase):
