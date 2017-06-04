@@ -150,7 +150,7 @@ class MemoryTest(unittest.TestCase):
 
     def question(self, inp, chan='#test'):
         output = []
-        question(re.match(r'(.*)', inp),
+        question(re.match(r'(\S+) ?(\d+)?', inp),
                  chan=chan, say=output.append, db=self.db)
         return output[0] if output else None
 
