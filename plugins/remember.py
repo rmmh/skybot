@@ -119,9 +119,11 @@ def question(inp, chan='', say=None, db=None):
     if page is None:
         page = 1
 
+    page = int(page)
+
     data = get_memory(db, chan, word.strip())
     if data:
-        page_start = (int(page) - 1) * message_len_limit # 1-indexed
+        page_start = (page - 1) * message_len_limit # 1-indexed
         page_end = page_start + message_len_limit
         page_data = data[page_start:page_end]
 
@@ -133,7 +135,7 @@ def question(inp, chan='', say=None, db=None):
             say(page_data)
             return
 
-        pages_left = ceil(len(data) / float(message_len_limit)) - 1
+        pages_left = ceil(len(data) / float(message_len_limit)) - page
         say(page_data + (more_message % int(pages_left)))
 
 
@@ -210,3 +212,36 @@ class MemoryTest(unittest.TestCase):
 
     def test_forget_missing(self):
         assert "don't know" in self.forget('fakekey')
+
+    def test_paging_message(self):
+        long_string = "long "
+        for _ in range(0, 1000):
+            long_string += "a"
+
+        self.remember(long_string, chan='#long')
+        assert '2' in self.question('long', chan='#long') # "2 pages left"
+        assert '1' in self.question('long 2', chan='#long')
+        assert not re.match(r'\d', self.question('long 3', chan='#long'))
+
+    def test_paging_result(self):
+        long_string = "long "
+        for _ in range(0, 300):
+            long_string += "x"
+        for _ in range(0, 300):
+            long_string += "y"
+        for _ in range(0, 300):
+            long_string += "z"
+
+        self.remember(long_string, chan='#long')
+        p1_data = self.question('long', chan='#long')
+        p2_data = self.question('long 2', chan='#long')
+        p3_data = self.question('long 3', chan='#long')
+
+        count_x = p1_data.count("x") + p2_data.count("x") + p3_data.count("x")
+        count_y = p1_data.count("y") + p2_data.count("y") + p3_data.count("y")
+        count_z = p1_data.count("z") + p2_data.count("z") + p3_data.count("z")
+
+        # no data lost
+        assert count_x == 300
+        assert count_y == 300
+        assert count_z == 300
