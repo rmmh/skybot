@@ -105,6 +105,35 @@ def forget(inp, chan='', db=None):
         return "I don't know about that."
 
 
+def get_page(data, start_idx, min_page_len, max_page_len):
+    page_data = data[start_idx:start_idx + max_page_len]
+    last_comma_idx = page_data.rfind(',')
+
+    if last_comma_idx == -1 or last_comma_idx < min_page_len:
+        ret = data[start_idx:max_page_len + start_idx]
+        return ret, len(ret) + start_idx
+
+    end_idx = last_comma_idx + start_idx
+    return data[start_idx:end_idx], end_idx
+
+
+def get_pages(data, min_page_len, max_page_len):
+    result = {}
+    i = 0
+    last_idx = 0
+
+    while True:
+        page_data, last_idx = get_page(data, last_idx, min_page_len, max_page_len)
+
+        if page_data == "":
+            break
+
+        result[i] = page_data
+        i += 1
+
+    return result
+
+
 @hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
     "?<word> <page?>-- shows what data is associated with word"
@@ -112,6 +141,7 @@ def question(inp, chan='', say=None, db=None):
 
     more_message = " (%s page(s) left)"
     message_len_limit = 512 - len(more_message) - 75 # fudge factor for protocol overhead
+    min_page_len = 100
 
     word = inp.group(1)
     page = inp.group(2)
@@ -123,19 +153,19 @@ def question(inp, chan='', say=None, db=None):
 
     data = get_memory(db, chan, word.strip())
     if data:
-        page_start = (page - 1) * message_len_limit # 1-indexed
-        page_end = page_start + message_len_limit
-        page_data = data[page_start:page_end]
+        pages = get_pages(data, min_page_len, message_len_limit)
+        page_idx = page - 1 # 1-indexed
+        page_data = pages.get(page_idx)
 
-        if page_data == "":
+        if page_data is None:
             return
 
-        on_last_page = page_end >= len(data)
-        if on_last_page:
+        last_page = max(pages.keys())
+        if page_idx == last_page:
             say(page_data)
             return
 
-        pages_left = ceil(len(data) / float(message_len_limit)) - page
+        pages_left = last_page - page_idx
         say(page_data + (more_message % int(pages_left)))
 
 
@@ -213,6 +243,24 @@ class MemoryTest(unittest.TestCase):
     def test_forget_missing(self):
         assert "don't know" in self.forget('fakekey')
 
+    def test_get_page(self):
+        assert get_page("123456789", 0, 5, 8) == ("12345678", 8) # max length
+        assert get_page("123,456789", 0, 5, 8) == ("123,4567", 8) # min length not satisfied
+        assert get_page("123,45,67,89", 0, 5, 8) == ("123,45", 6) # chooses correct comma
+        assert get_page("", 0, 5, 8) == ("", 0) # correct empty result
+        # start offsets
+        assert get_page("123456789", 1, 5, 9) == ("23456789", 9)
+        assert get_page("123456789", 1, 5, 8) == ("23456789", 9)
+        assert get_page("1234567,89", 1, 5, 8) == ("234567", 7)
+        assert get_page("", 1, 5, 8) == ("", 1)
+
+
+    def test_get_pages(self):
+        assert get_pages("123456789", 5, 8) == {0: "12345678", 1: "9"}
+        assert get_pages("123,456789", 5, 8) == {0: "123,4567", 1: "89"}
+        assert get_pages("123,45,67,89", 5, 8) == {0: "123,45", 1: ",67,89"}
+        assert get_pages("", 5, 8) == {}
+
     def test_paging_message(self):
         long_string = "long "
         for _ in range(0, 1000):
@@ -245,3 +293,6 @@ class MemoryTest(unittest.TestCase):
         assert count_x == 300
         assert count_y == 300
         assert count_z == 300
+
+if __name__ == '__main__':
+    unittest.main()
