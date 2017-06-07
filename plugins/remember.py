@@ -118,8 +118,7 @@ def get_page(data, start_idx, min_page_len, max_page_len):
 
 
 def get_pages(data, min_page_len, max_page_len):
-    result = {}
-    i = 0
+    result = []
     last_idx = 0
 
     while True:
@@ -128,8 +127,7 @@ def get_pages(data, min_page_len, max_page_len):
         if page_data == "":
             break
 
-        result[i] = page_data
-        i += 1
+        result.append(page_data)
 
     return result
 
@@ -155,12 +153,12 @@ def question(inp, chan='', say=None, db=None):
     if data:
         pages = get_pages(data, min_page_len, message_len_limit)
         page_idx = page - 1 # 1-indexed
-        page_data = pages.get(page_idx)
-
-        if page_data is None:
+        try:
+            page_data = pages[page_idx]
+        except IndexError:
             return
 
-        last_page = max(pages.keys())
+        last_page = len(pages) - 1
         if page_idx == last_page:
             say(page_data)
             return
@@ -256,10 +254,10 @@ class MemoryTest(unittest.TestCase):
 
 
     def test_get_pages(self):
-        assert get_pages("123456789", 5, 8) == {0: "12345678", 1: "9"}
-        assert get_pages("123,456789", 5, 8) == {0: "123,4567", 1: "89"}
-        assert get_pages("123,45,67,89", 5, 8) == {0: "123,45", 1: ",67,89"}
-        assert get_pages("", 5, 8) == {}
+        assert get_pages("123456789", 5, 8) == ["12345678", "9"]
+        assert get_pages("123,456789", 5, 8) == ["123,4567", "89"]
+        assert get_pages("123,45,67,89", 5, 8) == ["123,45", ",67,89"]
+        assert get_pages("", 5, 8) == []
 
     def test_paging_message(self):
         long_string = "long "
