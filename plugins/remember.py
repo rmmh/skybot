@@ -124,7 +124,7 @@ def get_pages(data, min_page_len, max_page_len):
     while True:
         page_data, last_idx = get_page(data, last_idx, min_page_len, max_page_len)
 
-        if page_data == "":
+        if page_data == '':
             break
 
         result.append(page_data)
@@ -137,7 +137,7 @@ def question(inp, chan='', say=None, db=None):
     "?<word> <page?>-- shows what data is associated with word"
     db_init(db)
 
-    more_message = " (%s page(s) left)"
+    more_message = ' (%s page(s) left)'
     message_len_limit = 512 - len(more_message) - 75 # fudge factor for protocol overhead
     min_page_len = 100
 
@@ -242,27 +242,27 @@ class MemoryTest(unittest.TestCase):
         assert "don't know" in self.forget('fakekey')
 
     def test_get_page(self):
-        assert get_page("123456789", 0, 5, 8) == ("12345678", 8) # max length
-        assert get_page("123,456789", 0, 5, 8) == ("123,4567", 8) # min length not satisfied
-        assert get_page("123,45,67,89", 0, 5, 8) == ("123,45", 6) # chooses correct comma
-        assert get_page("", 0, 5, 8) == ("", 0) # correct empty result
+        assert get_page('123456789', 0, 5, 8) == ('12345678', 8) # max length
+        assert get_page('123,456789', 0, 5, 8) == ('123,4567', 8) # min length not satisfied
+        assert get_page('123,45,67,89', 0, 5, 8) == ('123,45', 6) # chooses correct comma
+        assert get_page('', 0, 5, 8) == ('', 0) # correct empty result
         # start offsets
-        assert get_page("123456789", 1, 5, 9) == ("23456789", 9)
-        assert get_page("123456789", 1, 5, 8) == ("23456789", 9)
-        assert get_page("1234567,89", 1, 5, 8) == ("234567", 7)
-        assert get_page("", 1, 5, 8) == ("", 1)
+        assert get_page('123456789', 1, 5, 9) == ('23456789', 9)
+        assert get_page('123456789', 1, 5, 8) == ('23456789', 9)
+        assert get_page('1234567,89', 1, 5, 8) == ('234567', 7)
+        assert get_page('', 1, 5, 8) == ('', 1)
 
 
     def test_get_pages(self):
-        assert get_pages("123456789", 5, 8) == ["12345678", "9"]
-        assert get_pages("123,456789", 5, 8) == ["123,4567", "89"]
-        assert get_pages("123,45,67,89", 5, 8) == ["123,45", ",67,89"]
-        assert get_pages("", 5, 8) == []
+        assert get_pages('123456789', 5, 8) == ['12345678', '9']
+        assert get_pages('123,456789', 5, 8) == ['123,4567', '89']
+        assert get_pages('123,45,67,89', 5, 8) == ['123,45', ',67,89']
+        assert get_pages('', 5, 8) == []
 
     def test_paging_message(self):
-        long_string = "long "
+        long_string = 'long '
         for _ in range(0, 1000):
-            long_string += "a"
+            long_string += 'a'
 
         self.remember(long_string, chan='#long')
         assert '2' in self.question('long', chan='#long') # "2 pages left"
@@ -270,22 +270,22 @@ class MemoryTest(unittest.TestCase):
         assert not re.match(r'\d', self.question('long 3', chan='#long'))
 
     def test_paging_result(self):
-        long_string = "long "
+        long_string = 'long '
         for _ in range(0, 300):
-            long_string += "x"
+            long_string += 'x'
         for _ in range(0, 300):
-            long_string += "y"
+            long_string += 'y'
         for _ in range(0, 300):
-            long_string += "z"
+            long_string += 'z'
 
         self.remember(long_string, chan='#long')
         p1_data = self.question('long', chan='#long')
         p2_data = self.question('long 2', chan='#long')
         p3_data = self.question('long 3', chan='#long')
 
-        count_x = p1_data.count("x") + p2_data.count("x") + p3_data.count("x")
-        count_y = p1_data.count("y") + p2_data.count("y") + p3_data.count("y")
-        count_z = p1_data.count("z") + p2_data.count("z") + p3_data.count("z")
+        count_x = p1_data.count('x') + p2_data.count('x') + p3_data.count('x')
+        count_y = p1_data.count('y') + p2_data.count('y') + p3_data.count('y')
+        count_z = p1_data.count('z') + p2_data.count('z') + p3_data.count('z')
 
         # no data lost
         assert count_x == 300
