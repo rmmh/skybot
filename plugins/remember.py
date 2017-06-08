@@ -119,15 +119,11 @@ def get_page(data, start_idx, min_page_len, max_page_len):
 
 def get_pages(data, min_page_len, max_page_len):
     result = []
-    last_idx = 0
 
-    while True:
-        page_data, last_idx = get_page(data, last_idx, min_page_len, max_page_len)
-
-        if page_data == '':
-            break
-
+    page_data, last_idx = get_page(data, 0, min_page_len, max_page_len)
+    while page_data != '':
         result.append(page_data)
+        page_data, last_idx = get_page(data, last_idx, min_page_len, max_page_len)
 
     return result
 
