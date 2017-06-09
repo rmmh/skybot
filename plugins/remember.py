@@ -106,6 +106,12 @@ def forget(inp, chan='', db=None):
 
 
 def get_page(data, start_idx, min_page_len, max_page_len):
+    """
+    slices the data string, starting at start_idx, into a chunk no longer
+    than max_page_len. The slice will occur at a comma if the resulting
+    string would not be shorter than min_page_len.
+    returns a tuple of (result str, slice index)
+    """
     page_data = data[start_idx:start_idx + max_page_len]
     last_comma_idx = page_data.rfind(',')
 
@@ -118,6 +124,7 @@ def get_page(data, start_idx, min_page_len, max_page_len):
 
 
 def get_pages(data, min_page_len, max_page_len):
+    "slices the data string into pages using get_page, returning a list"
     result = []
 
     page_data, last_idx = get_page(data, 0, min_page_len, max_page_len)
@@ -132,7 +139,7 @@ page_missing_message = "%s only has %s page(s)"
 
 @hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
-    "?<word> <page?>-- shows what data is associated with word"
+    "?<word> <page?>-- shows what data is associated with word, paginated by page (1 if omitted)"
     db_init(db)
 
     message_len_limit = 512 - len(more_pages_message) - 75 # fudge factor for protocol overhead
