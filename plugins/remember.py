@@ -127,17 +127,18 @@ def get_pages(data, min_page_len, max_page_len):
 
     return result
 
+more_pages_message = ' (%s page(s) left)'
+page_missing_message = "%s only has %s page(s)"
 
 @hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
     "?<word> <page?>-- shows what data is associated with word"
     db_init(db)
 
-    more_message = ' (%s page(s) left)'
-    message_len_limit = 512 - len(more_message) - 75 # fudge factor for protocol overhead
+    message_len_limit = 512 - len(more_pages_message) - 75 # fudge factor for protocol overhead
     min_page_len = 100
 
-    word = inp.group(1)
+    word = inp.group(1).strip()
     page = inp.group(2)
 
     if page is None:
@@ -145,13 +146,14 @@ def question(inp, chan='', say=None, db=None):
 
     page = int(page)
 
-    data = get_memory(db, chan, word.strip())
+    data = get_memory(db, chan, word)
     if data:
         pages = get_pages(data, min_page_len, message_len_limit)
         page_idx = page - 1 # 1-indexed
         try:
             page_data = pages[page_idx]
         except IndexError:
+            say(page_missing_message % (word, len(pages)))
             return
 
         last_page = len(pages) - 1
@@ -160,7 +162,7 @@ def question(inp, chan='', say=None, db=None):
             return
 
         pages_left = last_page - page_idx
-        say(page_data + (more_message % int(pages_left)))
+        say(page_data + (more_pages_message % int(pages_left)))
 
 
 class MemoryTest(unittest.TestCase):
@@ -261,8 +263,8 @@ class MemoryTest(unittest.TestCase):
             long_string += 'a'
 
         self.remember(long_string, chan='#long')
-        assert '2' in self.question('long', chan='#long') # "2 pages left"
-        assert '1' in self.question('long 2', chan='#long')
+        assert more_pages_message % 2 in self.question('long', chan='#long') # "2 pages left"
+        assert more_pages_message % 1 in self.question('long 2', chan='#long')
         assert not re.match(r'\d', self.question('long 3', chan='#long'))
 
     def test_paging_result(self):
@@ -287,6 +289,17 @@ class MemoryTest(unittest.TestCase):
         assert count_x == 300
         assert count_y == 300
         assert count_z == 300
+
+    def test_missing_page(self):
+        long_string = ''
+        for _ in range(0, 1000):
+            long_string += 'x'
+
+        self.remember('long ' + long_string)
+        self.remember('thing foo')
+
+        assert page_missing_message % ('thing', 1) in self.question('thing 2')
+        assert page_missing_message % ('long', 3) in self.question('long 11')
 
 if __name__ == '__main__':
     unittest.main()
