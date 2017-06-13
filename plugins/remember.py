@@ -5,7 +5,6 @@ remember.py: written by Scaevolus 2010
 import re
 import string
 import unittest
-from math import ceil
 
 from util import hook
 
