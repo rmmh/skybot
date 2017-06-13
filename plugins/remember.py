@@ -136,13 +136,13 @@ def get_pages(data, min_page_len, max_page_len):
 
 more_pages_message = ' (%s page(s) left)'
 page_missing_message = "%s only has %s page(s)"
+message_len_limit = 512 - len(more_pages_message) - 75 # fudge factor for protocol overhead
 
 @hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
     "?<word> <page?>-- shows what data is associated with word, paginated by page (1 if omitted)"
     db_init(db)
 
-    message_len_limit = 512 - len(more_pages_message) - 75 # fudge factor for protocol overhead
     min_page_len = 100
 
     word = inp.group(1).strip()
@@ -275,27 +275,18 @@ class MemoryTest(unittest.TestCase):
         assert not re.match(r'\d', self.question('long 3', chan='#long'))
 
     def test_paging_result(self):
-        long_string = 'long '
-        for _ in range(0, 300):
-            long_string += 'x'
-        for _ in range(0, 300):
-            long_string += 'y'
-        for _ in range(0, 300):
-            long_string += 'z'
+        long_string = 'long ' + 'x' * message_len_limit + 'y' * message_len_limit
 
         self.remember(long_string, chan='#long')
         p1_data = self.question('long', chan='#long')
         p2_data = self.question('long 2', chan='#long')
         p3_data = self.question('long 3', chan='#long')
 
-        count_x = p1_data.count('x') + p2_data.count('x') + p3_data.count('x')
-        count_y = p1_data.count('y') + p2_data.count('y') + p3_data.count('y')
-        count_z = p1_data.count('z') + p2_data.count('z') + p3_data.count('z')
+        all_data = p1_data + p2_data + p3_data
 
         # no data lost
-        assert count_x == 300
-        assert count_y == 300
-        assert count_z == 300
+        assert all_data.count('x') == message_len_limit
+        assert all_data.count('y') == message_len_limit
 
     def test_missing_page(self):
         long_string = ''
