@@ -140,7 +140,7 @@ message_len_limit = 512 - len(more_pages_message) - 75 # fudge factor for protoc
 
 @hook.regex(r'^\? ?(\S+) ?(\d+)?')
 def question(inp, chan='', say=None, db=None):
-    "?<word> page] -- shows what data is associated with word, paginated by page (default 1)"
+    "?<word> [page] -- shows what data is associated with word, paginated by page (default 1)"
     db_init(db)
 
     min_page_len = 100
