@@ -117,7 +117,7 @@ def get_tags_by_nick(db, chan, nick):
         return ''
 
 
-def get_nicks_by_tagset(db, chan, tagset):
+def get_nicks_by_tagset(db, chan, tagset, mangle=True):
     nicks = None
     for tag in tagset.split('&'):
         tag = tag.strip()
@@ -134,7 +134,8 @@ def get_nicks_by_tagset(db, chan, tagset):
         else:
             nicks.intersection_update(current_nicks)
 
-    nicks = [munge(x[0], 1) for x in sorted(nicks)]
+    if mangle:
+        nicks = [munge(x[0], 1) for x in sorted(nicks)]
     if not nicks:
         return 'no nicks found with tags "%s"' % tagset
     return 'nicks tagged "%s": ' % tagset + winnow(nicks)
@@ -142,7 +143,7 @@ def get_nicks_by_tagset(db, chan, tagset):
 
 @hook.command
 def tag(inp, chan='', db=None):
-    '.tag <nick> <tag> -- marks <nick> as <tag> {related: .untag, .tags, .tagged, .is}'
+    '.tag <nick> <tag> -- marks <nick> as <tag> {related: .untag, .tags, .tagged, .is, .ping}'
 
     db.execute('create table if not exists tag(chan, subject, nick)')
 
@@ -165,7 +166,7 @@ def tag(inp, chan='', db=None):
 
 @hook.command
 def untag(inp, chan='', db=None):
-    '.untag <nick> <tag> -- unmarks <nick> as <tag> {related: .tag, .tags, .tagged, .is}'
+    '.untag <nick> <tag> -- unmarks <nick> as <tag> {related: .tag, .tags, .tagged, .is, .ping}'
 
     delete = re.match(r'(\S+) (.+)$', inp)
 
@@ -178,7 +179,7 @@ def untag(inp, chan='', db=None):
 
 @hook.command
 def tags(inp, chan='', db=None):
-    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged, .is}'
+    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged, .is, .ping}'
     if inp == 'list':
         return get_tag_counts_by_chan(db, chan)
 
@@ -195,9 +196,17 @@ def tagged(inp, chan='', db=None):
 
     return get_nicks_by_tagset(db, chan, inp)
 
+
+@hook.command
+def ping(inp, chan='', db=None):
+    '.ping <tag> [& tag...] -- ping nicks marked as <tag> (separate multiple tags with &) {related: .tag, .untag, .tags, .is, .tagged}'
+
+    return get_nicks_by_tagset(db, chan, inp, mangle=False)
+
+
 @hook.command('is')
 def is_tagged(inp, chan='', db=None):
-    '.is <nick> <tag> -- checks if <nick> has been marked as <tag> {related: .tag, .untag, .tags, .tagged}'
+    '.is <nick> <tag> -- checks if <nick> has been marked as <tag> {related: .tag, .untag, .tags, .tagged, .ping}'
 
     args = re.match(r'(\S+) (.+)$', inp)
 
