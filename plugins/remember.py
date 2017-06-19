@@ -112,6 +112,10 @@ def get_page(data, start_idx, min_page_len, max_page_len):
     returns a tuple of (result str, slice index)
     """
     page_data = data[start_idx:start_idx + max_page_len]
+
+    if len(page_data) < max_page_len:
+        return page_data, len(page_data) + start_idx
+
     last_comma_idx = page_data.rfind(',')
 
     if last_comma_idx < min_page_len:
@@ -159,6 +163,8 @@ def question(inp, chan='', say=None, db=None):
         except IndexError:
             say(page_missing_message % (word, len(pages)))
             return
+
+        page_data = page_data.lstrip(', ')
 
         last_page = len(pages) - 1
         if page_idx == last_page:
@@ -290,6 +296,17 @@ class MemoryTest(unittest.TestCase):
 
         assert page_missing_message % ('thing', 1) in self.question('thing 2')
         assert page_missing_message % ('long', 3) in self.question('long 11')
+
+    def test_strip_leading_comma(self):
+        long_string = 'long ' + 'x' * (message_len_limit - 10) + ', ' + 'y' * (message_len_limit - 10)
+        self.remember(long_string)
+        assert ', ' not in self.question('long 2')
+
+    def test_regressions(self):
+        # improper split on last comma even though full message is < length limit
+        gmg = 'gmg good morning goons, goodly morning goons, gob morning goons, good moring Gobiner, good morning gobs, goom morgan goobs'
+        self.remember(gmg)
+        assert self.question(gmg) == gmg
 
 if __name__ == '__main__':
     unittest.main()
