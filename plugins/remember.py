@@ -304,7 +304,7 @@ class MemoryTest(unittest.TestCase):
 
     def test_regressions(self):
         # improper split on last comma even though full message is < length limit
-        gmg = 'gmg good morning goons, goatse morning goons, gob morning goons, good moring Gobiner, good morning gobs, goom morgan goobs'
+        gmg = 'gmg good morning goons, goodly morning goons, gob morning goons, good moring Gobiner, good morning gobs, goom morgan goobs'
         self.remember(gmg)
         assert self.question(gmg) == gmg
 
