@@ -88,6 +88,6 @@ def twitter(inp, api_key=None):
 
 
 @hook.api_key('twitter')
-@hook.regex(r'https?://(mobile\.)?twitter.com/(#!/)?(?P<id>[_0-9a-zA-Z]+)/status/(\d+)')
+@hook.regex(r'https?://(mobile\.)?twitter.com/(#!/)?(?P<user_id>[_0-9a-zA-Z]+)/status/(<id>\d+)')
 def show_tweet(match, api_key=None):
     return twitter(match.group('id'), api_key)
