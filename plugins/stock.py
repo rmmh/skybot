@@ -1,17 +1,35 @@
 from util import hook, http
+import csv
 
+def get_stock_info(symbol):
+    # The YQL API is broken.. Some of the YQL web nodes work, others don't.
+
+    csv_url = 'http://finance.yahoo.com/d/quotes.csv'
+
+    columns = {
+        'Name': 'n',
+        'Ask': 'a',
+        'Bid': 'b',
+        'Open': 'o',
+        'DaysRange': 'm',
+        'LastTradePriceOnly': 'l1',
+        'Change': 'c1',
+        'MarketCapitalization': 'j1',
+    }
+
+    result = http.get(csv_url, s=symbol, f=''.join(columns.values()))
+
+    reader = csv.reader(result.split("\n"), delimiter=',')
+    line = reader.next()
+    quote = dict(zip(columns.keys(), line))
+
+    return quote
 
 @hook.command
 def stock(inp):
     '''.stock <symbol> -- gets stock information'''
 
-    url = ('http://query.yahooapis.com/v1/public/yql?format=json&'
-           'env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys')
-
-    parsed = http.get_json(url, q='select * from yahoo.finance.quotes '
-                           'where symbol in ("%s")' % inp)  # heh, SQLI
-
-    quote = parsed['query']['results']['quote']
+    quote = get_stock_info(inp)
 
     # if we dont get a company name back, the symbol doesn't match a company
     if quote['Change'] is None:
