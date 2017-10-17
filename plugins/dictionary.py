@@ -89,18 +89,15 @@ def define(inp):
 def etymology(inp):
     ".e/.etymology <word> -- Retrieves the etymology of chosen word"
 
-    url = 'http://www.etymonline.com/index.php'
+    h = http.get_html('http://www.etymonline.com/search', q=inp)
 
-    h = http.get_html(url, term=inp)
-
-    etym = h.xpath('//dl')
+    etym = h.xpath('//a[contains(@class, "word")]/div')
 
     if not etym:
         return 'No etymology found for ' + inp
 
-    etym = etym[0].text_content()
-
-    etym = ' '.join(etym.split())
+    etym = ' '.join(sum((e.text_content().split() for e in etym[0]), []))
+    etym = etym.replace(inp, '\x02%s\x02' % inp)
 
     if len(etym) > 400:
         etym = etym[:etym.rfind(' ', 0, 400)] + ' ...'
