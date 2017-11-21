@@ -17,7 +17,7 @@ from urllib2 import HTTPError, URLError
 from lxml import etree, html
 
 
-ua_skybot = 'Skybot/1.0 http://github.com/rmmh/skybot'
+ua_skybot = 'Skybot/1.0 https://github.com/rmmh/skybot'
 
 ua_firefox = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) ' \
              'Gecko/20070725 Firefox/2.0.0.6'
@@ -28,7 +28,6 @@ jar = cookielib.CookieJar()
 
 def get(*args, **kwargs):
     return open(*args, **kwargs).read()
-
 
 def get_html(*args, **kwargs):
     return html.fromstring(get(*args, **kwargs))
@@ -125,17 +124,8 @@ def oauth_unsigned_request(nonce, timestamp, req, consumer, token):
          'oauth_token': token,
          'oauth_version': '1.0'}
 
-    k, v = string.split(req, "=")
-    d[k] = v
-
-    unsigned_req = ''
-
-    for x in sorted(d, key=lambda key: key):
-        unsigned_req += x + "=" + d[x] + "&"
-
-    unsigned_req = quote(unsigned_req[:-1])
-
-    return unsigned_req
+    d.update(urlparse.parse_qsl(req))
+    return quote(urllib.urlencode(sorted(d.items())))
 
 
 def oauth_build_header(nonce, signature, timestamp, consumer, token):

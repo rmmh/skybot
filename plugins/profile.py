@@ -7,5 +7,5 @@ from util import hook
 def profile(inp):
     ".profile <username> -- links to <username>'s profile on SA"
 
-    return 'http://forums.somethingawful.com/member.php?action=getinfo' + \
+    return 'https://forums.somethingawful.com/member.php?action=getinfo' + \
         '&username=' + '+'.join(inp.split())

@@ -122,7 +122,7 @@ def get_nicks_by_tagset(db, chan, tagset):
     for tag in tagset.split('&'):
         tag = tag.strip()
 
-        current_nicks = db.execute("select nick from tag where " +
+        current_nicks = db.execute("select lower(nick) from tag where " +
                                    "lower(subject)=lower(?)"
                                    " and chan=?", (tag, chan)).fetchall()
 

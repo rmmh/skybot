@@ -10,7 +10,7 @@ youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
 base_url = 'https://www.googleapis.com/youtube/v3/'
 info_url = base_url + 'videos?part=snippet,contentDetails,statistics'
 search_api_url = base_url + 'search'
-video_url = 'http://youtube.com/watch?v=%s'
+video_url = 'https://youtube.com/watch?v=%s'
 
 
 def get_video_description(vid_id, api_key):

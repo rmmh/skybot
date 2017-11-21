@@ -42,7 +42,7 @@ def twitter(inp, api_key=None):
             request_url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s" % inp
 
     try:
-        tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key)
+        tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key, tweet_mode="extended")
     except http.HTTPError, e:
         errors = {400: 'bad request (ratelimited?)',
                   401: 'unauthorized',
@@ -74,10 +74,10 @@ def twitter(inp, api_key=None):
 
     if 'retweeted_status' in tweet:
         rt = tweet["retweeted_status"]
-        rt_text = http.unescape(rt["text"]).replace('\n', ' ')
+        rt_text = http.unescape(rt["full_text"]).replace('\n', ' ')
         text = "RT @%s %s" % (rt["user"]["screen_name"], rt_text)
     else:
-        text = http.unescape(tweet["text"]).replace('\n', ' ')
+        text = http.unescape(tweet["full_text"]).replace('\n', ' ')
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
@@ -88,6 +88,6 @@ def twitter(inp, api_key=None):
 
 
 @hook.api_key('twitter')
-@hook.regex(r'https?://twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(\d+)')
+@hook.regex(r'https?://(mobile\.)?twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(?P<id>\d+)')
 def show_tweet(match, api_key=None):
-    return twitter(match.group(3), api_key)
+    return twitter(match.group('id'), api_key)
