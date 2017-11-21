@@ -69,6 +69,10 @@ def translate(inp, api_key=''):
         ' <sentence> from source language (default autodetect) to target' \
         ' language (default English) using Google Translate'
 
+
+    if not hasapikey(bot):
+        return 'unable to translate, no API key'
+
     args = inp.split(' ', 2)
 
     try:
@@ -107,6 +111,9 @@ def babel_gen(inp):
 def babel(inp, api_key=''):
     ".babel <sentence> -- translates <sentence> through multiple languages"
 
+    if not hasapikey(bot):
+        return 'unable to translate, no API key'
+
     try:
         return list(babel_gen(api_key, inp))[-1][2]
     except IOError, e:
@@ -117,6 +124,9 @@ def babel(inp, api_key=''):
 @hook.command
 def babelext(inp, api_key=''):
     ".babelext <sentence> -- like .babel, but with more detailed output"
+
+    if not hasapikey(bot):
+        return 'unable to translate, no API key'
 
     try:
         babels = list(babel_gen(api_key, inp))
