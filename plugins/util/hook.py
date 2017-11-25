@@ -91,6 +91,20 @@ def api_key(key):
         return func
     return annotate
 
+def timer(timer, **kwargs):
+    args = kwargs
+
+    def timer_wrapper(func):
+        args['name'] = func.func_name
+        args['timer'] = timer
+        singlethread(func)
+        _hook_add(func, ['timer', (func, args)], 'timer')
+        return func
+
+    if isinstance(timer,type(0)):
+        return timer_wrapper
+    else:
+        raise ValueError("timer decorators require a time to cyclically run.")
 
 def regex(regex, flags=0, **kwargs):
     args = kwargs

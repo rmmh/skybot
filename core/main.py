@@ -227,3 +227,13 @@ def main(conn, out):
                 input.inp = m
 
                 dispatch(input, "regex", func, args)
+        
+        # TIMERS
+        for func, args in bot.plugs['timer']:
+            def timed_wrapper(func,timer_cycle,args):
+                while True:
+                    print(args)
+                    func(args)
+                    time.sleep(timer_cycle)
+            func = timed_wrapper(func,args['timer'],inp)
+            dispatch(input, "timer", func, args)
