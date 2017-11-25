@@ -230,9 +230,4 @@ def main(conn, out):
         
         # TIMERS
         for func, args in bot.plugs['timer']:
-            def timed_wrapper(func,timer_cycle,args):
-                while True:
-                    func(args)
-                    time.sleep(timer_cycle)
-            func = timed_wrapper(func,args['timer'],inp)
             dispatch(input, "timer", func, args)
