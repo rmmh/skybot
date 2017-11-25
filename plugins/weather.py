@@ -3,47 +3,75 @@
 from util import hook, http
 
 
+@hook.api_key('wunderground')
 @hook.command(autohelp=False)
-def weather(inp, nick='', server='', reply=None, db=None, bot=None):
-    ".weather <location> [dontsave] -- gets weather data from Wunderground "\
-            "http://wunderground.com/weather/api"
+def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
+    ".weather <location> [dontsave] | @<nick> -- gets weather data from " \
+        "Wunderground http://wunderground.com/weather/api"
 
-    api_key = bot.config.get("api_keys", {}).get("wunderground", None)
     if not api_key:
         return None
 
-    loc = inp
+    # this database is used by other plugins interested in user's locations,
+    # like .near in tag.py
+    db.execute("create table if not exists "
+               "location(chan, nick, loc, lat, lon, primary key(chan, nick))")
 
-    dontsave = loc.endswith(" dontsave")
-    if dontsave:
-        loc = loc[:-9].strip().lower()
-
-    db.execute("create table if not exists weather(nick primary key, loc)")
+    if inp[0:1] == '@':
+        nick = inp[1:].strip()
+        loc = None
+        dontsave = True
+    else:
+        dontsave = inp.endswith(" dontsave")
+        # strip off the " dontsave" text if it exists and set it back to `inp`
+        # so we don't report it back to the user incorrectly
+        if dontsave:
+            inp = inp[:-9].strip().lower()
+        loc = inp
 
     if not loc:  # blank line
-        loc = db.execute("select loc from weather where nick=lower(?)",
-                            (nick,)).fetchone()
+        loc = db.execute(
+            "select loc from location where chan=? and nick=lower(?)",
+            (chan, nick)).fetchone()
         if not loc:
-            return weather.__doc__
+            try:
+                # grab from old-style weather database
+                loc = db.execute("select loc from weather where nick=lower(?)",
+                                 (nick,)).fetchone()
+            except db.OperationalError:
+                pass    # no such table
+            if not loc:
+                return weather.__doc__
         loc = loc[0]
 
-    loc, _, state = loc.partition(', ')
+    params = [http.quote(p.strip()) for p in loc.split(',')]
 
-    # Check to see if a lat, long pair is being passed. This could be done more
-    # completely with regex, and converting from DMS to decimal degrees. This
-    # is nice and simple, however.
-    try:
-        float(loc)
-        float(state)
+    loc = params[0]
+    state = ''
 
-        loc = loc + ',' + state
-        state = ''
-    except ValueError:
-        if state:
-            state = http.quote_plus(state)
+    # Try to interpret the query based on the number of commas.
+    # Two commas might be city-state  city-country, or lat-long pair
+    if len(params) == 2:
+
+        state = params[1]
+
+        # Check to see if a lat, long pair is being passed. This could be done
+        # more completely with regex, and converting from DMS to decimal
+        # degrees. This is nice and simple, however.
+        try:
+            float(loc)
+            float(state)
+
+            loc = loc + ',' + state
+            state = ''
+        except ValueError:
             state += '/'
 
-        loc = http.quote_plus(loc)
+    # Assume three commas is a city-state-country triplet. Discard the state
+    # portion because that's what the API expects
+    elif len(params) == 3:
+        loc = params[0]
+        state = params[2] + '/'
 
     url = 'http://api.wunderground.com/api/'
     query = '{key}/geolookup/conditions/forecast/q/{state}{loc}.json' \
@@ -53,8 +81,7 @@ def weather(inp, nick='', server='', reply=None, db=None, bot=None):
     try:
         parsed_json = http.get_json(url)
     except IOError:
-        print 'Could not get data from Wunderground'
-        return None
+        return 'Could not get data from Wunderground'
 
     info = {}
     if 'current_observation' not in parsed_json:
@@ -67,13 +94,13 @@ def weather(inp, nick='', server='', reply=None, db=None, bot=None):
             results = parsed_json['response']['results']
 
             for place in results[:6]:
-                resp += '{city} '.format(**place)
+                resp += '{city}, '.format(**place)
 
                 if place['state']:
-                    resp += '{state} '.format(**place)
+                    resp += '{state}, '.format(**place)
 
                 if place['country_name']:
-                    resp += '{country_name}, '.format(**place)
+                    resp += '{country_name}; '.format(**place)
 
             resp = resp[:-2]
 
@@ -91,13 +118,18 @@ def weather(inp, nick='', server='', reply=None, db=None, bot=None):
     info['l_f'] = sf['low']['fahrenheit']
     info['l_c'] = sf['low']['celsius']
     info['humid'] = obs['relative_humidity']
-    info['wind'] = 'Wind: {mph}mph/{kph}kph'\
-            .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
-    reply('{city}: {weather}, {t_f}F/{t_c}C'\
-            '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)' \
-            ', Humidity: {humid}, {wind}'.format(**info))
+    info['wind'] = 'Wind: {mph}mph/{kph}kph' \
+        .format(mph=obs['wind_mph'], kph=obs['wind_kph'])
+    reply('{city}: {weather}, {t_f}F/{t_c}C'
+          '(H:{h_f}F/{h_c}C L:{l_f}F/{l_c}C)'
+          ', Humidity: {humid}, {wind}'.format(**info))
+
+    lat = float(obs['display_location']['latitude'])
+    lon = float(obs['display_location']['longitude'])
 
     if inp and not dontsave:
-        db.execute("insert or replace into weather(nick, loc) values (?,?)",
-                     (nick.lower(), loc))
+        db.execute("insert or replace into "
+                   "location(chan, nick, loc, lat, lon) "
+                   "values (?, ?, ?, ?, ?)",
+                   (chan, nick.lower(), inp, lat, lon))
         db.commit()

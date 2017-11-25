@@ -1,4 +1,3 @@
-import re
 import socket
 import subprocess
 import time
@@ -9,29 +8,31 @@ socket.setdefaulttimeout(10)  # global setting
 
 
 def get_version():
-    p = subprocess.Popen(['git', 'log', '--oneline'], stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-    p.wait()
-
-    revnumber = len(stdout.splitlines())
-
-    shorthash = stdout.split(None, 1)[0]
+    try:
+        stdout = subprocess.check_output(['git', 'log', '--format=%h'])
+    except:
+        revnumber = 0
+        shorthash = '????'
+    else:
+        revs = stdout.splitlines()
+        revnumber = len(revs)
+        shorthash = revs[0]
 
     http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
-                        % (revnumber, shorthash)
+        % (revnumber, shorthash)
 
     return shorthash, revnumber
 
 
-#autorejoin channels
+# autorejoin channels
 @hook.event('KICK')
 def rejoin(paraml, conn=None):
     if paraml[1] == conn.nick:
-        if paraml[0].lower() in conn.channels:
+        if paraml[0].lower() in conn.conf.get("channels", []):
             conn.join(paraml[0])
 
 
-#join channels when invited
+# join channels when invited
 @hook.event('INVITE')
 def invite(paraml, conn=None):
     conn.join(paraml[-1])
@@ -52,13 +53,10 @@ def onjoin(paraml, conn=None):
     if mode:
         conn.cmd('MODE', [conn.nick, mode])
 
-    # join channels
-    for channel in conn.channels:
-        conn.join(channel)
-        time.sleep(1)  # don't flood JOINs
+    conn.join_channels()
 
-    # set user-agent
-    ident, rev = get_version()
+    # set user-agent as a side effect of reading the version
+    get_version()
 
 
 @hook.regex(r'^\x01VERSION\x01$')

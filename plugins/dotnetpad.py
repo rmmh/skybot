@@ -1,39 +1,22 @@
 "dotnetpad.py: by sklnd, because gobiner wouldn't shut up"
 
 import urllib
-import httplib
-import socket
 import json
 
-from util import hook
+from util import hook, http
 
 
-def dotnetpad(lang, code, timeout=30):
+def dotnetpad(lang, code):
     "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
 
     code = code.encode('utf8')
     params = urllib.urlencode({'language': lang, 'code': code})
 
-    headers = {"Content-type": "application/x-www-form-urlencoded",
-               "Accept": "text/plain"}
-
     try:
-        conn = httplib.HTTPConnection("dotnetpad.net", 80, timeout=timeout)
-        conn.request("POST", "/Skybot", params, headers)
-        response = conn.getresponse()
-    except httplib.HTTPException:
-        conn.close()
-        return 'error: dotnetpad is broken somehow'
-    except socket.error:
+        result = http.get_json('https://dotnetpad.net/Skybot',
+                               post_data=params, get_method='POST')
+    except http.HTTPError:
         return 'error: unable to connect to dotnetpad'
-
-    try:
-        result = json.loads(response.read())
-    except ValueError:
-        conn.close()
-        return 'error: dotnetpad is broken somehow'
-
-    conn.close()
 
     if result['Errors']:
         return 'First error: %s' % (result['Errors'][0]['ErrorText'])

@@ -3,14 +3,11 @@ import re
 from util import hook, http
 
 
+@hook.api_key('wolframalpha')
 @hook.command('wa')
 @hook.command
-def wolframalpha(inp, bot=None):
+def wolframalpha(inp, api_key=None):
     ".wa/.wolframalpha <query> -- computes <query> using Wolfram Alpha"
-
-    api_key = bot.config.get("api_keys", {}).get("wolframalpha", None)
-    if api_key is None:
-        return "error: no api key set"
 
     url = 'http://api.wolframalpha.com/v2/query?format=plaintext'
 
