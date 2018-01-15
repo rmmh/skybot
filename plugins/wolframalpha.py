@@ -47,4 +47,4 @@ def wolframalpha(inp, api_key=None):
     if not ret:
         return 'no results'
 
-    return ret
+    return ret.replace('Result: ', '', 1)
