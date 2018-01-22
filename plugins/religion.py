@@ -1,21 +1,25 @@
 from util import hook, http
 
-
+# https://api.esv.org/account/create-application/
+@hook.api_key('bible')
 @hook.command('god')
 @hook.command
-def bible(inp):
+def bible(inp, api_key=None):
     ".bible <passage> -- gets <passage> from the Bible (ESV)"
 
-    base_url = ('http://www.esvapi.org/v2/rest/passageQuery?key=IP&'
-                'output-format=plain-text&include-heading-horizontal-lines&'
-                'include-headings=false&include-passage-horizontal-lines=false&'
-                'include-passage-references=false&include-short-copyright=false&'
-                'include-footnotes=false&line-length=0&'
-                'include-heading-horizontal-lines=false')
+    base_url = ('https://api.esv.org/v3/passage/text/?'
+                'include-headings=false&'
+                'include-passage-horizontal-lines=false&'
+                'include-heading-horizontal-lines=false&'
+                'include-passage-references=false&'
+                'include-short-copyright=false&'
+                'include-footnotes=false&'
+                )
 
-    text = http.get(base_url, passage=inp)
+    text = http.get_json(base_url, q=inp,
+                         headers={'Authorization': 'Token ' + api_key})
 
-    text = ' '.join(text.split())
+    text = ' '.join(text['passages']).strip()
 
     if len(text) > 400:
         text = text[:text.rfind(' ', 0, 400)] + '...'
