@@ -4,7 +4,7 @@ from util import http, hook
 @hook.command()
 def crypto(inp, say=None):
     fsym = inp.split(' ')[0].upper()
-    price_response = http.get_json("https://min-api.cryptocompare.com/data/pricemultifull?fsyms={}&tsyms=USD".format(fsym))
+    price_response = http.get_json("https://min-api.cryptocompare.com/data/pricemultifull", fsyms=fsym, tsyms="USD")
 
     if price_response.get("Response") == "Error":
         return "Error: " + price_response.get("Message", "An API Error Has Occured. https://min-api.cryptocompare.com/")
