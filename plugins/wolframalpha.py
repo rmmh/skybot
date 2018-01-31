@@ -15,7 +15,7 @@ def wolframalpha(inp, api_key=None):
 
     pod_texts = []
     for pod in result.xpath("//pod"):
-        title = pod.attrib['title']
+        title = '' if pod.attrib['title'] == 'Result' else pod.attrib['title'] + ': ' 
         if pod.attrib['id'] == 'Input':
             continue
 
@@ -26,7 +26,7 @@ def wolframalpha(inp, api_key=None):
             if subpod:
                 results.append(subpod)
         if results:
-            pod_texts.append(title + ': ' + '|'.join(results))
+            pod_texts.append(title + '|'.join(results))
 
     ret = '. '.join(pod_texts)
 
