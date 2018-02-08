@@ -44,7 +44,14 @@ class crlf_tcp(object):
         return socket.socket(socket.AF_INET, socket.TCP_NODELAY)
 
     def run(self):
-        self.socket.connect((self.host, self.port))
+        while True:
+            try:
+                self.socket.connect((self.host, self.port))
+            except socket.timeout:
+                print 'timed out connecting to %s:%s' % (self.host, self.port)
+                time.sleep(60)
+            else:
+                break
         thread.start_new_thread(self.recv_loop, ())
         thread.start_new_thread(self.send_loop, ())
 
