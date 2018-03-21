@@ -1,46 +1,39 @@
 from util import hook, http
+from urllib2 import HTTPError
 
 
 @hook.command
 def stock(inp):
-    '''.stock <symbol> -- gets stock information'''
+    symbol = inp.split(' ')[0].upper()
 
-    url = ('http://query.yahooapis.com/v1/public/yql?format=json&'
-           'env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys')
+    try:
+        fundamentals = http.get_json('https://api.robinhood.com/fundamentals/{}/'.format(symbol))
+        quote = http.get_json('https://api.robinhood.com/quotes/{}/'.format(symbol))
+    except HTTPError:
+        return '{} is not a valid stock symbol.'.format(symbol)
 
-    parsed = http.get_json(url, q='select * from yahoo.finance.quotes '
-                           'where symbol in ("%s")' % inp)  # heh, SQLI
+    if fundamentals['open'] is None or quote['ask_price'] is None:
+        return 'unknown ticker symbol %s' % inp
 
-    quote = parsed['query']['results']['quote']
+    if inp.split(' ')[1] == 'info':
+        return fundamentals['description']
 
-    # if we dont get a company name back, the symbol doesn't match a company
-    if quote['Change'] is None:
-        return "unknown ticker symbol %s" % inp
+    # Manually "calculate" change since API does not provide it
+    price = float(quote['last_trade_price'])
+    change = float(quote['last_trade_price']) - float(quote['adjusted_previous_close'])
 
-    price = float(quote['LastTradePriceOnly'])
-    change = float(quote['Change'])
-    if quote['Open'] and quote['Bid'] and quote['Ask']:
-        open_price = float(quote['Open'])
-        bid = float(quote['Bid'])
-        ask = float(quote['Ask'])
-        if price < bid:
-            price = bid
-        elif price > ask:
-            price = ask
-        change = price - open_price
-        quote['LastTradePriceOnly'] = "%.2f" % price
-        quote['Change'] = ("+%.2f" % change) if change >= 0 else change
+    # Can come back as null
+    dividend_yield = float(fundamentals['dividend_yield']) if fundamentals['dividend_yield'] else 0
 
-    if change < 0:
-        quote['color'] = "5"
-    else:
-        quote['color'] = "3"
+    response = {
+        'change': '{:,.2f}'.format(change) if change >= 0 else change,
+        'percent_change': '{:.2f}'.format(100 * change / (price - change)),
+        'market_cap': '{:,.2f}'.format(float(fundamentals['market_cap'])),
+        'dividend_yield': '{:,.2f}'.format(dividend_yield),
+        'symbol': quote['symbol'],
+        'price': '{:,.2f}'.format(price),
+        'color': '\x035' if change < 0 else '\x033'
+    }
 
-    quote['PercentChange'] = 100 * change / (price - change)
-
-    ret = "%(Name)s - %(LastTradePriceOnly)s "                   \
-          "\x03%(color)s%(Change)s (%(PercentChange).2f%%)\x03 "        \
-          "Day Range: %(DaysRange)s " \
-          "MCAP: %(MarketCapitalization)s" % quote
-
-    return ret
+    return "[{symbol}] ${price} {color}{change} ({percent_change}%)\x03 :: Dividend Yield: ${dividend_yield} " \
+           ":: MCAP: ${market_cap}".format(**response)
