@@ -4,36 +4,46 @@ from urllib2 import HTTPError
 
 @hook.command
 def stock(inp):
-    symbol = inp.split(' ')[0].upper()
+    '''.stock <symbol> [info] -- retrieves a weeks worth of stats for given symbol. Optionally displays information about the company.'''
+
+    arguments = inp.split(' ')
+
+    symbol = arguments[0].upper()
 
     try:
-        fundamentals = http.get_json('https://api.robinhood.com/fundamentals/{}/'.format(symbol))
-        quote = http.get_json('https://api.robinhood.com/quotes/{}/'.format(symbol))
+        fundamentals = http.get_json(
+            'https://api.robinhood.com/fundamentals/{}/'.format(symbol))
+        quote = http.get_json(
+            'https://api.robinhood.com/quotes/{}/'.format(symbol))
     except HTTPError:
         return '{} is not a valid stock symbol.'.format(symbol)
 
     if fundamentals['open'] is None or quote['ask_price'] is None:
         return 'unknown ticker symbol %s' % inp
 
-    if inp.split(' ')[1] == 'info':
+    if len(arguments) > 1 and arguments[1] == 'info':
         return fundamentals['description']
 
     # Manually "calculate" change since API does not provide it
     price = float(quote['last_trade_price'])
-    change = float(quote['last_trade_price']) - float(quote['adjusted_previous_close'])
-
-    # Can come back as null
-    dividend_yield = float(fundamentals['dividend_yield']) if fundamentals['dividend_yield'] else 0
+    change = price - float(quote['adjusted_previous_close'])
 
     response = {
-        'change': '{:,.2f}'.format(change) if change >= 0 else change,
-        'percent_change': '{:.2f}'.format(100 * change / (price - change)),
-        'market_cap': '{:,.2f}'.format(float(fundamentals['market_cap'])),
-        'dividend_yield': '{:,.2f}'.format(dividend_yield),
+        'change': change,
+        'percent_change': 100 * change / (price - change),
+        'market_cap': float(fundamentals['market_cap']),
         'symbol': quote['symbol'],
-        'price': '{:,.2f}'.format(price),
-        'color': '\x035' if change < 0 else '\x033'
+        'price': price,
+        'color': '\x035' if change < 0 else '\x033',
+        'high': float(fundamentals['high']),
+        'low': float(fundamentals['low']),
+        'pe_ratio': float(fundamentals['pe_ratio']),
+        'average_volume': float(fundamentals['average_volume']),
     }
 
-    return "[{symbol}] ${price} {color}{change} ({percent_change}%)\x03 :: Dividend Yield: ${dividend_yield} " \
-           ":: MCAP: ${market_cap}".format(**response)
+    return "[{symbol}] ${price:,.2f} {color}{change:,.2f} ({percent_change:,.2f}%)\x03 :: " \
+        "High: ${high:,.2f} :: " \
+        "Low: ${low:,.2f} :: " \
+        "PE: {pe_ratio:,.2f}% :: " \
+        "Volume: ${average_volume:,.2f} :: " \
+        "MCAP: ${market_cap:,.2f}".format(**response)
