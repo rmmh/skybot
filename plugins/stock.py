@@ -1,46 +1,49 @@
 from util import hook, http
+from urllib2 import HTTPError
 
 
 @hook.command
 def stock(inp):
-    '''.stock <symbol> -- gets stock information'''
+    '''.stock <symbol> [info] -- retrieves a weeks worth of stats for given symbol. Optionally displays information about the company.'''
 
-    url = ('http://query.yahooapis.com/v1/public/yql?format=json&'
-           'env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys')
+    arguments = inp.split(' ')
 
-    parsed = http.get_json(url, q='select * from yahoo.finance.quotes '
-                           'where symbol in ("%s")' % inp)  # heh, SQLI
+    symbol = arguments[0].upper()
 
-    quote = parsed['query']['results']['quote']
+    try:
+        fundamentals = http.get_json(
+            'https://api.robinhood.com/fundamentals/{}/'.format(symbol))
+        quote = http.get_json(
+            'https://api.robinhood.com/quotes/{}/'.format(symbol))
+    except HTTPError:
+        return '{} is not a valid stock symbol.'.format(symbol)
 
-    # if we dont get a company name back, the symbol doesn't match a company
-    if quote['Change'] is None:
-        return "unknown ticker symbol %s" % inp
+    if fundamentals['open'] is None or quote['ask_price'] is None:
+        return 'unknown ticker symbol %s' % inp
 
-    price = float(quote['LastTradePriceOnly'])
-    change = float(quote['Change'])
-    if quote['Open'] and quote['Bid'] and quote['Ask']:
-        open_price = float(quote['Open'])
-        bid = float(quote['Bid'])
-        ask = float(quote['Ask'])
-        if price < bid:
-            price = bid
-        elif price > ask:
-            price = ask
-        change = price - open_price
-        quote['LastTradePriceOnly'] = "%.2f" % price
-        quote['Change'] = ("+%.2f" % change) if change >= 0 else change
+    if len(arguments) > 1 and arguments[1] == 'info':
+        return fundamentals['description']
 
-    if change < 0:
-        quote['color'] = "5"
-    else:
-        quote['color'] = "3"
+    # Manually "calculate" change since API does not provide it
+    price = float(quote['last_trade_price'])
+    change = price - float(quote['adjusted_previous_close'])
 
-    quote['PercentChange'] = 100 * change / (price - change)
+    response = {
+        'change': change,
+        'percent_change': 100 * change / (price - change),
+        'market_cap': float(fundamentals['market_cap']),
+        'symbol': quote['symbol'],
+        'price': price,
+        'color': '\x035' if change < 0 else '\x033',
+        'high': float(fundamentals['high']),
+        'low': float(fundamentals['low']),
+        'pe_ratio': float(fundamentals['pe_ratio']),
+        'average_volume': float(fundamentals['average_volume']),
+    }
 
-    ret = "%(Name)s - %(LastTradePriceOnly)s "                   \
-          "\x03%(color)s%(Change)s (%(PercentChange).2f%%)\x03 "        \
-          "Day Range: %(DaysRange)s " \
-          "MCAP: %(MarketCapitalization)s" % quote
-
-    return ret
+    return "[{symbol}] ${price:,.2f} {color}{change:,.2f} ({percent_change:,.2f}%)\x03 :: " \
+        "High: ${high:,.2f} :: " \
+        "Low: ${low:,.2f} :: " \
+        "PE: {pe_ratio:,.2f}% :: " \
+        "Volume: ${average_volume:,.2f} :: " \
+        "MCAP: ${market_cap:,.2f}".format(**response)
