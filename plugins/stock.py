@@ -45,28 +45,28 @@ def stock(inp):
     if m:
         name = m.group(0)
 
+    def maybe(name, key, fmt=human_price):
+        if fundamentals.get(key):
+            return ' | {0}: {1}'.format(name, fmt(float(fundamentals[key])))
+        return ''
+
     response = {
         'name': name,
         'change': change,
         'percent_change': 100 * change / (price - change),
-        'market_cap': float(fundamentals['market_cap']),
         'symbol': quote['symbol'],
         'price': price,
         'color': '5' if change < 0 else '3',
         'high': float(fundamentals['high']),
         'low': float(fundamentals['low']),
-        'average_volume': human_price(float(fundamentals['average_volume'])),
-        'market_cap': human_price(float(fundamentals['market_cap'])),
-        'pe_ratio': '',
+        'average_volume': maybe('Volume', 'average_volume'),
+        'market_cap': maybe('MCAP', 'market_cap'),
+        'pe_ratio': maybe('P/E', 'pe_ratio', fmt='{:.2f}'.format),
     }
 
-    if fundamentals.get('pe_ratio'):
-        response['pe_ratio'] = ' P/E: {:,.2f} |'.format(float(fundamentals['pe_ratio']))
-
     return ("{name}({symbol}) ${price:,.2f} \x03{color}{change:,.2f} ({percent_change:,.2f}%)\x03 | "
-            "Day Range: ${low:,.2f} - ${high:,.2f} |{pe_ratio} "
-            "Volume: ${average_volume} | "
-            "MCAP: ${market_cap}").format(**response)
+            "Day Range: ${low:,.2f} - ${high:,.2f}"
+            "{pe_ratio}{average_volume}{market_cap}").format(**response)
 
 if __name__ == '__main__':
     import sys
