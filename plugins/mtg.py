@@ -2,8 +2,11 @@ from util import hook, http
 
 
 def card_search(name):
-    return http.get_json('https://api.deckbrew.com/mtg/cards', name=name)
-
+    matching_cards = http.get_json('https://api.magicthegathering.io/v1/cards', name=name)
+    for card in matching_cards['cards']:
+        if card['name'].lower() == name.lower():
+            return card 
+    return matching_cards['cards'][0]
 
 @hook.command
 def mtg(inp, say=None):
@@ -11,15 +14,14 @@ def mtg(inp, say=None):
     '''
 
     try:
-        card = card_search(inp)[0]
+        card = card_search(inp)
     except IndexError:
         return 'Card not found.'
-
-    for valid_edition in range(len(card['editions'])):
-        if card['editions'][valid_edition]['multiverse_id'] != 0 :
+    '''
+    for valid_edition in range(len(card['printings'])):
+        if card['editions'][valid_edition]['multiverseid'] != 0 :
             break
-    
-    #symbols = {'{T}' : u'\u27F3' , '{S}' : u'\u2744' , '{Q}' : u'\u21BA', '\n' : ' ' , '{' : '', '}' : ''} 
+    '''
     symbols = {
     #    '{0}'   : u'\u24EA' , 
     #    '{1}'   : u'\u2460' , 
@@ -82,19 +84,22 @@ def mtg(inp, say=None):
     }
     results = {
         'name': card['name'],
-        'types': ', '.join(t.capitalize() for t in card['types']),
-        'cost': card['cost'],
+        #'types': ', '.join(t.capitalize() for t in card['types']),
+        'type': card['type'],
+        'cost': card['manaCost'],
         'text': card['text'],
         'power': card.get('power'),
         'toughness': card.get('toughness'),
         'loyalty': card.get('loyalty'),
-        'multiverse_id': card['editions'][valid_edition]['multiverse_id'],
+        #'multiverseid': card['editions'][valid_edition]['multiverse_id'],
+        'multiverseid': card.get('multiverseid'),
     }
+    '''
     if card.get('supertypes'):
         results['supertypes'] = ', '.join(card['supertypes']).title()
     if card.get('subtypes'):
         results['subtypes'] = ', '.join(card['subtypes']).title()
-
+    '''
     for fragment, rep in symbols.items():
         results['text'] = results['text'].replace(fragment, rep)
         results['cost'] = results['cost'].replace(fragment, rep)
@@ -102,7 +107,7 @@ def mtg(inp, say=None):
     template = ['{name} -']
     if results.get('supertypes'):
         template.append('{supertypes}')
-    template.append('{types}')
+    template.append('{type}')
     if results.get('subtypes'):
         template.append('{subtypes}')
     template.append('- {cost} |')
@@ -110,7 +115,7 @@ def mtg(inp, say=None):
         template.append('{loyalty} Loyalty |')
     if results['power']:
         template.append('{power}/{toughness} |')
-    template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}')
+    template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverseid}')
     
     return u' '.join(template).format(**results)
 
