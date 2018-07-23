@@ -8,11 +8,10 @@ from util import hook, http
 def urban(inp):
     '''.u/.urban <phrase> -- looks up <phrase> on urbandictionary.com'''
 
-    url = 'http://www.urbandictionary.com/iphone/search/define'
-    page = http.get_json(url, term=inp, headers={'Referer': 'http://m.urbandictionary.com'})
+    page = http.get_json('https://api.urbandictionary.com/v0/define', term=inp)
     defs = page['list']
 
-    if page['result_type'] == 'no_results':
+    if not defs:
         return 'not found.'
 
     out = defs[0]['word'] + ': ' + defs[0]['definition'].replace('\r\n', ' ')
