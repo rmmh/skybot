@@ -36,7 +36,7 @@ def stock(inp):
         return fundamentals['description']
 
     # Manually "calculate" change since API does not provide it
-    price = float(quote['last_trade_price'])
+    price = float(quote.get('last_extended_hours_trade_price') or quote['last_trade_price'])
     change = price - float(quote['adjusted_previous_close'])
 
     # Extract name as Upper Case Corp Name from description.
