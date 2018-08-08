@@ -3,11 +3,16 @@
 from util import hook, http
 
 
+# http://www.omdbapi.com/apikey.aspx
+@hook.api_key('omdbapi')
 @hook.command
-def imdb(inp):
+def imdb(inp, api_key=None):
     '''.imdb <movie> -- gets information about <movie> from IMDb'''
 
-    content = http.get_json("http://www.omdbapi.com/", t=inp)
+    if not api_key:
+        return None
+
+    content = http.get_json("https://www.omdbapi.com/", t=inp, apikey=api_key)
 
     if content['Response'] == 'Movie Not Found':
         return 'movie not found'
