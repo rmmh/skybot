@@ -5,6 +5,19 @@ from urllib2 import HTTPError
 
 from util import hook, http
 
+SCORE_CLASSES = {
+    '\x0304': [ 'negative', 'bad', 'score_terrible', 'score_unfavorable' ],
+    '\x0308': [ 'mixed', 'forty', 'fifty', 'score_mixed' ],
+    '\x0303': [ 'sixtyone', 'seventyfive', 'good', 'positive', 'score_favorable', 'score_outstanding' ]
+}
+
+
+def get_score_color(element_classes):
+    for (color, score_classes) in SCORE_CLASSES.iteritems():
+        for score_class in score_classes:
+            if score_class in element_classes:
+                return color
+
 
 @hook.command('mc')
 def metacritic(inp):
@@ -35,40 +48,12 @@ def metacritic(inp):
 
     url = 'http://www.metacritic.com/search/%s/%s/results' % (cat, title_safe)
 
+    print(url)
+
     try:
         doc = http.get_html(url)
     except HTTPError:
         return 'error fetching results'
-
-    ''' result format:
-    -- game result, with score
-    -- subsequent results are the same structure, without first_result class
-    <li class="result first_result">
-        <div class="result_type">
-            <strong>Game</strong>
-            <span class="platform">WII</span>
-        </div>
-        <div class="result_wrap">
-            <div class="basic_stats has_score">
-                <div class="main_stats">
-                    <h3 class="product_title basic_stat">...</h3>
-                    <div class="std_score">
-                      <div class="score_wrap">
-                        <span class="label">Metascore: </span>
-                        <span class="data metascore score_favorable">87</span>
-                      </div>
-                    </div>
-                </div>
-                <div class="more_stats extended_stats">...</div>
-            </div>
-        </div>
-    </li>
-
-    -- other platforms are the same basic layout
-    -- if it doesn't have a score, there is no div.basic_score
-    -- the <div class="result_type"> changes content for non-games:
-    <div class="result_type"><strong>Movie</strong></div>
-    '''
 
     # get the proper result element we want to pull data from
 
@@ -78,7 +63,7 @@ def metacritic(inp):
         return 'no results found'
 
     # if they specified an invalid search term, the input box will be empty
-    if doc.get_element_by_id('search_term').value == '':
+    if doc.get_element_by_id('primary_search_box').value == '':
         return 'invalid search term'
 
     if plat not in game_platforms:
@@ -111,25 +96,21 @@ def metacritic(inp):
         return 'no results found'
 
     # get the name, release date, and score from the result
-    product_title = result.find_class('product_title')[0]
-    name = product_title.text_content()
-    link = 'http://metacritic.com' + product_title.find('a').attrib['href']
+    product_title_element = result.find_class('product_title')[0]
+
+    review = {
+        'platform': plat.upper(),
+        'title': product_title_element.text_content().strip(),
+        'link': 'http://metacritic.com' + product_title_element.find('a').attrib['href']
+    }
 
     try:
-        release = result.find_class('release_date')[0].\
-            find_class('data')[0].text_content()
+        score_element = result.find_class('metascore_w')[0]
 
-        # strip extra spaces out of the release date
-        release = re.sub(r'\s{2,}', ' ', release)
+        review['score'] = score_element.text_content().strip()
+
+        review['score_color'] = get_score_color(score_element.classes)
     except IndexError:
-        release = None
+        review['score'] = 'unknown'
 
-    try:
-        score = result.find_class('metascore_w')[0].text_content()
-    except IndexError:
-        score = None
-
-    return '[%s] %s - %s, %s -- %s' % (plat.upper(), name,
-                                       score or 'no score',
-                                       'release: %s' % release if release else 'unreleased',
-                                       link)
+    return '[{platform}] {title} - \x02{score_color}{score}\x0f - {link}'.format(**review)
