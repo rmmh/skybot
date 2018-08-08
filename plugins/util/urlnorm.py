@@ -21,12 +21,16 @@ inspired by:
   Mark Nottingham, http://www.mnot.net/python/urlnorm.py
 """
 
+from builtins import str
+from builtins import object
 __license__ = "Python"
+
+from future.builtins import str
 
 import re
 import unicodedata
-import urlparse
-from urllib import quote, unquote
+import urllib.parse
+from urllib.parse import quote, unquote
 
 default_port = {
     'http': 80,
@@ -50,7 +54,7 @@ normalizers = ( Normalizer( re.compile(r'(?:https?://)?(?:[a-zA-Z0-9\-]+\.)?(?:a
 def normalize(url):
     """Normalize a URL."""
 
-    scheme, auth, path, query, fragment = urlparse.urlsplit(url.strip())
+    scheme, auth, path, query, fragment = urllib.parse.urlsplit(str(url.strip()))
     userinfo, host, port = re.search('([^@]*@)?([^:]*):?(.*)', auth).groups()
 
     # Always provide the URI scheme in lowercase characters.
@@ -73,7 +77,7 @@ def normalize(url):
     # Always use uppercase A-through-F characters when percent-encoding.
     # All portions of the URI must be utf-8 encoded NFC from Unicode strings
     def clean(string):
-        string = unicode(unquote(string), 'utf-8', 'replace')
+        string = str(unquote(string))
         return unicodedata.normalize('NFC', string).encode('utf-8')
     path = quote(clean(path), "~:/?#[]@!$&'()*+,;=")
     fragment = quote(clean(fragment), "~")
@@ -112,7 +116,7 @@ def normalize(url):
 
     # For schemes that define a port, use an empty port if the default is
     # desired
-    if port and scheme in default_port.keys():
+    if port and scheme in list(default_port.keys()):
         if port.isdigit():
             port = str(int(port))
             if int(port) == default_port[scheme]:
@@ -124,8 +128,7 @@ def normalize(url):
         auth += ":" + port
     if url.endswith("#") and query == "" and fragment == "":
         path += "#"
-    normal_url = urlparse.urlunsplit((scheme, auth, path, query,
-        fragment)).replace("http:///", "http://")
+    normal_url = urllib.parse.urlunsplit((scheme, auth, path, query, fragment)).replace("http:///", "http://")
     for norm in normalizers:
         m = norm.regex.match(normal_url)
         if m:

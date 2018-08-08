@@ -2,6 +2,9 @@
 dice.py: written by Scaevolus 2008, updated 2009
 simulates dicerolls
 """
+from builtins import str
+from builtins import map
+from builtins import range
 import re
 import random
 import unittest
@@ -19,15 +22,15 @@ split_re = re.compile(r'([\d+-]*)d?(F|\d*)', re.I)
 def nrolls(count, n):
     "roll an n-sided die count times"
     if n == "F":
-        return [random.randint(-1, 1) for x in xrange(min(count, 100))]
+        return [random.randint(-1, 1) for x in range(min(count, 100))]
     if n < 2:  # it's a coin
         if count < 5000:
-            return [random.randint(0, 1) for x in xrange(count)]
+            return [random.randint(0, 1) for x in range(count)]
         else:  # fake it
             return [int(random.normalvariate(.5 * count, (.75 * count) ** .5))]
     else:
         if count < 5000:
-            return [random.randint(1, n) for x in xrange(count)]
+            return [random.randint(1, n) for x in range(count)]
         else:  # fake it
             return [int(random.normalvariate(.5 * (1 + n) * count,
                                              (((n + 1) * (2 * n + 1) / 6. - (.5 * (1 + n)) ** 2) * count) ** .5))]
@@ -79,7 +82,7 @@ def dice(inp):
             try:
                 if count > 0:
                     dice = nrolls(count, side)
-                    rolls += map(str, dice)
+                    rolls += list(map(str, dice))
                     total += sum(dice)
                 else:
                     dice = nrolls(-count, side)

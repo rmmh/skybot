@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from util import http, hook
 
 
@@ -14,6 +16,11 @@ def crypto(inp, say=None):
 
     values = price_response["DISPLAY"][fsym]["USD"]
 
-    say(u"USD/{FROMSYMBOL}: \x0307{PRICE}\x0f - High: \x0307{HIGHDAY}\x0f - Low: \x0307{LOWDAY}\x0f - Volume: {VOLUMEDAY}"
-        " ({VOLUMEDAYTO}) - Total Supply: {SUPPLY} - MktCap: {MKTCAP}".format(**values))
+    say(
+        (
+            "USD/{FROMSYMBOL}: \x0307{PRICE}\x0f - High: \x0307{HIGHDAY}\x0f "
+            "- Low: \x0307{LOWDAY}\x0f - Volume: {VOLUMEDAY}"
+            " ({VOLUMEDAYTO}) - Total Supply: {SUPPLY} - MktCap: {MKTCAP}"
+        ).format(**values)
+    )
 

@@ -3,7 +3,9 @@ A Google API key is required and retrieved from the bot config file.
 Since December 1, 2011, the Google Translate API is a paid service only.
 '''
 
-import htmlentitydefs
+from builtins import zip
+from builtins import chr
+import html.entities
 import re
 
 from util import hook, http
@@ -18,15 +20,15 @@ def unescape(text):
             # character reference
             try:
                 if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
+                    return chr(int(text[3:-1], 16))
                 else:
-                    return unichr(int(text[2:-1]))
+                    return chr(int(text[2:-1]))
             except ValueError:
                 pass
         else:
             # named entity
             try:
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+                text = chr(html.entities.name2codepoint[text[1:-1]])
             except KeyError:
                 pass
         return text  # leave as is
@@ -86,7 +88,7 @@ def translate(inp, api_key=''):
                     return goog_trans(api_key, args[1] + ' ' + args[2], sl, 'en')
                 return goog_trans(api_key, args[2], sl, tl)
         return goog_trans(api_key, inp, '', 'en')
-    except IOError, e:
+    except IOError as e:
         return e
 
 
@@ -109,7 +111,7 @@ def babel(inp, api_key=''):
 
     try:
         return list(babel_gen(api_key, inp))[-1][2]
-    except IOError, e:
+    except IOError as e:
         return e
 
 
@@ -120,10 +122,10 @@ def babelext(inp, api_key=''):
 
     try:
         babels = list(babel_gen(api_key, inp))
-    except IOError, e:
+    except IOError as e:
         return e
 
-    out = u''
+    out = ''
     for lang, trans, text in babels:
         out += '%s:"%s", ' % (lang, text.decode('utf8'))
 

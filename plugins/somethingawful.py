@@ -1,6 +1,10 @@
-from urllib import urlencode
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+
 import re
 
+from urllib.parse import urlencode
 from util import hook, http
 
 
@@ -14,9 +18,9 @@ PROFILE_URL = "https://forums.somethingawful.com/member.php"
 MATCH_OBJECT = type(re.match(r"", "")) # Is there a nicer way to get this??
 
 GENDER_UNICODE = {
-    "male": u"\u2642",
-    "female": u"\u2640",
-    "porpoise": u"\uE520"
+    "male": "\u2642",
+    "female": "\u2640",
+    "porpoise": "\uE520"
 }
 
 FORUM_ABBREVS = {
@@ -265,13 +269,13 @@ def format_profile_response(profile, show_link=False):
 
     if show_link:
         return (
-            u"\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
-            u"last post \x02{last_post}\x02 - {post_rate} posts per day - {profile_link}"
+            "\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
+            "last post \x02{last_post}\x02 - {post_rate} posts per day - {profile_link}"
         ).format(**profile)
     else:
         return (
-            u"\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
-            u"last post \x02{last_post}\x02 - {post_rate} posts per day"
+            "\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
+            "last post \x02{last_post}\x02 - {post_rate} posts per day"
         ).format(**profile)
 
 @hook.api_key("somethingawful")
@@ -329,11 +333,11 @@ def thread_link(inp, api_key=None):
         return
 
     if len(thread['thread_title']) > 100:
-        thread['thread_title'] = thread['thread_title'][0:97] + u'\u2026'
+        thread['thread_title'] = thread['thread_title'][0:97] + '\u2026'
 
     thread['post_count_word'] = 'posts' if thread['post_count'] > 1 else 'post'
 
     return (
-        u"\x02{forum_title}\x02 > \x02{thread_title}\x02 by \x02{author}\x02, "
-        u"\x02{post_count}\x02 {post_count_word}"
+        "\x02{forum_title}\x02 > \x02{thread_title}\x02 by \x02{author}\x02, "
+        "\x02{post_count}\x02 {post_count_word}"
     ).format(**thread)

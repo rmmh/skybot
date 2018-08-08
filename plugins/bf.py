@@ -1,6 +1,8 @@
 '''brainfuck interpreter adapted from (public domain) code at
 http://brainfuck.sourceforge.net/brain.py'''
 
+from builtins import chr
+from builtins import range
 import re
 import random
 import unittest

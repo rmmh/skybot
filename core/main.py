@@ -1,9 +1,14 @@
+from __future__ import print_function
+from builtins import str
+from builtins import range
+from builtins import object
 import re
-import thread
+import _thread
 import traceback
+from queue import Queue
+from future.builtins import str
 
-
-thread.stack_size(1024 * 512)  # reduce vm size
+_thread.stack_size(1024 * 512)  # reduce vm size
 
 
 class Input(dict):
@@ -82,14 +87,14 @@ def run(func, input):
     else:
         out = func(input.inp)
     if out is not None:
-        input.reply(unicode(out))
+        input.reply(str(out))
 
 
 def do_sieve(sieve, bot, input, func, type, args):
     try:
         return sieve(bot, input, func, type, args)
     except Exception:
-        print 'sieve error',
+        print('sieve error', end=' ')
         traceback.print_exc()
         return None
 
@@ -100,8 +105,8 @@ class Handler(object):
 
     def __init__(self, func):
         self.func = func
-        self.input_queue = Queue.Queue()
-        thread.start_new_thread(self.start, ())
+        self.input_queue = Queue()
+        _thread.start_new_thread(self.start, ())
 
     def start(self):
         uses_db = 'db' in self.func._args
@@ -152,14 +157,14 @@ def dispatch(input, kind, func, args, autohelp=False):
     if func._thread:
         bot.threads[func].put(input)
     else:
-        thread.start_new_thread(run, (func, input))
+        _thread.start_new_thread(run, (func, input))
 
 
 def match_command(command):
     commands = list(bot.commands)
 
     # do some fuzzy matching
-    prefix = filter(lambda x: x.startswith(command), commands)
+    prefix = [x for x in commands if x.startswith(command)]
     if len(prefix) == 1:
         return prefix[0]
     elif prefix and command not in prefix:
@@ -181,7 +186,7 @@ def test_make_command_re():
     match = make_command_re('.', False, 'bot').match
     assert not match('foo')
     assert not match('bot foo')
-    for _ in xrange(2):
+    for _ in range(2):
         assert match('.test').groups() == ('test', '')
         assert match('bot: foo args').groups() == ('foo', 'args')
         match = make_command_re('.', True, 'bot').match

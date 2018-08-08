@@ -1,4 +1,5 @@
 "weather, thanks to wunderground"
+from __future__ import unicode_literals
 
 from util import hook, http
 

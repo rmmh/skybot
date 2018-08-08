@@ -1,5 +1,6 @@
 " seen.py: written by sklnd in about two beers July 2009"
 
+from builtins import object
 import time
 import unittest
 

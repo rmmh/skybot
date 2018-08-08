@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import division, unicode_literals
+from builtins import range, object
+from past.utils import old_div
 import math
 import random
 import re
@@ -15,7 +17,7 @@ def sanitize(s):
 @hook.command
 def munge(inp, munge_count=0):
     reps = 0
-    for n in xrange(len(inp)):
+    for n in range(len(inp)):
         rep = character_replacements.get(inp[n])
         if rep:
             inp = inp[:n] + rep.decode('utf8') + inp[n + 1:]
@@ -44,7 +46,7 @@ class PaginatingWinnower(object):
                 self.last_input = inputs_sorted
                 self.recent.clear()
 
-            combiner = lambda l: u', '.join(l)
+            combiner = lambda l: ', '.join(l)
             suffix = ''
 
             while len(combiner(inputs)) >= limit:
@@ -215,7 +217,7 @@ def is_tagged(inp, chan='', db=None):
         return is_tagged.__doc__
 
 def distance(lat1, lon1, lat2, lon2):
-    deg_to_rad = math.pi / 180
+    deg_to_rad = old_div(math.pi, 180)
     lat1 *= deg_to_rad
     lat2 *= deg_to_rad
     lon1 *= deg_to_rad

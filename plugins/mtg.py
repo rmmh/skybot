@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import range
 from util import hook, http
 
 
@@ -63,20 +65,20 @@ def mtg(inp, say=None):
         '{18}'   : '18' , 
         '{19}'   : '19' , 
         '{20}'   : '20' , 
-        '{T}'   : u'\u27F3' , 
-        '{S}'   : u'\u2744' , 
-        '{Q}'   : u'\u21BA' , 
-        '{C}'   : u'\u27E1' , 
+        '{T}'   : '\u27F3' , 
+        '{S}'   : '\u2744' , 
+        '{Q}'   : '\u21BA' , 
+        '{C}'   : '\u27E1' , 
         '{W}'   : 'W' , 
         '{U}'   : 'U' , 
         '{B}'   : 'B' , 
         '{R}'   : 'R' , 
         '{G}'   : 'G' , 
-        '{W/P}' : u'\u03D5' , 
-        '{U/P}' : u'\u03D5' , 
-        '{B/P}' : u'\u03D5' , 
-        '{R/P}' : u'\u03D5' , 
-        '{G/P}' : u'\u03D5' ,
+        '{W/P}' : '\u03D5' , 
+        '{U/P}' : '\u03D5' , 
+        '{B/P}' : '\u03D5' , 
+        '{R/P}' : '\u03D5' , 
+        '{G/P}' : '\u03D5' ,
         '{X}'   : 'X' ,
         '\n' : ' ' ,
     }
@@ -95,7 +97,7 @@ def mtg(inp, say=None):
     if card.get('subtypes'):
         results['subtypes'] = ', '.join(card['subtypes']).title()
 
-    for fragment, rep in symbols.items():
+    for fragment, rep in list(symbols.items()):
         results['text'] = results['text'].replace(fragment, rep)
         results['cost'] = results['cost'].replace(fragment, rep)
     
@@ -112,9 +114,9 @@ def mtg(inp, say=None):
         template.append('{power}/{toughness} |')
     template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}')
     
-    return u' '.join(template).format(**results)
+    return ' '.join(template).format(**results)
 
 
 if __name__ == '__main__':
-    print card_search('Black Lotus')
-    print mtg('Black Lotus')
+    print(card_search('Black Lotus'))
+    print(mtg('Black Lotus'))

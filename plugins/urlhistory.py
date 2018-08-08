@@ -1,3 +1,5 @@
+from __future__ import division, unicode_literals
+from past.utils import old_div
 import math
 import time
 
@@ -29,7 +31,7 @@ def get_history(db, chan, url):
 
 
 def nicklist(nicks):
-    nicks = sorted(dict(nicks), key=unicode.lower)
+    nicks = sorted(dict(nicks), key=str.lower)
     if len(nicks) <= 2:
         return ' and '.join(nicks)
     else:
@@ -46,7 +48,7 @@ def format_reply(history):
     if len(history) == 1:
         return "%s linked that %s ago." % (last_nick, last_time)
 
-    hour_span = math.ceil((time.time() - history[-1][1]) / 3600)
+    hour_span = math.ceil(old_div((time.time() - history[-1][1]), 3600))
     hour_span = '%.0f hours' % hour_span if hour_span > 1 else 'hour'
 
     hlen = len(history)

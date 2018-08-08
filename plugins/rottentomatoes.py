@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 import json
 import re
 
@@ -79,7 +81,7 @@ def rottentomatoes(inp):
     movie = get_rottentomatoes_data(movie_id)
 
     return (
-        u"{title} - critics: \x02{critics_score}%\x02 "
-        u"({fresh}\u2191{rotten}\u2193) "
-        u"audience: \x02{audience_score}%\x02 - {url}"
+        "{title} - critics: \x02{critics_score}%\x02 "
+        "({fresh}\u2191{rotten}\u2193) "
+        "audience: \x02{audience_score}%\x02 - {url}"
     ).format(**movie)

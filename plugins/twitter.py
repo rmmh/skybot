@@ -1,7 +1,9 @@
+from __future__ import unicode_literals
+
 import random
 import re
 from time import strptime, strftime
-from urllib import quote
+from urllib.parse import quote
 
 from util import hook, http
 
@@ -43,7 +45,7 @@ def twitter(inp, api_key=None):
 
     try:
         tweet = http.get_json(request_url, oauth=True, oauth_keys=api_key, tweet_mode="extended")
-    except http.HTTPError, e:
+    except http.HTTPError as e:
         errors = {400: 'bad request (ratelimited?)',
                   401: 'unauthorized',
                   403: 'forbidden',

@@ -1,4 +1,4 @@
-import unittest
+from __future__ import unicode_literals
 
 from util import http, hook
 
@@ -9,9 +9,9 @@ def hackernews(match):
     entry = http.get_json(base_api + match.group(1) + ".json")
 
     if entry['type'] == "story":
-    	entry['title'] = http.unescape(entry['title'])
-        return u"{title} by {by} with {score} points and {descendants} comments ({url})".format(**entry)
+        entry['title'] = http.unescape(entry['title'])
+        return "{title} by {by} with {score} points and {descendants} comments ({url})".format(**entry)
 
     if entry['type'] == "comment":
-	entry['text'] = http.unescape(entry['text'].replace('<p>', ' // '))
-        return u'"{text}" -- {by}'.format(**entry)
+        entry['text'] = http.unescape(entry['text'].replace('<p>', ' // '))
+        return '"{text}" -- {by}'.format(**entry)

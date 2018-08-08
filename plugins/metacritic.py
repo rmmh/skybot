@@ -1,7 +1,8 @@
+from __future__ import print_function, unicode_literals
 # metacritic.com scraper
 
 import re
-from urllib2 import HTTPError
+from urllib.error import HTTPError
 
 from util import hook, http
 
@@ -13,7 +14,7 @@ SCORE_CLASSES = {
 
 
 def get_score_color(element_classes):
-    for (color, score_classes) in SCORE_CLASSES.iteritems():
+    for (color, score_classes) in SCORE_CLASSES.items():
         for score_class in score_classes:
             if score_class in element_classes:
                 return color

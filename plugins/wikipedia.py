@@ -1,6 +1,8 @@
 '''Searches wikipedia and returns first sentence of article
 Scaevolus 2009'''
 
+from __future__ import unicode_literals
+
 import re
 
 from util import hook, http
