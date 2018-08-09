@@ -3,7 +3,7 @@ import unittest
 
 
 def card_search(name):
-    results = http.get_json('http://api.magicthegathering.io/v1/cards', name=name, pageSize=1)
+    results = http.get_json('https://api.magicthegathering.io/v1/cards', name=name, pageSize=1)
 
     if not 'cards' in results or len(results['cards']) == 0:
         return None
