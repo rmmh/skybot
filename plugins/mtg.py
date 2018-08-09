@@ -58,14 +58,12 @@ def mtg(inp, say=None):
     }
     results = {
         'name': card['name'],
-        #'types': ', '.join(t.capitalize() for t in card['types']),
         'type': card['type'],
         'cost': card.get('manaCost',''),
         'text': card.get('text',''),
         'power': card.get('power'),
         'toughness': card.get('toughness'),
         'loyalty': card.get('loyalty'),
-        #'multiverseid': card['editions'][valid_edition]['multiverse_id'],
         'multiverseid': card.get('multiverseid'),
     }
     for fragment, rep in symbols.items():
