@@ -1,4 +1,5 @@
 from util import hook, http
+import unittest
 
 
 def card_search(name):
@@ -100,6 +101,22 @@ def mtg(inp):
     return u' '.join(template).format(**results)
 
 
+class MTGTest(unittest.TestCase):
+    def test_black_lotus(self):
+        assert mtg('Black Lotus') == u'Black Lotus - Artifact - No Cost | \u27F3, Sacrifice Black Lotus: Add ' \
+                                     u'three mana of any one color. | ' \
+                                     u'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=382866'
+
+    def test_underground_sea(self):
+        assert mtg('Underground Sea') == u'Underground Sea - Land : Island, Swamp - No Cost | ' \
+                                         u'(\u27F3: Add U or B.) | ' \
+                                         u'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=383142'
+
+    def test_mana_breach(self):
+        assert mtg('Mana Breach') == u'Mana Breach - Enchantment - 2U | Whenever a player casts a spell, that ' \
+                                     u'player returns a land they control to its owner\'s hand. | ' \
+                                     u'http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=6078'
+
+
 if __name__ == '__main__':
-    print card_search('Black Lotus')
-    print mtg('Black Lotus')
+    unittest.main()
