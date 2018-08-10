@@ -1,7 +1,7 @@
 from unittest import skip, TestCase
 from mock import patch
 
-from dice import dice
+from skybot.plugins.dice import dice
 
 
 class TestDice(TestCase):

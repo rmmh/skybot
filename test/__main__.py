@@ -9,7 +9,6 @@ if __name__ == '__main__':
     # properly import plugins and other code correctly.
     project_root_directory = path.dirname(path.dirname(__file__))
 
-    sys.path.append(path.join(project_root_directory, 'plugins'))
     sys.path.append(path.join(project_root_directory))
 
     discovered_tests = TestLoader().discover(path.dirname(__file__))

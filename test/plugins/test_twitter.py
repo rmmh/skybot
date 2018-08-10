@@ -2,7 +2,7 @@ from unittest import TestCase
 from mock import patch
 
 from helpers import get_fixture_file, execute_skybot_regex
-from twitter import show_tweet, twitter
+from skybot.plugins.twitter import show_tweet, twitter
 
 
 FAKE_API_KEY = {
@@ -14,7 +14,7 @@ FAKE_API_KEY = {
 
 
 class TestTwitter(TestCase):
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_tweet_regex(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, '1014260007771295745.json')
 
@@ -34,7 +34,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_twitter_username_no_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'user_loneblockbuster.json')
 
@@ -48,7 +48,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_twitter_username_with_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'user_loneblockbuster.json')
 
@@ -61,7 +61,7 @@ class TestTwitter(TestCase):
         assert expected == actual
 
     @patch('random.randint')
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_twitter_hashtag_no_tweet_number(self, mock_http_get, mock_random_randint):
         mock_http_get.return_value = get_fixture_file(self, 'hashtag_nyc.json')
 
@@ -83,7 +83,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_twitter_hashtag_with_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'hashtag_nyc.json')
 

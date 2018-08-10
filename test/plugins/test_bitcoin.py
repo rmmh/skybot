@@ -2,11 +2,12 @@ from unittest import TestCase
 from mock import patch, Mock
 
 from helpers import get_fixture_file
-from bitcoin import bitcoin, ethereum
+
+from skybot.plugins.bitcoin import bitcoin, ethereum
 
 
 class TestBitcoin(TestCase):
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_bitcoin(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'bitcoin.json')
 
@@ -19,7 +20,7 @@ class TestBitcoin(TestCase):
                    '10,329.67 BTC'
         say_mock.assert_called_once_with(expected)
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_ethereum(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'ethereum.json')
 

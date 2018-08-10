@@ -19,7 +19,7 @@ which you wish to place the bot and run the following command:
 
 Browse to Skybot's directory and run the following command:
 
-    python bot.py
+    python skybot
 
 On first run, Skybot will create a default configuration file in its
 directory. You can then stop the bot and follow the [[Configuration]] page's

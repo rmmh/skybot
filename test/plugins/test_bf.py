@@ -1,5 +1,5 @@
 from unittest import TestCase
-from bf import bf
+from skybot.plugins.bf import bf
 
 
 class TestBF(TestCase):

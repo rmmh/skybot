@@ -3,7 +3,8 @@ from unittest import TestCase
 from mock import Mock, patch, call
 
 from helpers import execute_skybot_regex
-from crowdcontrol import crowdcontrol
+
+from skybot.plugins.crowdcontrol import crowdcontrol
 
 class TestCrowdcontrol(TestCase):
     def call_crowd_control(self, input, called=None, rules=None):

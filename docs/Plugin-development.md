@@ -9,7 +9,7 @@ Skybot continually scans the `plugins/` directory for new or changed .py
 files. When it finds one, it runs it and examines each function to see whether
 it is a plugin hook.
 
-All plugins need to `from util import hook` in order to be callable.
+All plugins need to `from skybot.util import hook` in order to be callable.
 
 
 ## A simple example ##
@@ -17,7 +17,7 @@ All plugins need to `from util import hook` in order to be callable.
 plugins/echo.py:
 
 ```python
-from util import hook
+from skybot.util import hook
 
 @hook.command
 def echo(inp):
@@ -39,7 +39,7 @@ can be invoked by saying phrases in a channel the bot is in, notably ".echo",
 
 There are four types of plugin hooks: commands, regexes, events, and sieves.
 The hook type is assigned to plugin functions using decorators found
-in `util/hook.py`.
+in `skybot/util/hook.py`.
 
 
 There is also a secondary hook decorator: `@hook.singlethread`
@@ -83,7 +83,7 @@ function name. When given an argument, it is used as the command name. This
 allows one function to respond to multiple commands:
 
 ```python
-from util import hook
+from skybot.util import hook
 
 @hook.command('hi')
 @hook.command
@@ -103,7 +103,7 @@ Each line of chat is matched against the provided regex pattern. If it is
 successful, the hook function will be called with the matched object.
 
 ```python
-from util import hook
+from skybot.util import hook
 
 @hook.regex("lame bot")
 def hurtfulcomment(match):

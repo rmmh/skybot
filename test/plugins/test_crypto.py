@@ -2,11 +2,12 @@ from unittest import TestCase
 from mock import Mock, patch
 
 from helpers import get_fixture_file
-from crypto import crypto
+
+from skybot.plugins.crypto import crypto
 
 
 class TestCrypto(TestCase):
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_crypto_btc_to_default(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'crypto_btc_to_default.json')
 
@@ -21,7 +22,7 @@ class TestCrypto(TestCase):
 
         say_mock.assert_called_once_with(expected)
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_crypto_eth_to_default(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'crypto_eth_to_default.json')
 

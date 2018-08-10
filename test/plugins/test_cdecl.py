@@ -2,11 +2,12 @@ from unittest import TestCase
 from mock import patch
 
 from helpers import get_fixture_file
-from cdecl import cdecl
+
+from skybot.plugins.cdecl import cdecl
 
 
 class TestCDecl(TestCase):
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_cdecl(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, 'example.json')
 

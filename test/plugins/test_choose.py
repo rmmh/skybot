@@ -1,7 +1,7 @@
 from unittest import TestCase
 from mock import patch
 
-from choose import choose
+from skybot.plugins.choose import choose
 
 
 class TestChoose(TestCase):

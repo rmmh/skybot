@@ -3,11 +3,12 @@ from unittest import TestCase
 from mock import patch
 
 from helpers import get_fixture_file, execute_skybot_regex
-from hackernews import hackernews
+
+from skybot.plugins.hackernews import hackernews
 
 
 class TestHackernews(TestCase):
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_story(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, '9943431.json')
 
@@ -21,7 +22,7 @@ class TestHackernews(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_comment(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, '9943987.json')
 
@@ -33,7 +34,7 @@ class TestHackernews(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('skybot.util.http.get')
     def test_comment_encoding(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file(self, '9943897.json')
 
