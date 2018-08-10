@@ -9,6 +9,7 @@ import time
 import urllib
 import urllib2
 import urlparse
+import re
 
 from hashlib import sha1
 from urllib import quote, unquote, quote_plus as _quote_plus
@@ -27,7 +28,31 @@ jar = cookielib.CookieJar()
 
 
 def get(*args, **kwargs):
-    return open(*args, **kwargs).read()
+    response = open(*args, **kwargs)
+    response_body = response.read()
+
+    content_type = response.headers.get('content-type')
+
+    if not content_type or 'text' not in content_type:
+        return response_body
+
+    charset_match = re.search('charset=([-A-Za-z0-9]+)', content_type)
+
+    if charset_match:
+        encoding = charset_match.group(1)
+    else:
+        encoding = 'ISO-8859-1'
+
+    try:
+        return unicode(response_body, encoding=encoding)
+    except UnicodeDecodeError:
+        pass
+
+    try:
+        return unicode(response_body, encoding=encoding, errors='replace')
+    except TypeError:
+        return response_body
+
 
 def get_html(*args, **kwargs):
     return html.fromstring(get(*args, **kwargs))
