@@ -57,7 +57,11 @@ def dice(inp):
 
     for roll in groups:
         count, side = split_re.match(roll).groups()
-        count = int(count) if count not in " +-" else 1
+        if count in ['', ' ', '+', '-']:
+            count = int('%s1' % count)
+        else:
+            count = int(count)
+
         if side.upper() == "F":  # fudge dice are basically 1d3-2
             for fudge in nrolls(count, "F"):
                 if fudge == 1:
