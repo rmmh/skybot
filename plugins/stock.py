@@ -56,7 +56,7 @@ def stock(inp):
         'percent_change': 100 * change / (price - change),
         'symbol': quote['symbol'],
         'price': price,
-        'color': '5' if change < 0 else '3',
+        'color': '05' if change < 0 else '03',
         'high': float(fundamentals['high']),
         'low': float(fundamentals['low']),
         'average_volume': maybe('Volume', 'average_volume'),
