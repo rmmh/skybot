@@ -20,7 +20,7 @@ def munge(inp, munge_count=0):
     for n in range(len(inp)):
         rep = character_replacements.get(inp[n])
         if rep:
-            inp = inp[:n] + rep.decode('utf8') + inp[n + 1:]
+            inp = inp[:n] + rep + inp[n + 1:]
             reps += 1
             if reps == munge_count:
                 break
