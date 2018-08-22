@@ -32,19 +32,19 @@ jar = CookieJar()
 
 
 def get(*args, **kwargs):
-    return open(*args, **kwargs).read()
+    return open(*args, **kwargs).read().decode('utf-8')
 
 
 def get_html(*args, **kwargs):
-    return html.fromstring(get(*args, **kwargs))
+    return html.fromstring(open(*args, **kwargs).read())
 
 
 def get_xml(*args, **kwargs):
-    return etree.fromstring(get(*args, **kwargs))
+    return etree.fromstring(open(*args, **kwargs).read())
 
 
 def get_json(*args, **kwargs):
-    return json.loads(get(*args, **kwargs))
+    return json.loads(open(*args, **kwargs).read())
 
 
 def open(url, query_params=None, post_data=None,
