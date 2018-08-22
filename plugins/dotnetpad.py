@@ -12,8 +12,11 @@ def dotnetpad(lang, code):
     params = urllib.parse.urlencode({'language': lang, 'code': code})
 
     try:
-        result = http.get_json('https://dotnetpad.net/Skybot',
-                               post_data=params, get_method='POST')
+        result = http.get_json(
+            'https://dotnetpad.net/Skybot',
+            post_data=params.encode('utf-8'),
+            get_method='POST'
+        )
     except http.HTTPError:
         return 'error: unable to connect to dotnetpad'
 
