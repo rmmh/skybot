@@ -5,6 +5,31 @@ from urllib import quote
 
 from util import hook, http
 
+def format_ratio(ratio):
+    if ratio >= 100:
+        return '\x02\x0300,04%s\x03\x02 ' % ratio #bold and red background, white text
+    elif ratio >= 50:
+        return '\x02\x0300,07%s\x03\x02 ' % ratio #bold and orange background, white text
+    elif ratio >= 20:
+        return '\x02\x0301,08%s\x03\x02 ' % ratio #bold and yellow background, black text
+    elif ratio >= 10:
+        return '\x02\x0300,03%s\x03\x02 ' % ratio #bold and green background, white text
+    elif ratio >= 2:
+        return '\x02%s\x02 ' % ratio #bold
+    elif ratio > 1:
+        return '%s ' % ratio
+    else:
+        return ''
+
+def screen_scrape_reply_count(user, tweet_id):
+    web_url = 'https://twitter.com/%s/status/%s' % (user, tweet_id)
+    html = http.get_html(web_url)
+    span_id = 'profile-tweet-action-reply-count-aria-%s' % tweet_id
+    reply_count = html.xpath("//span[@id='%s']/parent::span/@data-tweet-stat-count" % span_id)[0]
+    return int(reply_count)
+
+def calculate_ratio(replies, retweets, faves):
+    return (2 * replies / (faves+retweets))
 
 @hook.api_key('twitter')
 @hook.command
@@ -83,8 +108,13 @@ def twitter(inp, api_key=None):
 
     time = strftime('%Y-%m-%d %H:%M:%S',
                     strptime(time, '%a %b %d %H:%M:%S +0000 %Y'))
+    
+    retweets = tweet["retweet_count"]
+    faves = tweet["favorite_count"]
+    replies = screen_scrape_reply_count(screen_name, tweet["id"])
+    ratio = calculate_ratio(replies, retweets, faves)
 
-    return "%s \x02%s\x02: %s" % (time, screen_name, text)
+    return "%s %s\x02%s\x02: %s" % (time, format_ratio(ratio), screen_name, text)
 
 
 @hook.api_key('twitter')
