@@ -16,7 +16,7 @@ def format_ratio(ratio):
         return '\x02\x0300,03%s\x03\x02 ' % ratio #bold and green background, white text
     elif ratio >= 2:
         return '\x02%s\x02 ' % ratio #bold
-    elif ratio > 1:
+    elif ratio >= 1:
         return '%s ' % ratio
     else:
         return ''
@@ -29,7 +29,7 @@ def screen_scrape_reply_count(user, tweet_id):
     return int(reply_count)
 
 def calculate_ratio(replies, retweets, faves):
-    return (2 * replies / (faves+retweets))
+    return (2.0 * replies / (faves+retweets))
 
 @hook.api_key('twitter')
 @hook.command
