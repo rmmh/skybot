@@ -29,7 +29,7 @@ def screen_scrape_reply_count(user, tweet_id):
     return int(reply_count)
 
 def calculate_ratio(replies, retweets, faves):
-    return (2.0 * replies / (faves+retweets))
+    return (2.0 * replies) / (faves + retweets)
 
 @hook.api_key('twitter')
 @hook.command
