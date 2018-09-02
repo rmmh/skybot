@@ -1,32 +1,67 @@
-# searches scene releases using orlydb
+from time import gmtime
+import re
 
 from util import hook, http
 
 
-@hook.command
-def predb(inp):
-    '.predb <query> -- searches scene releases using orlydb.com'
+PRE_DB_SEARCH_URL = 'https://pr3.us/search.php'
+PRE_DB_RE_NOT_FOUND = re.compile('^Nothing found for: .+$')
+
+
+def get_predb_release(release_name):
+    timestamp = gmtime()
 
     try:
-        h = http.get_html("http://orlydb.com/", q=inp)
-    except HTTPError:
-        return 'orlydb seems to be down'
+        # Without accept headers, the underlying
+        # site falls apart for some reason
+        h = http.get_html(
+            PRE_DB_SEARCH_URL,
+            search=release_name,
+            ts=timestamp,
+            pretimezone=0,
+            timezone=0,
+            headers={
+                'Accept': '*/*',
+                'Accept-Language': 'en-US,en;q=0.5'
+            }
+        )
+    except http.HTTPError:
+        return None
 
-    results = h.xpath("//div[@id='releases']/div/span[@class='release']/..")
+    results = h.xpath("//tr")
 
     if not results:
-        return "zero results"
+        return None
 
-    result = results[0]
+    first_result = results[0]
 
-    date, time = result.xpath("span[@class='timestamp']/text()")[0].split()
-    section, = result.xpath("span[@class='section']//text()")
-    name, = result.xpath("span[@class='release']/text()")
+    if PRE_DB_RE_NOT_FOUND.match(first_result.text_content()):
+        return None
 
-    size = result.xpath("span[@class='inforight']//text()")
-    if size:
-        size = ' :: ' + size[0].split()[0]
-    else:
-        size = ''
+    section_field, name_field, _, size_field, ts_field, _ = \
+        first_result.xpath('./td')
 
-    return '%s - %s - %s%s' % (date, section, name, size)
+    date, time = ts_field.text_content().split()
+
+    return {
+        'date': date,
+        'time': time,
+        'section': section_field.text_content(),
+        'name': name_field.text_content().strip(),
+        'size': size_field.text_content()
+    }
+
+
+@hook.command
+def predb(inp):
+    """.predb <query> -- searches scene releases"""
+
+    release = get_predb_release(inp)
+
+    if not release:
+        return 'zero results'
+
+    if release['size']:
+        release['size'] = ' - %s' % release['size']
+
+    return '{date} - {section} - {name}{size}'.format(**release)
