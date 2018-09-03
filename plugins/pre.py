@@ -38,8 +38,8 @@ def get_predb_release(release_name):
     if PRE_DB_RE_NOT_FOUND.match(first_result.text_content()):
         return None
 
-    section_field, name_field, _, size_field, ts_field, _ = \
-        first_result.xpath('./td')
+    section_field, name_field, _, size_field, ts_field = \
+        first_result.xpath('./td')[:5]
 
     date, time = ts_field.text_content().split()
 
