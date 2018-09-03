@@ -4,6 +4,7 @@ simulates dicerolls
 """
 import re
 import random
+import unittest
 
 from util import hook
 
@@ -57,7 +58,11 @@ def dice(inp):
 
     for roll in groups:
         count, side = split_re.match(roll).groups()
-        count = int(count) if count not in " +-" else 1
+        if count in ['', ' ', '+', '-']:
+            count = int('%s1' % count)
+        else:
+            count = int(count)
+
         if side.upper() == "F":  # fudge dice are basically 1d3-2
             for fudge in nrolls(count, "F"):
                 if fudge == 1:
@@ -87,3 +92,16 @@ def dice(inp):
         return "%s: %d (%s=%s)" % (desc.strip(),  total, inp, ", ".join(rolls))
     else:
         return "%d (%s=%s)" % (total, inp, ", ".join(rolls))
+
+
+class DiceTest(unittest.TestCase):
+    def test_complex_roll_with_subtraction(self):
+        actual = dice('2d20-d5+4')
+
+        match = re.match('(?P<result>\d+) \(2d20-d5\+4=(?P<a>\d+), (?P<b>\d+), -(?P<c>\d+)\)', actual)
+
+        assert match is not None
+
+        expected_result = int(match.group('a')) + int(match.group('b')) - int(match.group('c')) + 4
+
+        assert expected_result == int(match.group('result'))
