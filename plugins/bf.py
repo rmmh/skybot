@@ -83,37 +83,3 @@ def bf(inp, max_steps=1000000, buffer_size=5000):
         return 'no output'
 
     return stripped_output[:430].decode('utf8', 'ignore')
-
-
-class BFTest(unittest.TestCase):
-    def test_hello(self):
-        assert bf('--[>--->->->++>-<<<<<-------]>--.>---------.>--..+++.>---'
-                  '-.>+++++++++.<<.+++.------.<-.>>+.') == 'Hello world!'
-
-    def test_unbalanced(self):
-        assert 'unbalanced' in bf('[[++]]]')
-        assert 'unbalanced' in bf('[[[++]]')
-
-    def test_comment(self):
-        assert bf('[this is a comment!]++++++[>+++++++<-]>.') == '*'
-
-    def test_unprintable(self):
-        assert bf('+.') == 'no printable output'
-
-    def test_empty(self):
-        assert bf('+++[-]') == 'no output'
-
-    def test_exceeded(self):
-        assert bf('+[>,[-]<]', 1000) == 'no output [exceeded 1000 iterations]'
-
-    def test_inf_mem(self):
-        assert 'no output [exceeded 1000 iterations]' == \
-            bf('+[>[.-]+]', 1000, buffer_size=10)
-
-    def test_left_wrap(self):
-        # eventually, wrap around and hit ourselves
-        assert 'aaaa' in bf('+[<[-' + '+' * ord('a') + '.[-]]+]',
-                            2000, buffer_size=5)
-
-    def test_too_much_output(self):
-        assert 'a' * 430 == bf('+' * ord('a') + '[.]')
