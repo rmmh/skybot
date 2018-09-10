@@ -61,28 +61,6 @@ class Input(dict):
         self[key] = value
 
 
-def run(func, input):
-    args = func._args
-
-    if 'inp' not in input:
-        input.inp = input.paraml
-
-    if args:
-        if 'db' in args and 'db' not in input:
-            input.db = get_db_connection(input.conn)
-        if 'input' in args:
-            input.input = input
-        if 0 in args:
-            out = func(input.inp, **input)
-        else:
-            kw = dict((key, input[key]) for key in args if key in input)
-            out = func(input.inp, **kw)
-    else:
-        out = func(input.inp)
-    if out is not None:
-        input.reply(unicode(out))
-
-
 def do_sieve(sieve, bot, input, func, type, args):
     try:
         return sieve(bot, input, func, type, args)
@@ -93,13 +71,31 @@ def do_sieve(sieve, bot, input, func, type, args):
 
 
 class Handler(object):
-
-    '''Runs plugins in their own threads (ensures order)'''
-
     def __init__(self, func):
         self.func = func
         self.input_queue = Queue.Queue()
         thread.start_new_thread(self.start, ())
+
+    def run(self, func, input):
+        args = func._args
+
+        if 'inp' not in input:
+            input.inp = input.paraml
+
+        if args:
+            if 'db' in args and 'db' not in input:
+                input.db = get_db_connection(input.conn)
+            if 'input' in args:
+                input.input = input
+            if 0 in args:
+                out = func(input.inp, **input)
+            else:
+                kw = dict((key, input[key]) for key in args if key in input)
+                out = func(input.inp, **kw)
+        else:
+            out = func(input.inp)
+        if out is not None:
+            input.reply(unicode(out))
 
     def start(self):
         uses_db = 'db' in self.func._args
@@ -118,7 +114,7 @@ class Handler(object):
                 input.db = db
 
             try:
-                run(self.func, input)
+                self.run(self.func, input)
             except:
                 traceback.print_exc()
 
@@ -147,10 +143,7 @@ def dispatch(input, kind, func, args, autohelp=False):
             return
         input.api_key = key
 
-    if func._thread:
-        bot.threads[func].put(input)
-    else:
-        thread.start_new_thread(run, (func, input))
+    bot.threads[func].put(input)
 
 
 def match_command(command):

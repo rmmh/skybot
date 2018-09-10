@@ -103,8 +103,7 @@ def reload(init=False):
 
             for obj in namespace.itervalues():
                 if hasattr(obj, '_hook'):  # check for magic
-                    if obj._thread:
-                        bot.threads[obj] = Handler(obj)
+                    bot.threads[obj] = Handler(obj)
 
                     for type, data in obj._hook:
                         bot.plugs[type] += [data]

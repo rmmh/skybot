@@ -81,7 +81,6 @@ def get_log_fd(dir, server, chan):
     return fd
 
 
-@hook.singlethread
 @hook.event('*')
 def log(paraml, input=None, bot=None):
     timestamp = gmtime(timestamp_format)

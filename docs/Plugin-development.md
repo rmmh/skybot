@@ -42,11 +42,6 @@ The hook type is assigned to plugin functions using decorators found
 in `util/hook.py`.
 
 
-There is also a secondary hook decorator: `@hook.singlethread`
-
-It indicates that the function should run in its own thread. Note that, in
-that case, you can't use the existing database connection object.
-
 ### Shared arguments ###
 
 > This section has to be verified.

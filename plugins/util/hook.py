@@ -34,9 +34,6 @@ def _hook_add(func, add, name=''):
             args.append(0)  # means kwargs present
         func._args = args
 
-    if not hasattr(func, '_thread'):  # does function run in its own thread?
-        func._thread = False
-
 
 def sieve(func):
     if func.func_code.co_argcount != 5:
@@ -78,11 +75,6 @@ def event(arg=None, **kwargs):
         if arg is not None:
             args['events'] = arg.split()
         return event_wrapper
-
-
-def singlethread(func):
-    func._thread = True
-    return func
 
 
 def api_key(key):
