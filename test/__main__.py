@@ -13,4 +13,7 @@ if __name__ == '__main__':
     sys.path.append(path.join(project_root_directory))
 
     discovered_tests = TestLoader().discover(path.dirname(__file__))
-    TextTestRunner().run(discovered_tests)
+    run_result = TextTestRunner().run(discovered_tests)
+
+    if not run_result.wasSuccessful():
+        sys.exit(1)
