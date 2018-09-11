@@ -1,4 +1,5 @@
 from os import path
+from json import loads
 import inspect
 
 
@@ -10,6 +11,10 @@ def get_fixture_file(testcase, file):
 
     with open(path.join(dir_path, test_name, file)) as f:
         return f.read()
+
+
+def get_fixture_file_data(testcase, file):
+    return loads(get_fixture_file(testcase, file))
 
 
 def execute_skybot_regex(command_method, inp, **kwargs):

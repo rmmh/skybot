@@ -2,14 +2,14 @@ from unittest import TestCase
 
 from mock import patch
 
-from helpers import get_fixture_file, execute_skybot_regex
+from helpers import get_fixture_file_data, execute_skybot_regex
 from hackernews import hackernews
 
 
 class TestHackernews(TestCase):
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_story(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, '9943431.json')
+        mock_http_get.return_value = get_fixture_file_data(self, '9943431.json')
 
         expected = u'Can Desalination Counter the Drought? by cwal37 ' \
                    u'with 51 points and 94 comments ' \
@@ -21,9 +21,9 @@ class TestHackernews(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_comment(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, '9943987.json')
+        mock_http_get.return_value = get_fixture_file_data(self, '9943987.json')
 
         expected = u'"Yes, they must have meant kilowatt hours. Was ' \
                    u'there no editor?" -- oaktowner'
@@ -33,9 +33,9 @@ class TestHackernews(TestCase):
 
         assert expected == actual
 
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_comment_encoding(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, '9943897.json')
+        mock_http_get.return_value = get_fixture_file_data(self, '9943897.json')
 
         expected = u'"> All told, it takes about 3460 kilowatts per ' \
                    u'acre-foot to pump water from Northern California ' \

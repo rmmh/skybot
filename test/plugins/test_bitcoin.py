@@ -1,14 +1,14 @@
 from unittest import TestCase
 from mock import patch, Mock
 
-from helpers import get_fixture_file
+from helpers import get_fixture_file_data
 from bitcoin import bitcoin, ethereum
 
 
 class TestBitcoin(TestCase):
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_bitcoin(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, 'bitcoin.json')
+        mock_http_get.return_value = get_fixture_file_data(self, 'bitcoin.json')
 
         say_mock = Mock()
 
@@ -19,9 +19,9 @@ class TestBitcoin(TestCase):
                    '10,329.67 BTC'
         say_mock.assert_called_once_with(expected)
 
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_ethereum(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, 'ethereum.json')
+        mock_http_get.return_value = get_fixture_file_data(self, 'ethereum.json')
 
         say_mock = Mock()
 
