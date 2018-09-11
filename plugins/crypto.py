@@ -8,7 +8,11 @@ API_FIELD_TRANSLATION = {
     'TOSYMBOL': 'currency',
     'PRICE': 'last',
     'HIGH24HOUR': 'high',
-    'LOW24HOUR': 'low'
+    'LOW24HOUR': 'low',
+    'MKTCAP': 'market_cap_currency',
+    'TOTALVOLUME24H': 'volume_coin',
+    'TOTALVOLUME24HTO': 'volume_currency',
+    'SUPPLY': 'supply_currency',
 }
 
 
@@ -61,9 +65,9 @@ def get_coin_price(coin, price_basis):
     coin_price = {API_FIELD_TRANSLATION[k]: v for k, v in raw_coin_price.items() if k in API_FIELD_TRANSLATION}
 
     if coin_price['currency'] in CURRENCY_SYMBOLS:
-        coin_price['symbol'] = CURRENCY_SYMBOLS[coin_price['currency']]
+        coin_price['currency_symbol'] = CURRENCY_SYMBOLS[coin_price['currency']]
     else:
-        coin_price['symbol'] = '%s ' % coin_price['currency']
+        coin_price['currency_symbol'] = '%s ' % coin_price['currency']
 
     return coin_price
 
@@ -86,9 +90,12 @@ def crypto(inp):
         ).format(coin=coin, currency=currency)
 
     return (
-        u"{coin:s}/{currency:s}: \x0307{symbol:s}{last:.2f}\x0f - "
-        u"High: \x0307{symbol:s}{high:.2f}\x0f - "
-        u"Low: \x0307{symbol:s}{low:.2f}\x0f"
+        u"{coin:s}/{currency:s}: \x0307{currency_symbol:s}{last:.2f}\x0f - "
+        u"High: \x0307{currency_symbol:s}{high:.2f}\x0f - "
+        u"Low: \x0307{currency_symbol:s}{low:.2f}\x0f - "
+        u"Volume: \x0307{currency_symbol:s}{volume_currency:.2f}\x0f - "
+        u"Total Supply: \x0307{currency_symbol:s}{supply_currency:.2f}\x0f - "
+        u"Market Cap: \x0307{currency_symbol:s}{market_cap_currency:.2f}\x0f"
     ).format(**response)
 
 @hook.command(autohelp=False)
