@@ -84,4 +84,4 @@ def bf(inp, max_steps=1000000, buffer_size=5000):
             return 'no printable output'
         return 'no output'
 
-    return stripped_output[:430].decode('utf8', 'ignore')
+    return stripped_output[:430]
