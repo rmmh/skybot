@@ -1,6 +1,7 @@
 .*.swp
 *.pyc
 *.orig
+.tox/
 persist
 config
 config.json
