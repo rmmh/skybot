@@ -90,3 +90,13 @@ def crypto(inp):
         u"High: \x0307{symbol:s}{high:.2f}\x0f - "
         u"Low: \x0307{symbol:s}{low:.2f}\x0f"
     ).format(**response)
+
+@hook.command(autohelp=False)
+def bitcoin(inp):
+    """.bitcoin -- gets current exchange rate for bitcoin to USD"""
+    return crypto('BTC USD')
+
+@hook.command(autohelp=False)
+def ethereum(inp):
+    """.ethereum -- gets current exchange rate for ethereum to USD"""
+    return crypto('ETH USD')
