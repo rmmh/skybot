@@ -52,6 +52,8 @@ def config():
             bot.config = json.load(open(find_config()))
             bot._config_mtime = config_mtime
             for name, conf in bot.config['connections'].iteritems():
+                conf.setdefault('censored_strings', bot.config.get('censored_strings', []))
+
                 if name in bot.conns:
                     bot.conns[name].set_conf(conf)
                 else:

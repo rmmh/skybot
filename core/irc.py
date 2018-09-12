@@ -19,16 +19,21 @@ def decode(txt):
             return txt.decode(codec)
         except UnicodeDecodeError:
             continue
+
     return txt.decode('utf-8', 'ignore')
 
 
-def censor(text):
-    text = text.replace('\n', '').replace('\r', '')
-    replacement = '[censored]'
-    if 'censored_strings' in bot.config:
-        words = map(re.escape, bot.config['censored_strings'])
-        regex = re.compile('(%s)' % "|".join(words))
-        text = regex.sub(replacement, text)
+def censor(text, censored_strings = None):
+    text = re.sub("[\n\r]+", " ", text)
+
+    if not censored_strings:
+        return text
+
+    words = map(re.escape, censored_strings)
+    pattern = "(%s)" % "|".join(words)
+
+    text = re.sub(pattern, "[censored]", text)
+
     return text
 
 
@@ -162,8 +167,6 @@ class IRC(object):
     def __init__(self, conf):
         self.conn = None
 
-        self.censored_strings = []
-
         self.nick = DEFAULT_NAME
         self.user = DEFAULT_NAME
         self.realname = DEFAULT_REALNAME
@@ -179,6 +182,7 @@ class IRC(object):
 
         self.channels = []
         self.admins = []
+        self.censored_strings = []
 
         self.out = Queue.Queue()  # responses from the server are placed here
         # format: [rawline, prefix, command, params,
@@ -191,8 +195,6 @@ class IRC(object):
         thread.start_new_thread(self.parse_loop, ())
 
     def set_conf(self, conf):
-        self.censored_strings = conf.get('censored_strings', [])
-
         self.nick = conf.get('nick', DEFAULT_NAME)
         self.user = conf.get('user', DEFAULT_NAME)
         self.realname = conf.get('realname', DEFAULT_REALNAME)
@@ -208,6 +210,7 @@ class IRC(object):
 
         self.channels = conf.get('channels', [])
         self.admins = conf.get('admins', [])
+        self.censored_strings = conf.get('censored_strings', [])
 
         if self.conn is not None:
             self.join_channels()
@@ -262,7 +265,10 @@ class IRC(object):
     def cmd(self, command, params=None):
         if params:
             params[-1] = ':' + params[-1]
-            self.send(command + ' ' + ' '.join(map(censor, params)))
+
+            params = [censor(p, self.censored_strings) for p in params]
+
+            self.send(command + ' ' + ' '.join(params))
         else:
             self.send(command)
 
