@@ -147,7 +147,14 @@ def dispatch(input, kind, func, args, autohelp=False):
             return
         input.api_key = key
 
-    bot.threads[func].put(input)
+    # There are some edge cases where we no longer will have an underlying thread
+    # at this point because of reloads occurring.  It's not likely, but given that
+    # the case would take down the bot, let's just protect against it and lose the
+    # message.
+
+    # TODO: Create a more fault tolerant way of passing messages to threads?
+    if func in bot.threads:
+        bot.threads[func].put(input)
 
 
 def match_command(command):
