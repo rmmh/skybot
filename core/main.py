@@ -11,6 +11,8 @@ class Input(dict):
     def __init__(self, conn, raw, prefix, command, params,
                  nick, user, host, paraml, msg):
 
+        server = conn.server_host
+
         chan = paraml[0].lower()
         if chan == conn.nick.lower():  # is a PM
             chan = nick
@@ -48,7 +50,7 @@ class Input(dict):
 
         dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
                       params=params, nick=nick, user=user, host=host,
-                      paraml=paraml, msg=msg, server=conn.server, chan=chan,
+                      paraml=paraml, msg=msg, server=server, chan=chan,
                       notice=notice, say=say, reply=reply, pm=pm, bot=bot,
                       kick=kick, ban=ban, unban=unban, me=me,
                       set_nick=set_nick, lastparam=paraml[-1])
