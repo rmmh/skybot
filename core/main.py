@@ -1,9 +1,6 @@
 import re
-import thread
+from threading import Thread
 import traceback
-
-
-thread.stack_size(1024 * 512)  # reduce vm size
 
 
 class Input(dict):
@@ -70,59 +67,66 @@ def do_sieve(sieve, bot, input, func, type, args):
         return None
 
 
-class Handler(object):
+class Handler(Thread):
     def __init__(self, func):
-        self.func = func
-        self.input_queue = Queue.Queue()
-        thread.start_new_thread(self.start, ())
+        super(Handler, self).__init__()
 
-    def run(self, func, input):
-        args = func._args
+        # Handlers do not need to be cleaned up in any
+        # special way, so mark them as "daemon"
+        self.daemon = True
 
-        if 'inp' not in input:
-            input.inp = input.paraml
+        self._func = func
+        self._input_queue = Queue.Queue()
+        self._db_connections = {}
+
+    def _call_func(self, obj):
+        func = self._func
+        args = self._func._args
+
+        if 'inp' not in obj:
+            obj.inp = obj.paraml
 
         if args:
-            if 'db' in args and 'db' not in input:
-                input.db = get_db_connection(input.conn)
+            if 'db' in args:
+                obj.db = self._get_db_connection(obj.conn)
+
             if 'input' in args:
-                input.input = input
+                obj.input = obj
+
             if 0 in args:
-                out = func(input.inp, **input)
+                out = func(obj.inp, **obj)
             else:
-                kw = dict((key, input[key]) for key in args if key in input)
-                out = func(input.inp, **kw)
+                kw = dict((key, obj[key]) for key in args if key in obj)
+                out = func(obj.inp, **kw)
         else:
-            out = func(input.inp)
+            out = func(obj.inp)
+
         if out is not None:
-            input.reply(unicode(out))
+            obj.reply(unicode(out))
 
-    def start(self):
-        uses_db = 'db' in self.func._args
-        db_conns = {}
+    def _get_db_connection(self, connection):
+        if connection not in self._db_connections:
+            self._db_connections[connection] = bot.get_db_connection(connection)
+
+        return self._db_connections.get(connection)
+
+    def run(self):
         while True:
-            input = self.input_queue.get()
+            next_input = self._input_queue.get()
 
-            if input == StopIteration:
+            if next_input == StopIteration:
                 break
 
-            if uses_db:
-                db = db_conns.get(input.conn)
-                if db is None:
-                    db = bot.get_db_connection(input.conn)
-                    db_conns[input.conn] = db
-                input.db = db
-
             try:
-                self.run(self.func, input)
-            except:
+                self._call_func(next_input)
+            except ValueError:
                 traceback.print_exc()
 
     def stop(self):
-        self.input_queue.put(StopIteration)
+        self._input_queue.put(StopIteration)
 
     def put(self, value):
-        self.input_queue.put(value)
+        self._input_queue.put(value)
 
 
 def dispatch(input, kind, func, args, autohelp=False):
