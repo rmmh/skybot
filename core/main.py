@@ -79,6 +79,9 @@ class Handler(Thread):
         self._input_queue = Queue.Queue()
         self._db_connections = {}
 
+    def __del__(self):
+        self.stop()
+
     def _call_func(self, obj):
         func = self._func
         args = self._func._args
