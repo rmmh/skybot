@@ -44,8 +44,8 @@ Optional:
 * nickserv_name: defaults to "nickserv" (standard on most networks)
 * nickserv_command: defaults to "IDENTIFY %s" (interpolated with password)
 * ssl: defaults to false. Set to true to connect to the server using SSL
-* ignore_cert: defaults to true. Set to false to validate the certificate
-  that the remote host uses for the SSL connection.
+* ignore_cert: defaults to `false`. Set to `true` to disable validation of certificates
+  from servers - thus weakening the security of your connection.
 
 
 ## Examples ##
