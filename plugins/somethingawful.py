@@ -1,61 +1,339 @@
+from urllib import urlencode
+import re
+
 from util import hook, http
 
 
-thread_re = r"(?i)forums\.somethingawful\.com/\S+threadid=(\d+)"
-showthread = "http://forums.somethingawful.com/showthread.php?noseen=1"
+SA_THREAD_RE  = r"(?i)forums\.somethingawful\.com/\S*\?(?:\S+&)?threadid=(\d+)"
+SA_PROFILE_RE = r"(?i)forums\.somethingawful\.com/member.php\?\S+(userid|username)=([^&]+)"
+
+LOGIN_URL = "https://forums.somethingawful.com/account.php"
+THREAD_URL = "https://forums.somethingawful.com/showthread.php"
+PROFILE_URL = "https://forums.somethingawful.com/member.php"
+
+MATCH_OBJECT = type(re.match(r"", "")) # Is there a nicer way to get this??
+
+GENDER_UNICODE = {
+    "male": u"\u2642",
+    "female": u"\u2640",
+    "porpoise": u"\uE520"
+}
+
+FORUM_ABBREVS = {
+    "Serious Hardware / Software Crap": "SHSC",
+    "The Cavern of COBOL": "CoC",
+    "General Bullshit": "GBS",
+    "Haus of Tech Support": "HoTS"
+}
 
 
 def login(user, password):
+    """
+    Authenticate against SomethingAwful, both storing that authentication in
+    the global cookiejar and returning the relevant cookies
+
+    :param user: your awful username for somethingawful dot com
+    :param password: your awful password for somethingawful dot com
+    :return: the authentication cookies for somethingawful dot com
+    """
+
+    get_sa_cookies = lambda jar: [
+        c for c in jar
+        if c.domain.endswith("forums.somethingawful.com") and (c.name == "bbuserid" or c.name == "bbpassword")
+    ]
+
     http.jar.clear_expired_cookies()
-    if any(cookie.domain == 'forums.somethingawful.com' and
-           cookie.name == 'bbuserid' for cookie in http.jar):
-        if any(cookie.domain == 'forums.somethingawful.com' and
-               cookie.name == 'bbpassword' for cookie in http.jar):
-            return
-        assert("malformed cookie jar")
-    user = http.quote(user)
-    password = http.quote(password)
-    http.get("http://forums.somethingawful.com/account.php", cookies=True,
-             post_data="action=login&username=%s&password=%s" % (user, password))
+
+    sa_cookies = get_sa_cookies(http.jar)
+
+    if len(sa_cookies) == 2:
+        return sa_cookies
+
+    http.get(
+        LOGIN_URL,
+        cookies=True,
+        post_data=urlencode({
+            "action": "login",
+            "username": user,
+            "password": password
+        })
+    )
+
+    sa_cookies = get_sa_cookies(http.jar)
+
+    if len(sa_cookies) < 2:
+        return None
+
+    return sa_cookies
 
 
-@hook.api_key('somethingawful')
-@hook.regex(thread_re)
-def forum_link(inp, api_key=None):
-    if api_key is None or 'user' not in api_key or 'password' not in api_key:
+def parse_profile_html(document):
+    """
+    Parse an LXML document to retrieve the profile data
+
+    :param document: the LXML document to parse
+    :return: a dictionary representing the profile
+    """
+    username_elements = document.xpath("//*[@class='author']")
+    registered_elements = document.xpath("//*[@class='registered']")
+    avatar_elements = document.xpath("//*[@class='title']//img")
+    info_elements = document.xpath("//*[@class='info']")
+    userid_elements = document.xpath("//*[@name='userid']")
+
+    profile = {}
+
+    if userid_elements:
+        profile["id"] = userid_elements[0].attrib["value"]
+
+    if username_elements:
+        profile["username"] = username_elements[0].text_content()
+
+    if registered_elements:
+        profile["registered"] = registered_elements[0].text_content()
+
+    if avatar_elements:
+        profile["avatar"] = avatar_elements[0].attrib["src"] if avatar_elements[0].attrib["src"] else ""
+        profile["is_newbie"] = profile["avatar"].endswith("/images/newbie.gif")
+
+    if info_elements:
+        info_text = info_elements[0].text_content()
+
+        post_count = re.search(r"Post Count(\d+)", info_text)
+        if post_count:
+            profile["post_count"] = post_count.group(1)
+
+        post_rate = re.search(r"Post Rate([\d\.]+)", info_text)
+        if post_rate:
+            profile["post_rate"] = post_rate.group(1)
+
+        last_post = re.search(r"Last Post(.+)", info_text)
+        if last_post:
+            profile["last_post"] = last_post.group(1)
+
+        gender = re.search(r"claims to be a ([-a-z0-9 ]+)", info_text)
+        if gender:
+            profile["gender"] = gender.group(1).lower()
+
+    if "id" in profile:
+        profile["profile_link"] = http.prepare_url(PROFILE_URL, { "action": "getinfo", "userid": profile["id"]})
+    elif "username" in profile:
+        profile["profile_link"] = http.prepare_url(PROFILE_URL, {"action": "getinfo", "username": profile["username"]})
+
+    return profile
+
+
+def parse_thread_html(document):
+    """
+    Parse an LXML document to retrieve the thread data
+
+    :param document: the LXML document to parse
+    :return: a dictionary representing the thread
+    """
+    breadcrumbs_elements = document.xpath("//div[@class='breadcrumbs']//a")
+    author_elements = document.xpath("//dt[contains(@class, author)]")
+    last_page_elements = document.xpath("//a[@title='Last page']")
+
+    if not breadcrumbs_elements:
         return
 
-    login(api_key['user'], api_key['password'])
-
-    thread = http.get_html(showthread, threadid=inp.group(1), perpage='1',
-                           cookies=True)
-
-    breadcrumbs = thread.xpath('//div[@class="breadcrumbs"]//a/text()')
-
-    if not breadcrumbs:
+    if not author_elements:
         return
+
+    if len(breadcrumbs_elements) < 2:
+        return
+
+    thread_id = int(breadcrumbs_elements[-1].attrib['href'].rsplit('=', 2)[1])
+
+    breadcrumbs = [ e.text_content() for e in breadcrumbs_elements ]
 
     thread_title = breadcrumbs[-1]
-    forum_title = forum_abbrevs.get(breadcrumbs[-2], breadcrumbs[-2])
+    forum_title = breadcrumbs[-2]
 
-    poster = thread.xpath('//dt[contains(@class, author)]//text()')[0]
-
-    # 1 post per page => n_pages = n_posts
-    num_posts = thread.xpath('//a[@title="Last page"]/@href')
-
-    if not num_posts:
-        num_posts = 1
+    if author_elements:
+        author = author_elements[0].text_content().strip()
     else:
-        num_posts = int(num_posts[0].rsplit('=', 1)[1])
+        author = 'Unknown Author'
 
-    return '\x02%s\x02 > \x02%s\x02 by \x02%s\x02, %s post%s' % (
-        forum_title, thread_title, poster, num_posts,
-        's' if num_posts > 1 else '')
+    # Handle GBS / FYAD / E/N / etc
+    if ':' in forum_title:
+        forum_title = forum_title.split(':')[0].strip()
+
+    if forum_title in FORUM_ABBREVS:
+        forum_title = FORUM_ABBREVS[forum_title]
+
+    if last_page_elements:
+        post_count = int(last_page_elements[0].text_content().split(" ")[0])
+    else:
+        post_count = 1
+
+    return {
+        "id": thread_id,
+        "breadcrumbs": breadcrumbs,
+        "forum_title": forum_title,
+        "thread_title": thread_title,
+        "author": author,
+        "post_count": post_count,
+        "thread_link": http.prepare_url(THREAD_URL, {'threadid': thread_id})
+    }
 
 
-forum_abbrevs = {
-    'Serious Hardware / Software Crap': 'SHSC',
-    'The Cavern of COBOL': 'CoC',
-    'General Bullshit': 'GBS',
-    'Haus of Tech Support': 'HoTS'
-}
+def get_thread_by_id(credentials, id):
+    """
+    Get thread data via the ID of the thread
+
+    :param credentials: the credentials to lookup with
+    :param id: the ID to look up
+    :return: a dictionary representing the thread
+    """
+    if not login(credentials["user"], credentials["password"]):
+        raise ValueError('invalid login')
+
+    thread_document = http.get_html(
+        THREAD_URL,
+        cookies=True,
+        query_params={
+            "noseen": 1,
+            "threadid": id,
+            "perpage": 1
+        }
+    )
+
+    return parse_thread_html(thread_document)
+
+
+def get_profile_by_id(credentials, id):
+    """
+    Get profile data via the ID of a user
+
+    :param credentials: the credentials to lookup with
+    :param id: the ID to look up
+    :return: a dictionary representing a profile
+    """
+    if not login(credentials["user"], credentials["password"]):
+        raise ValueError('invalid login')
+
+    profile_document = http.get_html(
+        PROFILE_URL,
+        cookies=True,
+        query_params={
+            "action": "getinfo",
+            "userid": id
+        }
+    )
+
+    return parse_profile_html(profile_document)
+
+
+def get_profile_by_username(credentials, username):
+    """
+    Get profile data via the username of a user
+
+    :param credentials: the credentials to lookup with
+    :param username: the username to look up
+    :return: a dictionary representing a profile
+    """
+    if not login(credentials["user"], credentials["password"]):
+        raise ValueError('invalid login')
+
+    profile_document = http.get_html(
+        PROFILE_URL,
+        cookies=True,
+        query_params={
+            "action": "getinfo",
+            "username": username
+        }
+    )
+
+    return parse_profile_html(profile_document)
+
+
+def format_profile_response(profile, show_link=False):
+    """
+    Format a profile object into a response for sending out via IRC reply.
+
+    :param profile: a dictionary with profile data from parse_profile_html
+    :param show_link: whether or not to show the link to the profile
+    :return: a human-readable string representation of the profile
+    """
+    if not profile:
+        return "profile not found"
+
+    if "gender" in profile and profile["gender"] in GENDER_UNICODE:
+        profile["gender_symbol"] = GENDER_UNICODE[profile["gender"]]
+    else:
+        profile["gender_symbol"] = "?"
+
+    if show_link:
+        return (
+            u"\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
+            u"last post \x02{last_post}\x02 - {post_rate} posts per day - {profile_link}"
+        ).format(**profile)
+    else:
+        return (
+            u"\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
+            u"last post \x02{last_post}\x02 - {post_rate} posts per day"
+        ).format(**profile)
+
+@hook.api_key("somethingawful")
+@hook.command("profile")
+def profile_username(inp, api_key=None):
+    """.profile <username> - get the SomethingAwful profile for a user via their username"""
+    if api_key is None or "user" not in api_key or "password" not in api_key:
+        return
+
+    profile = get_profile_by_username(api_key, inp)
+
+    return format_profile_response(profile, show_link=True)
+
+
+@hook.api_key("somethingawful")
+@hook.regex(SA_PROFILE_RE)
+def profile_link(inp, api_key=None):
+    if api_key is None or "user" not in api_key or "password" not in api_key:
+        return
+
+    if not isinstance(inp, MATCH_OBJECT):
+        inp = re.search(SA_PROFILE_RE, inp)
+
+    if not inp:
+        return
+
+    profile_lookup_type = inp.group(1).lower()
+    profile_lookup_value = inp.group(2)
+
+    profile = None
+
+    if profile_lookup_type == "userid":
+        profile = get_profile_by_id(api_key, profile_lookup_value)
+    elif profile_lookup_type == "username":
+        profile = get_profile_by_username(api_key, profile_lookup_value)
+
+    return format_profile_response(profile)
+
+
+@hook.api_key("somethingawful")
+@hook.regex(SA_THREAD_RE)
+def thread_link(inp, api_key=None):
+    if api_key is None or "user" not in api_key or "password" not in api_key:
+        return
+
+    if not isinstance(inp, MATCH_OBJECT):
+        inp = re.search(SA_THREAD_RE, inp)
+
+    if not inp:
+        return
+
+    thread = get_thread_by_id(api_key, inp.group(1))
+
+    if not thread:
+        return
+
+    if len(thread['thread_title']) > 100:
+        thread['thread_title'] = thread['thread_title'][0:97] + u'\u2026'
+
+    thread['post_count_word'] = 'posts' if thread['post_count'] > 1 else 'post'
+
+    return (
+        u"\x02{forum_title}\x02 > \x02{thread_title}\x02 by \x02{author}\x02, "
+        u"\x02{post_count}\x02 {post_count_word}"
+    ).format(**thread)
