@@ -1,10 +1,7 @@
 from __future__ import unicode_literals
-from future import standard_library
-standard_library.install_aliases()
 
 import re
 
-from urllib.parse import urlencode
 from util import hook, http
 
 
@@ -46,24 +43,16 @@ def login(user, password):
         if c.domain.endswith("forums.somethingawful.com") and (c.name == "bbuserid" or c.name == "bbpassword")
     ]
 
-    http.jar.clear_expired_cookies()
-
-    sa_cookies = get_sa_cookies(http.jar)
+    http.clear_expired_cookies()
+    sa_cookies = get_sa_cookies(http.get_cookie_jar())
 
     if len(sa_cookies) == 2:
         return sa_cookies
 
-    http.get(
-        LOGIN_URL,
-        cookies=True,
-        post_data=urlencode({
-            "action": "login",
-            "username": user,
-            "password": password
-        })
-    )
+    post_data = {"action": "login", "username": user, "password": password}
+    http.get(LOGIN_URL, cookies=True, post_data=post_data)
 
-    sa_cookies = get_sa_cookies(http.jar)
+    sa_cookies = get_sa_cookies(http.get_cookie_jar())
 
     if len(sa_cookies) < 2:
         return None

@@ -67,6 +67,10 @@ def open(url, query_params=None, post_data=None,
 
     url = prepare_url(url, query_params)
 
+    if post_data and isinstance(post_data, collections.Mapping):
+        post_data = urllib.parse.urlencode(post_data)
+        post_data = post_data.encode('UTF-8')
+
     request = urllib.request.Request(url, post_data)
 
     if get_method is not None:

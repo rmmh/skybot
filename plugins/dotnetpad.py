@@ -9,12 +9,12 @@ def dotnetpad(lang, code):
     "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
 
     code = code.encode('utf8')
-    params = urllib.parse.urlencode({'language': lang, 'code': code})
+    params = {'language': lang, 'code': code}
 
     try:
         result = http.get_json(
             'https://dotnetpad.net/Skybot',
-            post_data=params.encode('utf-8'),
+            post_data=params,
             get_method='POST'
         )
     except http.HTTPError:
