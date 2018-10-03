@@ -1,34 +1,45 @@
-from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
+from future.standard_library import hooks
 
-# convenience wrapper for urllib2 & friends
-from http.cookiejar import CookieJar
+from lxml import etree, html
+
 import binascii
 import hmac
 import json
 import random
 import time
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import urllib.parse
 
 from hashlib import sha1
-from urllib.parse import quote, unquote, quote_plus as _quote_plus
-from urllib.error import HTTPError, URLError
 
-from lxml import etree, html
+from builtins import str
+from builtins import range
+
+try:
+    from http.cookiejar import CookieJar
+except:
+    from future.backports.http.cookiejar import CookieJar
+
+with hooks():
+    import urllib.request, urllib.parse, urllib.error
+
+    from urllib.parse import quote, unquote, quote_plus as _quote_plus
+    from urllib.error import HTTPError, URLError
 
 
 ua_skybot = 'Skybot/1.0 https://github.com/rmmh/skybot'
-
 ua_firefox = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) ' \
              'Gecko/20070725 Firefox/2.0.0.6'
 ua_internetexplorer = 'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1)'
 
-jar = CookieJar()
+
+def get_cookie_jar():
+    if not hasattr(get_cookie_jar, 'memo'):
+        get_cookie_jar.memo = CookieJar()
+
+    return get_cookie_jar.memo
+
+
+def clear_expired_cookies():
+    get_cookie_jar().clear_expired_cookies()
 
 
 def get(*args, **kwargs):
@@ -83,9 +94,10 @@ def open(url, query_params=None, post_data=None,
         request.add_header('Authorization', header)
 
     if cookies:
-        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+        opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(get_cookie_jar()))
     else:
         opener = urllib.request.build_opener()
+
     return opener.open(request)
 
 
