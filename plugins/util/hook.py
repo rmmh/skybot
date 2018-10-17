@@ -85,9 +85,9 @@ def singlethread(func):
     return func
 
 
-def api_key(key):
+def api_key(*keys):
     def annotate(func):
-        func._apikey = key
+        func._apikeys = keys
         return func
     return annotate
 
