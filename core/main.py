@@ -151,8 +151,8 @@ def dispatch(input, kind, func, args, autohelp=False):
                 input.reply('error: missing api keys - {}'.format(missing))
                 return
         else:
-            key = bot_keys.get(func._apikey[0], None)
-            if key is None:
+            keys = bot_keys.get(func._apikey[0], None)
+            if keys is None:
                 input.reply('error: missing api key')
                 return
 
