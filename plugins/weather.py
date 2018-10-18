@@ -1,4 +1,4 @@
-"weather, thanks to darksky and google geocoding"
+"""Weather, thanks to darksky and google geocoding."""
 
 from util import hook, http
 
@@ -7,6 +7,7 @@ DARKSKY_URL = u'https://api.darksky.net/forecast/'
 
 
 def geocode_location(api_key, loc):
+    """Get a geocoded location from gooogle's gocoding api."""
     try:
         parsed_json = http.get_json(GEOCODING_URL, address=loc, key=api_key)
     except IOError:
@@ -16,6 +17,7 @@ def geocode_location(api_key, loc):
 
 
 def get_weather_data(api_key, lat, long):
+    """Get weather data from darksky."""
     query = '{key}/{lat},{long}'.format(key=api_key, lat=lat, long=long)
     url = DARKSKY_URL + query
     try:
@@ -27,20 +29,19 @@ def get_weather_data(api_key, lat, long):
 
 
 def f_to_c(temp_f):
+    """Converg F to C."""
     return (temp_f - 32) * 5 / 9
 
 
 def mph_to_kph(mph):
+    """Convert mph to kph."""
     return mph * 1.609
 
 
 @hook.api_key('google-geocoding', 'darksky')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
-    """
-    .weather <location> [dontsave] | @<nick> -- gets weather data from
-        darksky https://darksky.net/dev
-    """
+    """.weather <location> [dontsave] | @<nick> -- Get weather data."""
     if 'google-geocoding' not in api_key and 'darksky' not in api_key:
         return None
 
@@ -82,12 +83,16 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
         reply('Failed to determine location for {}'.format(inp))
         return
 
-    geo = location.get(u'results', [{}])[0].get(u'geometry', {}).get(u'location', None)
+    geo = (location.get(u'results', [{}])[0]
+                   .get(u'geometry', {})
+                   .get(u'location', None))
     if not geo or u'lat' not in geo or u'lng' not in geo:
         reply('Failed to determine location for {}'.format(inp))
         return
 
-    parsed_json = get_weather_data(api_key['darksky'], geo[u'lat'], geo[u'lng'])
+    parsed_json = get_weather_data(api_key['darksky'],
+                                   geo[u'lat'],
+                                   geo[u'lng'])
     current = parsed_json.get(u'currently')
 
     if not current:
