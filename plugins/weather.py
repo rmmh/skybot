@@ -7,10 +7,8 @@ DARKSKY_URL = u'https://api.darksky.net/forecast/'
 
 
 def geocode_location(api_key, loc):
-    query = '?address={}&key={}'.format(http.quote(loc), api_key)
-    url = GEOCODING_URL + query
     try:
-        parsed_json = http.get_json(url)
+        parsed_json = http.get_json(GEOCODING_URL, address=loc, key=api_key)
     except IOError:
         return None
 
