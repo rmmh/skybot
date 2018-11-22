@@ -1,11 +1,14 @@
 from __future__ import print_function
 from builtins import range
 from util import hook, http
-
+import random
 
 def card_search(name):
-    return http.get_json('https://api.deckbrew.com/mtg/cards', name=name)
-
+    matching_cards = http.get_json('https://api.magicthegathering.io/v1/cards', name=name)
+    for card in matching_cards['cards']:
+        if card['name'].lower() == name.lower():
+            return card 
+    return random.choice(matching_cards['cards'])
 
 @hook.command
 def mtg(inp, say=None):
@@ -13,37 +16,10 @@ def mtg(inp, say=None):
     '''
 
     try:
-        card = card_search(inp)[0]
+        card = card_search(inp)
     except IndexError:
         return 'Card not found.'
-
-    for valid_edition in range(len(card['editions'])):
-        if card['editions'][valid_edition]['multiverse_id'] != 0 :
-            break
-    
-    #symbols = {'{T}' : u'\u27F3' , '{S}' : u'\u2744' , '{Q}' : u'\u21BA', '\n' : ' ' , '{' : '', '}' : ''} 
     symbols = {
-    #    '{0}'   : u'\u24EA' , 
-    #    '{1}'   : u'\u2460' , 
-    #    '{2}'   : u'\u2461' , 
-    #    '{3}'   : u'\u2462' , 
-    #    '{4}'   : u'\u2463' , 
-    #    '{5}'   : u'\u2464' , 
-    #    '{6}'   : u'\u2465' , 
-    #    '{7}'   : u'\u2466' , 
-    #    '{8}'   : u'\u2467' , 
-    #    '{9}'   : u'\u2468' , 
-    #    '{10}'   : u'\u2469' , 
-    #    '{11}'   : u'\u246A' , 
-    #    '{12}'   : u'\u246B' , 
-    #    '{13}'   : u'\u246C' , 
-    #    '{14}'   : u'\u246D' , 
-    #    '{15}'   : u'\u246E' , 
-    #    '{16}'   : u'\u246F' , 
-    #    '{17}'   : u'\u2470' , 
-    #    '{18}'   : u'\u2471' , 
-    #    '{19}'   : u'\u2472' , 
-    #    '{20}'   : u'\u2473' , 
         '{0}'   : '0' , 
         '{1}'   : '1' , 
         '{2}'   : '2' , 
@@ -84,35 +60,27 @@ def mtg(inp, say=None):
     }
     results = {
         'name': card['name'],
-        'types': ', '.join(t.capitalize() for t in card['types']),
-        'cost': card['cost'],
-        'text': card['text'],
+        'type': card['type'],
+        'cost': card.get('manaCost',''),
+        'text': card.get('text',''),
         'power': card.get('power'),
         'toughness': card.get('toughness'),
         'loyalty': card.get('loyalty'),
-        'multiverse_id': card['editions'][valid_edition]['multiverse_id'],
+        'multiverseid': card.get('multiverseid'),
     }
-    if card.get('supertypes'):
-        results['supertypes'] = ', '.join(card['supertypes']).title()
-    if card.get('subtypes'):
-        results['subtypes'] = ', '.join(card['subtypes']).title()
 
-    for fragment, rep in list(symbols.items()):
+    for fragment, rep in symbols.items():
         results['text'] = results['text'].replace(fragment, rep)
         results['cost'] = results['cost'].replace(fragment, rep)
     
     template = ['{name} -']
-    if results.get('supertypes'):
-        template.append('{supertypes}')
-    template.append('{types}')
-    if results.get('subtypes'):
-        template.append('{subtypes}')
+    template.append('{type}')
     template.append('- {cost} |')
     if results['loyalty']:
         template.append('{loyalty} Loyalty |')
     if results['power']:
         template.append('{power}/{toughness} |')
-    template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverse_id}')
+    template.append('{text} | http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid={multiverseid}')
     
     return ' '.join(template).format(**results)
 
