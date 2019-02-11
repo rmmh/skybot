@@ -2,7 +2,6 @@ import re
 import thread
 import traceback
 
-
 thread.stack_size(1024 * 512)  # reduce vm size
 
 
@@ -142,12 +141,20 @@ def dispatch(input, kind, func, args, autohelp=False):
         input.reply(func.__doc__)
         return
 
-    if hasattr(func, '_apikey'):
-        key = bot.config.get('api_keys', {}).get(func._apikey, None)
-        if key is None:
-            input.reply('error: missing api key')
+    if hasattr(func, '_apikeys'):
+        bot_keys = bot.config.get('api_keys', {})
+        keys = {key: bot_keys.get(key) for key in func._apikeys}
+
+        missing = [keyname for keyname, value in keys.items() if value is None]
+        if missing:
+            input.reply('error: missing api keys - {}'.format(missing))
             return
-        input.api_key = key
+
+        # Return a single key as just the value, and multiple keys as a dict.
+        if len(keys) == 1:
+            input.api_key = keys.values()[0]
+        else:
+            input.api_key = keys
 
     if func._thread:
         bot.threads[func].put(input)
