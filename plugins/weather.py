@@ -99,22 +99,23 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     forecast = parsed_json['daily']['data'][0]
 
     info = {
-        u'city': addr,
-        u't_f': current[u'temperature'],
-        u't_c': f_to_c(current[u'temperature']),
-        u'h_f': forecast[u'temperatureHigh'],
-        u'h_c': f_to_c(forecast[u'temperatureHigh']),
-        u'l_f': forecast[u'temperatureLow'],
-        u'l_c': f_to_c(forecast[u'temperatureLow']),
-        u'weather': current[u'summary'],
-        u'humid': int(current[u'humidity'] * 100),
-        u'wind': u'Wind: {mph:.1f}mph/{kph:.1f}kph'.format(
+        'city': addr,
+        't_f': current[u'temperature'],
+        't_c': f_to_c(current[u'temperature']),
+        'h_f': forecast[u'temperatureHigh'],
+        'h_c': f_to_c(forecast[u'temperatureHigh']),
+        'l_f': forecast[u'temperatureLow'],
+        'l_c': f_to_c(forecast[u'temperatureLow']),
+        'weather': current[u'summary'],
+        'humid': int(current[u'humidity'] * 100),
+        'wind': u'Wind: {mph:.1f}mph/{kph:.1f}kph'.format(
             mph=current[u'windSpeed'],
             kph=mph_to_kph(current[u'windSpeed'])),
+        'forecast': parsed_json.get('hourly', {}).get('summary', ''),
     }
-    reply('{city}: {weather}, {t_f:.1f}F/{t_c:.1f}C'
+    reply(u'{city}: {weather}, {t_f:.1f}F/{t_c:.1f}C'
           '(H:{h_f:.1f}F/{h_c:.1f}C L:{l_f:.1f}F/{l_c:.1f}C)'
-          ', Humidity: {humid}%, {wind}'.format(**info))
+          ', Humidity: {humid}%, {wind} \x02{forecast}\x02'.format(**info))
 
     if inp and not dontsave:
         db.execute("insert or replace into "
