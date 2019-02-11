@@ -64,35 +64,32 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
 
     if not loc:  # blank line
         loc = db.execute(
-            "select loc from location where chan=? and nick=lower(?)",
+            "select loc, lat, lon from location where chan=? and nick=lower(?)",
             (chan, nick)).fetchone()
         if not loc:
-            try:
-                # grab from old-style weather database
-                loc = db.execute("select loc from weather where nick=lower(?)",
-                                 (nick,)).fetchone()
-            except db.OperationalError:
-                pass    # no such table
-            if not loc:
-                return weather.__doc__
-        loc = loc[0]
+            return weather.__doc__
+        addr, lat, lng = loc
+    else:
+        location = geocode_location(api_key['google'], loc)
 
-    location = geocode_location(api_key['google'], loc)
+        if not location or location.get(u'status') != u'OK':
+            reply('Failed to determine location for {}'.format(inp))
+            return
 
-    if not location or location.get(u'status') != u'OK':
-        reply('Failed to determine location for {}'.format(inp))
-        return
+        geo = (location.get(u'results', [{}])[0]
+                       .get(u'geometry', {})
+                       .get(u'location', None))
+        if not geo or u'lat' not in geo or u'lng' not in geo:
+            reply('Failed to determine location for {}'.format(inp))
+            return
 
-    geo = (location.get(u'results', [{}])[0]
-                   .get(u'geometry', {})
-                   .get(u'location', None))
-    if not geo or u'lat' not in geo or u'lng' not in geo:
-        reply('Failed to determine location for {}'.format(inp))
-        return
+        addr = location['results'][0]['formatted_address']
+        lat = geo['lat']
+        lng = geo['lng']
 
     parsed_json = get_weather_data(api_key['darksky'],
-                                   geo[u'lat'],
-                                   geo[u'lng'])
+                                   lat,
+                                   lng)
     current = parsed_json.get(u'currently')
 
     if not current:
@@ -102,7 +99,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     forecast = parsed_json['daily']['data'][0]
 
     info = {
-        u'city': location[u'results'][0][u'formatted_address'],
+        u'city': addr,
         u't_f': current[u'temperature'],
         u't_c': f_to_c(current[u'temperature']),
         u'h_f': forecast[u'temperatureHigh'],
@@ -123,5 +120,5 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
         db.execute("insert or replace into "
                    "location(chan, nick, loc, lat, lon) "
                    "values (?, ?, ?, ?, ?)",
-                   (chan, nick.lower(), inp, geo[u'lat'], geo[u'lng']))
+                   (chan, nick.lower(), addr, lat, lng))
         db.commit()
