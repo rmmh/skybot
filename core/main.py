@@ -150,8 +150,8 @@ def dispatch(input, kind, func, args, autohelp=False):
             input.reply('error: missing api keys - {}'.format(missing))
             return
 
-        # Return a signle key as just the value, and multiple keys as a dict.
-        if len(keys) = 1:
+        # Return a single key as just the value, and multiple keys as a dict.
+        if len(keys) == 1:
             input.api_key = keys.values()[0]
         else:
             input.api_key = keys
