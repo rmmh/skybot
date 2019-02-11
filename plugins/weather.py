@@ -1,15 +1,15 @@
-"""Weather, thanks to darksky and google geocoding."""
+"""Weather, thanks to darksky and mapbox geocoding."""
 
 from util import hook, http
 
-GEOCODING_URL = u'https://maps.googleapis.com/maps/api/geocode/json'
 DARKSKY_URL = u'https://api.darksky.net/forecast/'
+GEOCODING_URL = u'https://api.mapbox.com/geocoding/v5/mapbox.places/{search_text}.json'
 
 
 def geocode_location(api_key, loc):
     """Get a geocoded location from gooogle's geocoding api."""
     try:
-        parsed_json = http.get_json(GEOCODING_URL, address=loc, key=api_key)
+        parsed_json = http.get_json(GEOCODING_URL.format(search_text=loc), access_token=api_key)
     except IOError:
         return None
 
@@ -38,11 +38,11 @@ def mph_to_kph(mph):
     return mph * 1.609
 
 
-@hook.api_key('google', 'darksky')
+@hook.api_key('mapbox', 'darksky')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     """.weather <location> [dontsave] | @<nick> -- Get weather data."""
-    if 'google' not in api_key and 'darksky' not in api_key:
+    if 'mapbox' not in api_key and 'darksky' not in api_key:
         return None
 
     # this database is used by other plugins interested in user's locations,
@@ -70,26 +70,26 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
             return weather.__doc__
         addr, lat, lng = loc
     else:
-        location = geocode_location(api_key['google'], loc)
+        location = geocode_location(api_key['mapbox'], loc)
 
-        if not location or location.get(u'status') != u'OK':
+        if not location:
             reply('Failed to determine location for {}'.format(inp))
             return
 
-        geo = (location.get(u'results', [{}])[0]
-                       .get(u'geometry', {})
-                       .get(u'location', None))
-        if not geo or u'lat' not in geo or u'lng' not in geo:
+        geo = location.get(u'features', [{}])[0].get(u'center', None)
+        if not geo or len(geo) != 2:
             reply('Failed to determine location for {}'.format(inp))
             return
 
-        addr = location['results'][0]['formatted_address']
-        lat = geo['lat']
-        lng = geo['lng']
+        addr = location.get(u'features', [{}])[0].get(u'place_name', None)
+        lng = geo[0]
+        lat = geo[1]
 
-    parsed_json = get_weather_data(api_key['darksky'],
-                                   lat,
-                                   lng)
+    parsed_json = get_weather_data(api_key['darksky'], lat, lng)
+    if not parsed_json:
+        reply('Failed to get weather data for {}'.format(inp))
+        return
+
     current = parsed_json.get(u'currently')
 
     if not current:
