@@ -38,11 +38,11 @@ def mph_to_kph(mph):
     return mph * 1.609
 
 
-@hook.api_key('google-geocoding', 'darksky')
+@hook.api_key('google', 'darksky')
 @hook.command(autohelp=False)
 def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
     """.weather <location> [dontsave] | @<nick> -- Get weather data."""
-    if 'google-geocoding' not in api_key and 'darksky' not in api_key:
+    if 'google' not in api_key and 'darksky' not in api_key:
         return None
 
     # this database is used by other plugins interested in user's locations,
@@ -77,7 +77,7 @@ def weather(inp, chan='', nick='', reply=None, db=None, api_key=None):
                 return weather.__doc__
         loc = loc[0]
 
-    location = geocode_location(api_key['google-geocoding'], loc)
+    location = geocode_location(api_key['google'], loc)
 
     if not location or location.get(u'status') != u'OK':
         reply('Failed to determine location for {}'.format(inp))
