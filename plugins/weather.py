@@ -7,7 +7,7 @@ DARKSKY_URL = u'https://api.darksky.net/forecast/'
 
 
 def geocode_location(api_key, loc):
-    """Get a geocoded location from gooogle's gocoding api."""
+    """Get a geocoded location from gooogle's geocoding api."""
     try:
         parsed_json = http.get_json(GEOCODING_URL, address=loc, key=api_key)
     except IOError:
@@ -29,7 +29,7 @@ def get_weather_data(api_key, lat, long):
 
 
 def f_to_c(temp_f):
-    """Converg F to C."""
+    """Convert F to C."""
     return (temp_f - 32) * 5 / 9
 
 
