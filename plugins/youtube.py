@@ -7,14 +7,15 @@ from util import hook, http
 youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
               '([-_a-z0-9]+)', re.I)
 
-base_url = 'https://www.googleapis.com/youtube/v3/'
-info_url = base_url + 'videos?part=snippet,contentDetails,statistics,localizations'
-search_api_url = base_url + 'search'
-video_url = 'https://youtube.com/watch?v=%s'
+BASE_URL = 'https://www.googleapis.com/youtube/v3/'
+PARTS = 'snippet,contentDetails,statistics,localizations'
+INFO_URL = BASE_URL + 'videos'
+SEARCH_API_URL = BASE_URL + 'search'
+VIDEO_URL = 'https://youtube.com/watch?v=%s'
 
 
 def get_video_description(vid_id, api_key):
-    j = http.get_json(info_url, id=vid_id, key=api_key)
+    j = http.get_json(INFO_URL, id=vid_id, key=api_key, part=PARTS)
 
     if not j['pageInfo']['totalResults']:
         return
@@ -70,13 +71,14 @@ def youtube(inp, api_key=None):
 
     params = {
         'key': api_key,
-        'fields': 'items(id,snippet(channelId,title))',
+        'fields': 'items(id(videoId))',
         'part': 'snippet',
         'type': 'video',
-        'q': inp
+        'maxResults': '1',
+        'q': inp,
     }
 
-    j = http.get_json(search_api_url, **params)
+    j = http.get_json(SEARCH_API_URL, **params)
 
     if 'error' in j:
         return 'error while performing the search'
@@ -88,4 +90,4 @@ def youtube(inp, api_key=None):
 
     vid_id = j['items'][0]['id']['videoId']
 
-    return get_video_description(vid_id, api_key) + " - " + video_url % vid_id
+    return get_video_description(vid_id, api_key) + " - " + VIDEO_URL % vid_id
