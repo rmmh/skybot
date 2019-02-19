@@ -8,14 +8,13 @@ youtube_re = (r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)'
               '([-_a-z0-9]+)', re.I)
 
 BASE_URL = 'https://www.googleapis.com/youtube/v3/'
-PARTS = 'snippet,contentDetails,statistics,localizations'
-INFO_URL = BASE_URL + 'videos'
+INFO_URL = BASE_URL + 'videos?part=snippet,contentDetails,statistics&hl=en'
 SEARCH_API_URL = BASE_URL + 'search'
 VIDEO_URL = 'https://youtube.com/watch?v=%s'
 
 
 def get_video_description(vid_id, api_key):
-    j = http.get_json(INFO_URL, id=vid_id, key=api_key, part=PARTS)
+    j = http.get_json(INFO_URL, id=vid_id, key=api_key)
 
     if not j['pageInfo']['totalResults']:
         return
@@ -32,8 +31,8 @@ def get_video_description(vid_id, api_key):
     likes = j['statistics'].get('likeCount', 0)
     dislikes = j['statistics'].get('dislikeCount', 0)
     title = j['snippet']['title']
-    if 'localizations' in j:
-        title = j['localizations'].get('en', {}).get('title') or title
+    if 'localized' in j['snippet']:
+        title = j['snippet']['localized'].get('title') or title
     
     out = (u'\x02{title}\x02 - length \x02{duration}\x02 - '
            u'{likes}\u2191{dislikes}\u2193 - '
