@@ -450,7 +450,7 @@ def translate(inp):
 
         if guessed_to_language:
             to_language = guessed_to_language
-            args.remove(0)
+            args.pop(0)
 
             if len(args) >= 2:
                 guessed_from_language = match_language(args[0])
