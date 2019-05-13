@@ -90,7 +90,7 @@ def etymology(inp):
 
     h = http.get_html('http://www.etymonline.com/search', q=inp)
 
-    etym = h.xpath('//a[contains(@class, "word")]/object')
+    etym = h.xpath('//div[contains(@class, "word")]/object')
 
     if not etym:
         return 'No etymology found for ' + inp
