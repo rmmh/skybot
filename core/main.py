@@ -158,7 +158,7 @@ def dispatch(input, kind, func, args, autohelp=False):
 
         # Return a single key as just the value, and multiple keys as a dict.
         if len(keys) == 1:
-            input.api_key = keys.values()[0]
+            input.api_key = list(keys.values())[0]
         else:
             input.api_key = keys
 
