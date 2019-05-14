@@ -1,4 +1,5 @@
-import urlparse
+from builtins import str
+import urllib.parse
 
 from util import hook, http
 
@@ -11,7 +12,7 @@ def down(inp):
     if not inp.startswith('//') and '://' not in inp:
         inp = '//' + inp
     
-    urlp = urlparse.urlparse(inp, 'http')
+    urlp = urllib.parse.urlparse(str(inp), 'http')
     
     if urlp.scheme not in ('http', 'https'):
         return inp + " is not a valid HTTP URL"

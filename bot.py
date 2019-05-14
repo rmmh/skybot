@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import os
-import Queue
+import queue
 import sys
 import traceback
 import time
 
 
-class Bot(object):
+class Bot:
     def __init__(self):
         self.conns = {}
         self.persist_dir = os.path.abspath('persist')
@@ -21,38 +22,38 @@ def main():
     sys.path += ['lib']
     os.chdir(os.path.dirname(__file__) or '.')  # do stuff relative to the install directory
 
-    print 'Loading plugins'
+    print('Loading plugins')
 
     # bootstrap the reloader
-    eval(compile(open(os.path.join('core', 'reload.py'), 'U').read(),
+    eval(compile(open(os.path.join('core', 'reload.py'), 'r').read(),
                  os.path.join('core', 'reload.py'), 'exec'),
          globals())
     reload(init=True)
 
-    print 'Connecting to IRC'
+    print('Connecting to IRC')
 
     try:
         config()
         if not hasattr(bot, 'config'):
             exit()
-    except Exception, e:
-        print 'ERROR: malformed config file:', e
+    except Exception as e:
+        print('ERROR: malformed config file:', e)
         traceback.print_exc()
         sys.exit()
 
-    print 'Running main loop'
+    print('Running main loop')
 
     while True:
         reload()  # these functions only do things
         config()  # if changes have occured
 
-        for conn in bot.conns.itervalues():
+        for conn in bot.conns.values():
             try:
                 out = conn.out.get_nowait()
                 main(conn, out)
-            except Queue.Empty:
+            except queue.Empty:
                 pass
-        while all(conn.out.empty() for conn in bot.conns.itervalues()):
+        while all(conn.out.empty() for conn in iter(bot.conns.values())):
             time.sleep(.1)
 
 if __name__ == '__main__':

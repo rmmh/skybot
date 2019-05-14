@@ -1,6 +1,8 @@
 '''brainfuck interpreter adapted from (public domain) code at
 http://brainfuck.sourceforge.net/brain.py'''
 
+from builtins import chr
+from builtins import range
 import re
 import random
 import unittest
@@ -82,4 +84,4 @@ def bf(inp, max_steps=1000000, buffer_size=5000):
             return 'no printable output'
         return 'no output'
 
-    return stripped_output[:430].decode('utf8', 'ignore')
+    return stripped_output[:430]

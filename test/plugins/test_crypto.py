@@ -1,14 +1,14 @@
 from unittest import TestCase
 from mock import Mock, patch
 
-from helpers import get_fixture_file
+from helpers import get_fixture_file_data
 from crypto import crypto
 
 
 class TestCrypto(TestCase):
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_crypto_btc_to_default(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, 'crypto_btc_to_default.json')
+        mock_http_get.return_value = get_fixture_file_data(self, 'crypto_btc_to_default.json')
 
         expected = u'USD/\u0243: \x0307$ 6,084.30\x0f - High: ' \
                    u'\x0307$ 6,178.90\x0f - Low: \x0307$ 6,014.26' \
@@ -21,9 +21,9 @@ class TestCrypto(TestCase):
 
         say_mock.assert_called_once_with(expected)
 
-    @patch('util.http.get')
+    @patch('util.http.get_json')
     def test_crypto_eth_to_default(self, mock_http_get):
-        mock_http_get.return_value = get_fixture_file(self, 'crypto_eth_to_default.json')
+        mock_http_get.return_value = get_fixture_file_data(self, 'crypto_eth_to_default.json')
 
         expected = u'USD/\u039e: \x0307$ 315.91\x0f - High: ' \
                    u'\x0307$ 332.41\x0f - Low: \x0307$ 312.35\x0f ' \

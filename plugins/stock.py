@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import division, unicode_literals, print_function
+from past.utils import old_div
 import re
 
 from util import hook, http
@@ -7,9 +9,9 @@ from util import hook, http
 
 def human_price(x):
     if x > 1e9:
-        return '{:,.2f}B'.format(x / 1e9)
+        return '{:,.2f}B'.format(old_div(x, 1e9))
     elif x > 1e6:
-        return '{:,.2f}M'.format(x / 1e6)
+        return '{:,.2f}M'.format(old_div(x, 1e6))
     return '{:,.0f}'.format(x)
 
 
@@ -65,4 +67,4 @@ def stock(inp, api_key=None):
 if __name__ == '__main__':
     import os, sys
     for arg in sys.argv[1:]:
-        print stock(arg, api_key=os.getenv('KEY'))
+        print(stock(arg, api_key=os.getenv('KEY')))

@@ -1,5 +1,6 @@
 '''Searches Encyclopedia Dramatica and returns the first paragraph of the
 article'''
+from __future__ import unicode_literals
 
 from util import hook, http
 

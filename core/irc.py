@@ -1,8 +1,11 @@
+from __future__ import print_function
+from builtins import map
+from builtins import object
 import re
 import socket
 import time
-import thread
-import Queue
+import _thread
+import queue
 
 from ssl import wrap_socket, CERT_NONE, CERT_REQUIRED, SSLError
 
@@ -42,10 +45,10 @@ class crlf_tcp(object):
     "Handles tcp connections that consist of utf-8 lines ending with crlf"
 
     def __init__(self, host, port, timeout=300):
-        self.ibuffer = ""
-        self.obuffer = ""
-        self.oqueue = Queue.Queue()  # lines to be sent out
-        self.iqueue = Queue.Queue()  # lines that were received
+        self.ibuffer = b''
+        self.obuffer = b''
+        self.oqueue = queue.Queue()  # lines to be sent out
+        self.iqueue = queue.Queue()  # lines that were received
         self.socket = self.create_socket()
         self.host = host
         self.port = port
@@ -59,12 +62,12 @@ class crlf_tcp(object):
             try:
                 self.socket.connect((self.host, self.port))
             except socket.timeout:
-                print 'timed out connecting to %s:%s' % (self.host, self.port)
+                print('timed out connecting to %s:%s' % (self.host, self.port))
                 time.sleep(60)
             else:
                 break
-        thread.start_new_thread(self.recv_loop, ())
-        thread.start_new_thread(self.send_loop, ())
+        _thread.start_new_thread(self.recv_loop, ())
+        _thread.start_new_thread(self.send_loop, ())
 
     def recv_from_socket(self, nbytes):
         return self.socket.recv(nbytes)
@@ -98,15 +101,15 @@ class crlf_tcp(object):
                     return
                 continue
 
-            while '\r\n' in self.ibuffer:
-                line, self.ibuffer = self.ibuffer.split('\r\n', 1)
+            while b'\r\n' in self.ibuffer:
+                line, self.ibuffer = self.ibuffer.split(b'\r\n', 1)
                 self.iqueue.put(decode(line))
 
     def send_loop(self):
         while True:
             line = self.oqueue.get().splitlines()[0][:500]
-            print ">>> %r" % line
-            self.obuffer += line.encode('utf-8', 'replace') + '\r\n'
+            print(">>> %s" % line)
+            self.obuffer += line.encode('utf-8', 'replace') + b'\r\n'
             while self.obuffer:
                 sent = self.socket.send(self.obuffer)
                 self.obuffer = self.obuffer[sent:]
@@ -184,7 +187,7 @@ class IRC(object):
         self.admins = []
         self.censored_strings = []
 
-        self.out = Queue.Queue()  # responses from the server are placed here
+        self.out = queue.Queue()  # responses from the server are placed here
         # format: [rawline, prefix, command, params,
         # nick, user, host, paramlist, msg]
 
@@ -192,7 +195,7 @@ class IRC(object):
 
         self.connect()
 
-        thread.start_new_thread(self.parse_loop, ())
+        _thread.start_new_thread(self.parse_loop, ())
 
     def set_conf(self, conf):
         self.nick = conf.get('nick', DEFAULT_NAME)
@@ -220,7 +223,7 @@ class IRC(object):
 
     def connect(self):
         self.conn = self.create_connection()
-        thread.start_new_thread(self.conn.run, ())
+        _thread.start_new_thread(self.conn.run, ())
         self.cmd("NICK", [self.nick])
         self.cmd("USER", [self.user, "3", "*", self.realname])
         if self.server_password:
@@ -279,18 +282,18 @@ class IRC(object):
 class FakeIRC(IRC):
     def __init__(self, conf):
         self.set_conf(conf)
-        self.out = Queue.Queue()  # responses from the server are placed here
+        self.out = queue.Queue()  # responses from the server are placed here
 
         self.f = open(fn, 'rb')
 
-        thread.start_new_thread(self.parse_loop, ())
+        _thread.start_new_thread(self.parse_loop, ())
 
     def parse_loop(self):
         while True:
             msg = decode(self.f.readline()[9:])
 
             if msg == '':
-                print "!!!!DONE READING FILE!!!!"
+                print("!!!!DONE READING FILE!!!!")
                 return
 
             if msg.startswith(":"):  # has a prefix

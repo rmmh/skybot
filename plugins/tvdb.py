@@ -3,6 +3,7 @@ TV information, written by Lurchington 2010
 modified by rmmh 2010, 2013
 """
 
+from builtins import map
 import datetime
 
 from util import hook, http, timesince
@@ -50,7 +51,7 @@ def get_episode_info(episode):
     episode_air_date = episode.findtext("FirstAired")
 
     try:
-        airdate = datetime.date(*map(int, episode_air_date.split('-')))
+        airdate = datetime.date(*list(map(int, episode_air_date.split('-'))))
     except (ValueError, TypeError):
         return None
 

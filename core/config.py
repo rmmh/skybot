@@ -1,3 +1,4 @@
+from __future__ import print_function
 import inspect
 import json
 import os
@@ -51,7 +52,8 @@ def config():
         try:
             bot.config = json.load(open(find_config()))
             bot._config_mtime = config_mtime
-            for name, conf in bot.config['connections'].iteritems():
+
+            for name, conf in bot.config['connections'].items():
                 conf.setdefault('censored_strings', bot.config.get('censored_strings', []))
 
                 if name in bot.conns:
@@ -61,8 +63,8 @@ def config():
                         bot.conns[name] = SSLIRC(conf)
                     else:
                         bot.conns[name] = IRC(conf)
-        except ValueError, e:
-            print 'ERROR: malformed config!', e
+        except ValueError as e:
+            print('ERROR: malformed config!', e)
 
 
 bot._config_mtime = 0

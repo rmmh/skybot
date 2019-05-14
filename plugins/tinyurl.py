@@ -5,5 +5,5 @@ from util import hook, http
 def tinyurl(match):
     try:
         return http.open(match.group()).url.strip()
-    except http.URLError, e:
+    except http.URLError as e:
         pass
