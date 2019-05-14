@@ -14,43 +14,28 @@ def get_rottentomatoes_data(movie_id):
     if movie_id.startswith('/m/'):
         movie_id = movie_id[3:]
 
-    document = http.get_html(
-        MOVIE_PAGE_URL % movie_id
-    )
+    document = http.get_html(MOVIE_PAGE_URL % movie_id)
 
     # JSON for the page is stored in the script with ID 'jsonLdSchema'
     # So we can pull that for tons of information.
-    ld_schema_element = document.xpath("//script[@id='jsonLdSchema']")[0]
-
+    ld_schema_element = document.xpath("//script[@type='application/ld+json']")[0]
     ld_schema = json.loads(ld_schema_element.text_content())
 
-    critics_score_element = document.xpath("//div[@id='scoreStats']")[0]
+    scripts = '\n'.join(document.xpath('//script/text()'))
+    score_info = json.loads(re.search(r'scoreInfo = (.*);', scripts).group(1))['tomatometerAllCritics']
 
-    fresh_rotten_match = re.search(
-        'Fresh:\s+([0-9]+)\s+Rotten:\s+([0-9]+)',
-        critics_score_element.text_content()
-    )
 
-    if fresh_rotten_match:
-        fresh, rotten = fresh_rotten_match.groups()
-    else:
-        fresh, rotten = 0, 0
-
-    audience_score_element = document.xpath("//div[@class='audience-score meter']")[0]
-
-    audience_score_match = re.search('([0-9]+)%', audience_score_element.text_content())
-
-    if audience_score_match:
-        audience_score = audience_score_match.group(1)
-    else:
-        audience_score = None
+    try:
+        audience_score = document.xpath('//span[contains(@class, "audience") and contains(@class, "rating")]/text()')[0].strip()
+    except IndexError:
+        audience_score = ''
 
     return {
         'title': ld_schema['name'],
-        'critics_score': ld_schema['aggregateRating']['ratingValue'],
+        'critics_score': score_info['score'],
         'audience_score': audience_score,
-        'fresh': fresh,
-        'rotten': rotten,
+        'fresh': score_info['freshCount'],
+        'rotten': score_info['rottenCount'],
         'url': MOVIE_PAGE_URL % movie_id
     }
 
@@ -83,5 +68,5 @@ def rottentomatoes(inp):
     return (
         "{title} - critics: \x02{critics_score}%\x02 "
         "({fresh}\u2191{rotten}\u2193) "
-        "audience: \x02{audience_score}%\x02 - {url}"
+        "audience: \x02{audience_score}\x02 - {url}"
     ).format(**movie)
