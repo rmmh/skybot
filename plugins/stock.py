@@ -13,62 +13,56 @@ def human_price(x):
     return '{:,.0f}'.format(x)
 
 
+@hook.api_key('iexcloud')
 @hook.command
-def stock(inp):
+def stock(inp, api_key=None):
     '''.stock <symbol> [info] -- retrieves a weeks worth of stats for given symbol. Optionally displays information about the company.'''
+
+    if not api_key:
+        return 'missing api key'
 
     arguments = inp.split(' ')
 
     symbol = arguments[0].upper()
 
     try:
-        fundamentals = http.get_json(
-            'https://api.robinhood.com/fundamentals/{}/'.format(symbol))
         quote = http.get_json(
-            'https://api.robinhood.com/quotes/{}/'.format(symbol))
+            'https://cloud.iexapis.com/stable/stock/{symbol}/quote'.format(symbol=symbol),
+            token=api_key)
     except http.HTTPError:
         return '{} is not a valid stock symbol.'.format(symbol)
 
-    if fundamentals['open'] is None or quote['ask_price'] is None:
-        return 'unknown ticker symbol %s' % inp
-
-    if len(arguments) > 1 and arguments[1] == 'info':
-        return fundamentals['description']
-
-    # Manually "calculate" change since API does not provide it
-    price = float(quote.get('last_extended_hours_trade_price') or quote['last_trade_price'])
-    change = price - float(quote['adjusted_previous_close'])
-
-    # Extract name as Upper Case Corp Name from description.
-    name = ''
-    m = re.match(r'^([A-Z]\S* )*', fundamentals['description'])
-    if m:
-        name = m.group(0)
+    if quote['latestTime'] >= quote['extendedPriceTime']:
+        price = quote['latestPrice']
+        change = quote['change']
+    else:
+        price = quote['extendedPrice']
+        change = quote['extendedChange']
 
     def maybe(name, key, fmt=human_price):
-        if fundamentals.get(key):
-            return ' | {0}: {1}'.format(name, fmt(float(fundamentals[key])))
+        if quote.get(key):
+            return ' | {0}: {1}'.format(name, fmt(float(quote[key])))
         return ''
 
     response = {
-        'name': name,
+        'name': quote['companyName'],
         'change': change,
         'percent_change': 100 * change / (price - change),
         'symbol': quote['symbol'],
         'price': price,
         'color': '05' if change < 0 else '03',
-        'high': float(fundamentals['high']),
-        'low': float(fundamentals['low']),
-        'average_volume': maybe('Volume', 'average_volume'),
-        'market_cap': maybe('MCAP', 'market_cap'),
-        'pe_ratio': maybe('P/E', 'pe_ratio', fmt='{:.2f}'.format),
+        'high': quote['high'],
+        'low': quote['low'],
+        'average_volume': maybe('Volume', 'latestVolume'),
+        'market_cap': maybe('MCAP', 'marketCap'),
+        'pe_ratio': maybe('P/E', 'peRatio', fmt='{:.2f}'.format),
     }
 
-    return ("{name}({symbol}) ${price:,.2f} \x03{color}{change:,.2f} ({percent_change:,.2f}%)\x03 | "
+    return ("{name} ({symbol}) ${price:,.2f} \x03{color}{change:,.2f} ({percent_change:,.2f}%)\x03 | "
             "Day Range: ${low:,.2f} - ${high:,.2f}"
             "{pe_ratio}{average_volume}{market_cap}").format(**response)
 
 if __name__ == '__main__':
-    import sys
+    import os, sys
     for arg in sys.argv[1:]:
-        print stock(arg)
+        print stock(arg, api_key=os.getenv('KEY'))
