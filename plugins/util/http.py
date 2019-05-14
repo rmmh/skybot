@@ -3,6 +3,7 @@ from future.standard_library import hooks
 from lxml import etree, html
 
 import binascii
+import collections
 import hmac
 import json
 import random
@@ -21,7 +22,7 @@ except:
 with hooks():
     import urllib.request, urllib.parse, urllib.error
 
-    from urllib.parse import quote, unquote, quote_plus as _quote_plus
+    from urllib.parse import quote, unquote, urlencode, quote_plus as _quote_plus
     from urllib.error import HTTPError, URLError
 
 
