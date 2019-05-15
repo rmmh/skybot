@@ -34,7 +34,7 @@ def stock(inp, api_key=None):
     except http.HTTPError:
         return '{} is not a valid stock symbol.'.format(symbol)
 
-    if quote['latestTime'] >= quote['extendedPriceTime']:
+    if quote['latestUpdate'] >= quote['extendedPriceTime']:
         price = quote['latestPrice']
         change = quote['change']
     else:
