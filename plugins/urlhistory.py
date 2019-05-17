@@ -31,7 +31,8 @@ def get_history(db, chan, url):
 
 
 def nicklist(nicks):
-    nicks = sorted(dict(nicks), key=str.lower)
+    nicks.sort(key=lambda n: n.lower())
+
     if len(nicks) <= 2:
         return ' and '.join(nicks)
     else:
@@ -59,8 +60,12 @@ def format_reply(history):
     else:
         last = "last linked by %s %s ago" % (last_nick, last_time)
 
-    return "that url has been posted %s in the past %s by %s (%s)." % (ordinal,
-                                                                       hour_span, nicklist(history), last)
+    return "that url has been posted %s in the past %s by %s (%s)." % (
+        ordinal,
+        hour_span,
+        nicklist([h[0] for h in history]),
+        last
+    )
 
 
 @hook.regex(r'([a-zA-Z]+://|www\.)[^ ]+')
