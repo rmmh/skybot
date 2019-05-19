@@ -1,26 +1,26 @@
-= Skybot =
+# Skybot
 
-==Goals==
+## Goals
 * simplicity
-** little boilerplate
-** minimal magic
+  * little boilerplate
+  *  minimal magic
 * power
-** multithreading
-** automatic reloading
-** extensibility
+  * multithreading
+  * automatic reloading
+  * extensibility
 
-==Features==
+# Features
 * Multithreaded dispatch and the ability to connect to multiple networks at a time.
 * Easy plugin development with automatic reloading and a simple hooking API.
 
-==Requirements==
+# Requirements
 To install dependencies, run:
 
     pip install -r requirements.txt
 
-Skybot runs on Python 2.7.
+Skybot runs on Python 2.7 and Python 3.7.
 
-==License==
+## License
 Skybot is public domain. If you find a way to make money using it, I'll be very impressed.
 
 See LICENSE for precise terms.
