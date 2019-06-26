@@ -1,8 +1,8 @@
 import base64
+import re
 import time
 
 from util import hook, http
-
 
 languages = {
     "bash": 1,
@@ -38,6 +38,8 @@ languages = {
     "rust": 42,
 }
 
+statuses = {x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")}
+
 
 def get_result(token):
     url = "https://api.judge0.com/submissions/{}".format(token)
@@ -45,23 +47,25 @@ def get_result(token):
     try:
         result = http.get_json(url, get_method="GET")
     except http.HTTPError as e:
-        return None
+        # Request failed, API is probably down (or dead given our luck with repl apis)
+        return e
 
-    status = result.get("status", {"id": 2})
+    status = result.get("status")
+
+    if not status:
+        return "Bad response from Judge0 API. Try again later."
+
     status_id = status["id"]
+    status_description = status["description"]
+
+    if re.match(status_description, "Error"):
+        return status_description
 
     # Processing, try again
-    if status_id not in [3, 6, 11]:
+    if status_id in [1, 2]:
         return None
 
-    # Compilation error
-    if status_id == 6:
-        return "compilation error: {}".format(result["compile_output"])
-
-    # Runtime error
-    if status_id == 11:
-        return "runtime error: {}".format(result["stderr"])
-
+    # Accepted and completed, return result and profiler stats
     if status_id == 3:
         return "[time: {time}, memory: {memory}] >> {stdout}".format(**result)
 
@@ -70,11 +74,9 @@ def submit_code(language, code):
     current_try = 0
     output = None
 
-    url = "https://api.judge0.com/submissions?base64_encoded=true"
+    url = "https://api.judge0.com/submissions"
 
-    encoded_code = base64.b64encode(code.encode())
-
-    data = {"source_code": encoded_code, "language_id": languages[language]}
+    data = {"source_code": code, "language_id": languages[language]}
 
     try:
         result = http.get_json(url, post_data=data, get_method="POST")
@@ -86,15 +88,13 @@ def submit_code(language, code):
     if not token:
         return "Missing submission token in response. API is probably down."
 
-    while current_try <= 5:
-        time.sleep(1)
-
+    for n in range(10):
         output = get_result(token)
 
         if output:
             break
 
-        current_try += 1
+        time.sleep(1.3 ** n)
 
     if output:
         return output
@@ -103,14 +103,21 @@ def submit_code(language, code):
 
 
 @hook.command("eval")
-def runcode(inp):
+def runcode(inp, autohelp=False):
     inputs = inp.split(" ")
 
-    arg1 = inputs[0]
+    supported_languages = ", ".join(sorted(languages.keys()))
+
+    try:
+        arg1, arg2 = inp.split(None, 1)
+    except ValueError:
+        return "eval <language> <code> - evaluate given code using language. Supported languages: {}".format(
+            supported_languages
+        )
 
     if arg1 not in languages.keys():
         return "Language not supported, supported languages: {}".format(
-            ", ".join(languages.keys())
+            supported_languages
         )
 
     arg2 = " ".join(inputs[1:])
