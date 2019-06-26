@@ -42,8 +42,6 @@ languages = {
 def get_result(token):
     url = "https://api.judge0.com/submissions/{}".format(token)
 
-    print(url)
-
     try:
         result = http.get_json(url, get_method="GET")
     except http.HTTPError as e:
