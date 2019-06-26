@@ -19,7 +19,7 @@ def fetch_languages():
     m["node"] = m["js"] = m["javascript"]
     m["rb"] = m["ruby"]
 
-    return lang_list
+    return m
 
 
 languages = fetch_languages()
