@@ -42,22 +42,30 @@ languages = {
 def get_result(token):
     url = "https://api.judge0.com/submissions/{}".format(token)
 
+    print(url)
+
     try:
         result = http.get_json(url, get_method="GET")
     except http.HTTPError as e:
         return None
 
-    status = result.get("status")
+    status = result.get("status", {"id": 2})
+    status_id = status["id"]
 
-    if not status or not status.get("id") or status.get("id") != 3:
+    # Processing, try again
+    if status_id not in [3, 6, 11]:
         return None
 
-    error = result.get("stderr")
+    # Compilation error
+    if status_id == 6:
+        return "compilation error: {}".format(result["compile_output"])
 
-    if error:
-        return "stderr: {}".format(error)
+    # Runtime error
+    if status_id == 11:
+        return "runtime error: {}".format(result["stderr"])
 
-    return "[time: {time}, memory: {memory}] >> {stdout}".format(**result)
+    if status_id == 3:
+        return "[time: {time}, memory: {memory}] >> {stdout}".format(**result)
 
 
 def submit_code(language, code):
