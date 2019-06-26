@@ -4,40 +4,25 @@ import time
 
 from util import hook, http
 
-languages = {
-    "bash": 1,
-    "basic": 3,
-    "c": 4,
-    "cpp": 10,
-    "c++": 10,
-    "csharp": 16,
-    "c#": 16,
-    "clj": 18,
-    "clojure": 18,
-    "crystal": 19,
-    "elixir": 20,
-    "erlang": 21,
-    "go": 22,
-    "haskell": 23,
-    "insect": 25,
-    "java": 26,
-    "js": 29,
-    "javascript": 29,
-    "node": 29,
-    "ocaml": 31,
-    "octave": 32,
-    "pascal": 33,
-    "python": 34,
-    "py": 34,
-    "py3": 34,
-    "python3": 34,
-    "py2": 36,
-    "python2": 36,
-    "ruby": 38,
-    "rb": 38,
-    "rust": 42,
-}
 
+def fetch_languages():
+    lang_list = http.get_json("https://api.judge0.com/languages")
+    m = {x["name"].split()[0].lower(): x["id"] for x in lang_list}
+    m.pop("text")
+    m.pop("executable")
+    m["python2"] = [x["id"] for x in lang_list if x["name"].startswith("Python (2")][0]
+    m["py"] = m["py3"] = m["python3"] = m["python"]
+    m["py2"] = m["python2"]
+    m["clj"] = m["clojure"]
+    m["cpp"] = m["c++"]
+    m["csharp"] = m["c#"]
+    m["node"] = m["js"] = m["javascript"]
+    m["rb"] = m["ruby"]
+
+    return lang_list
+
+
+languages = fetch_languages()
 statuses = {x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")}
 
 
