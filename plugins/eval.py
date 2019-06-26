@@ -1,4 +1,3 @@
-import re
 import time
 
 from util import hook, http
@@ -42,8 +41,10 @@ def get_result(token):
     status_id = status["id"]
     status_description = status["description"]
 
-    if re.match(status_description, "Error"):
-        return status_description
+    if "Error" in status_description:
+        stderr = result.get("stderr", "")
+
+        return "{} {}".format(status_description, stderr)
 
     # Processing, try again
     if status_id in [1, 2]:
