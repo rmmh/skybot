@@ -3,6 +3,9 @@ import time
 from util import hook, http
 
 
+languages = {}
+statuses = {}
+
 def fetch_languages():
     lang_list = http.get_json("https://api.judge0.com/languages")
     m = {x["name"].split()[0].lower(): x["id"] for x in lang_list}
@@ -20,15 +23,11 @@ def fetch_languages():
     return m
 
 
-languages = fetch_languages()
-statuses = {x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")}
-
-
 def get_result(token):
     url = "https://api.judge0.com/submissions/{}".format(token)
 
     try:
-        result = http.get_json(url, get_method="GET")
+        result = http.get_json(url)
     except http.HTTPError as e:
         # Request failed, API is probably down (or dead given our luck with repl apis)
         return e
@@ -52,7 +51,7 @@ def get_result(token):
 
     # Accepted and completed, return result and profiler stats
     if status_id == 3:
-        return "[time: {time}, memory: {memory}] >> {stdout}".format(**result)
+        return "({time}s {memory}) {stdout}".format(**result)
 
 
 def submit_code(language, code):
@@ -87,8 +86,16 @@ def submit_code(language, code):
     return "API took to long to return a response. Try again later."
 
 
-@hook.command("eval")
-def runcode(inp, autohelp=False):
+@hook.command("eval", autohelp=False)
+def runcode(inp):
+    if not languages:
+        global languages
+        languages = fetch_languages()
+
+    if not statuses:
+        global statuses
+        statuses = {x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")}
+
     inputs = inp.split(" ")
 
     supported_languages = ", ".join(sorted(languages.keys()))
@@ -100,7 +107,7 @@ def runcode(inp, autohelp=False):
             supported_languages
         )
 
-    if arg1 not in languages.keys():
+    if arg1 not in languages:
         return "Language not supported, supported languages: {}".format(
             supported_languages
         )
