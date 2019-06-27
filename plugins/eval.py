@@ -56,7 +56,6 @@ def get_result(token):
 
 
 def submit_code(language, code):
-    current_try = 0
     output = None
 
     url = "https://api.judge0.com/submissions"
