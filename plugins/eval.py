@@ -88,12 +88,13 @@ def submit_code(language, code):
 
 @hook.command("eval", autohelp=False)
 def runcode(inp):
+    global languages
+    global statuses
+
     if not languages:
-        global languages
         languages = fetch_languages()
 
     if not statuses:
-        global statuses
         statuses = {
             x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")
         }
