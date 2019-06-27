@@ -6,6 +6,7 @@ from util import hook, http
 languages = {}
 statuses = {}
 
+
 def fetch_languages():
     lang_list = http.get_json("https://api.judge0.com/languages")
     m = {x["name"].split()[0].lower(): x["id"] for x in lang_list}
@@ -94,7 +95,9 @@ def runcode(inp):
 
     if not statuses:
         global statuses
-        statuses = {x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")}
+        statuses = {
+            x["id"]: x for x in http.get_json("https://api.judge0.com/statuses")
+        }
 
     inputs = inp.split(" ")
 
