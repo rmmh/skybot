@@ -9,7 +9,7 @@ statuses = {}
 
 def fetch_languages():
     lang_list = http.get_json("https://api.judge0.com/languages")
-    m = {x["name"].split()[0].lower(): x["id"] for x in lang_list}
+    m = {x["name"].split()[0].lower(): x["id"] for x in lang_list[::-1]}
     m.pop("text")
     m.pop("executable")
     m["python2"] = [x["id"] for x in lang_list if x["name"].startswith("Python (2")][0]
