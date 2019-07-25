@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import division, unicode_literals, print_function
 from past.utils import old_div
@@ -34,12 +34,16 @@ def stock(inp, api_key=None):
     except http.HTTPError:
         return '{} is not a valid stock symbol.'.format(symbol)
 
-    if quote['latestUpdate'] >= quote['extendedPriceTime']:
-        price = quote['latestPrice']
-        change = quote['change']
-    else:
+    if quote['extendedPriceTime'] and ['latestUpdate'] < quote['extendedPriceTime']:
         price = quote['extendedPrice']
         change = quote['extendedChange']
+    elif quote['latestSource'] == 'Close' and quote.get('iexRealtimePrice'):
+        # NASDAQ stocks don't have extendedPrice anymore :(
+        price = quote['iexRealtimePrice']
+        change = price - quote['previousClose']
+    else:
+        price = quote['latestPrice']
+        change = quote['change']
 
     def maybe(name, key, fmt=human_price):
         if quote.get(key):
@@ -60,8 +64,8 @@ def stock(inp, api_key=None):
         'pe_ratio': maybe('P/E', 'peRatio', fmt='{:.2f}'.format),
     }
 
-    return ("{name} ({symbol}) ${price:,.2f} \x03{color}{change:,.2f} ({percent_change:,.2f}%)\x03 | "
-            "Day Range: ${low:,.2f} - ${high:,.2f}"
+    return ("{name} ({symbol}) ${price:,.2f} \x03{color}{change:,.2f} ({percent_change:,.2f}%)\x03"
+            + (" | Day Range: ${low:,.2f} - ${high:,.2f}"  if response['high'] and response['low'] else '') +
             "{pe_ratio}{average_volume}{market_cap}").format(**response)
 
 if __name__ == '__main__':
