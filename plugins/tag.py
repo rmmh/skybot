@@ -183,12 +183,12 @@ def untag(inp, chan='', db=None):
 
 @hook.command
 def tags(inp, chan='', db=None):
-    '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged, .is}'
+    '.tags <nick>/<nick1> <nick2>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged, .is}'
     if inp == 'list':
         return get_tag_counts_by_chan(db, chan)
-    elif '&' in inp:
+    elif ' ' in inp:
         tag_intersect = None
-        nicks = [nick.strip() for nick in inp.split('&')]
+        nicks = [nick.strip() for nick in inp.split(' ')]
         munged_nicks = [munge(x, 1) for x in nicks]
         for nick in nicks:
             curr_tags = get_tags_by_nick(db, chan, nick)
@@ -202,9 +202,9 @@ def tags(inp, chan='', db=None):
                 tag_intersect.intersection_update(curr_tags)
         
         if not tag_intersect:
-            return 'no tag overlap found for nicks "%s"' % winnow(munged_nicks)
+            return 'no shared tags for nicks "%s"' % winnow(munged_nicks)
         else:
-            return 'overlapping tags for nicks "%s": ' % winnow(munged_nicks) + winnow([tag[0] for tag in tag_intersect]) 
+            return 'shared tags for nicks "%s": ' % winnow(munged_nicks) + winnow([tag[0] for tag in tag_intersect]) 
 
     tags = get_tags_string_by_nick(db, chan, inp)
     if tags:
