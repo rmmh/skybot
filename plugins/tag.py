@@ -107,11 +107,14 @@ def get_tag_counts_by_chan(db, chan):
         return 'no tags in %s' % chan
     return winnow(['%s (%d)' % row for row in tags], ordered=True)
 
-
 def get_tags_by_nick(db, chan, nick):
-    tags = db.execute("select subject from tag where lower(nick)=lower(?)"
+    return db.execute("select subject from tag where lower(nick)=lower(?)"
                       " and chan=?"
                       " order by lower(subject)", (nick, chan)).fetchall()
+
+def get_tags_string_by_nick(db, chan, nick):
+    tags = get_tags_by_nick(db, chan, nick)
+
     if tags:
         return 'tags for "%s": ' % munge(nick, 1) + winnow([
             tag[0] for tag in tags])
@@ -158,7 +161,7 @@ def tag(inp, chan='', db=None):
             return 'tag syntax has changed. try ".untag %s" instead' % subject
         return add_tag(db, chan, sanitize(nick), sanitize(subject))
     else:
-        tags = get_tags_by_nick(db, chan, inp)
+        tags = get_tags_string_by_nick(db, chan, inp)
         if tags:
             return tags
         else:
@@ -183,8 +186,27 @@ def tags(inp, chan='', db=None):
     '.tags <nick>/list -- get list of tags for <nick>, or a list of tags {related: .tag, .untag, .tagged, .is}'
     if inp == 'list':
         return get_tag_counts_by_chan(db, chan)
+    elif '&' in inp:
+        tag_intersect = None
+        nicks = [nick.strip() for nick in inp.split('&')]
+        munged_nicks = [munge(x, 1) for x in nicks]
+        for nick in nicks:
+            curr_tags = get_tags_by_nick(db, chan, nick)
+            
+            if not curr_tags:
+                return 'nick "%s" not found' % nick
 
-    tags = get_tags_by_nick(db, chan, inp)
+            if tag_intersect is None:
+                tag_intersect = set(curr_tags)
+            else:
+                tag_intersect.intersection_update(curr_tags)
+        
+        if not tag_intersect:
+            return 'no tag overlap found for nicks "%s"' % winnow(munged_nicks)
+        else:
+            return 'overlapping tags for nicks "%s": ' % winnow(munged_nicks) + winnow([tag[0] for tag in tag_intersect]) 
+
+    tags = get_tags_string_by_nick(db, chan, inp)
     if tags:
         return tags
     else:
