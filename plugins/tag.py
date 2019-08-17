@@ -31,33 +31,39 @@ class PaginatingWinnower(object):
 
     def __init__(self):
         self.lock = threading.Lock()
-        self.last_input = []
-        self.recent = set()
+        self.inputs = {}
 
     def winnow(self, inputs, limit=400, ordered=False):
         "remove random elements from the list until it's short enough"
         with self.lock:
+            combiner = lambda l: ', '.join(sorted(l))
+
             # try to remove elements that were *not* removed recently
-            inputs_sorted = sorted(inputs)
-            if inputs_sorted == self.last_input:
+            inputs_sorted = combiner(inputs)
+            if inputs_sorted in self.inputs:
                 same_input = True
+                recent = self.inputs[inputs_sorted]
+                if len(recent) == len(inputs):
+                    recent.clear()
             else:
                 same_input = False
-                self.last_input = inputs_sorted
-                self.recent.clear()
+                if len(self.inputs) >= 100:
+                    # a true lru is effort, random replacement is easy
+                    self.inputs.pop(random.choice(list(self.inputs)))
+                recent = set()
+                self.inputs[inputs_sorted] = recent
 
-            combiner = lambda l: ', '.join(l)
             suffix = ''
 
             while len(combiner(inputs)) >= limit:
-                if same_input and any(inp in self.recent for inp in inputs):
+                if same_input and any(inp in recent for inp in inputs):
                     if ordered:
-                        for inp in self.recent:
+                        for inp in recent:
                             if inp in inputs:
                                 inputs.remove(inp)
                     else:
                         inputs.remove(
-                            random.choice([inp for inp in inputs if inp in self.recent]))
+                            random.choice([inp for inp in inputs if inp in recent]))
                 else:
                     if ordered:
                         inputs.pop()
@@ -65,7 +71,7 @@ class PaginatingWinnower(object):
                         inputs.pop(random.randint(0, len(inputs) - 1))
                 suffix = ' ...'
 
-            self.recent.update(inputs)
+            recent.update(inputs)
             return combiner(inputs) + suffix
 
 winnow = PaginatingWinnower().winnow
