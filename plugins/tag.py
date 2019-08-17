@@ -198,7 +198,7 @@ def tags(inp, chan='', db=None):
         munged_nicks = [munge(x, 1) for x in nicks]
         for nick in nicks:
             curr_tags = get_tags_by_nick(db, chan, nick)
-            
+
             if not curr_tags:
                 return 'nick "%s" not found' % nick
 
@@ -206,11 +206,12 @@ def tags(inp, chan='', db=None):
                 tag_intersect = set(curr_tags)
             else:
                 tag_intersect.intersection_update(curr_tags)
-        
+
+        msg = 'shared tags for nicks "%s"' % winnow(munged_nicks)
         if not tag_intersect:
-            return 'no shared tags for nicks "%s"' % winnow(munged_nicks)
+            return f'no {msg}'
         else:
-            return 'shared tags for nicks "%s": ' % winnow(munged_nicks) + winnow([tag[0] for tag in tag_intersect]) 
+            return f'{msg}: ' + winnow([tag[0] for tag in tag_intersect], 400 - len(msg))
 
     tags = get_tags_string_by_nick(db, chan, inp)
     if tags:
