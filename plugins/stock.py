@@ -34,7 +34,7 @@ def stock(inp, api_key=None):
     except http.HTTPError:
         return '{} is not a valid stock symbol.'.format(symbol)
 
-    if quote['extendedPriceTime'] and ['latestUpdate'] < quote['extendedPriceTime']:
+    if quote['extendedPriceTime'] and quote['latestUpdate'] < quote['extendedPriceTime']:
         price = quote['extendedPrice']
         change = quote['extendedChange']
     elif quote['latestSource'] == 'Close' and quote.get('iexRealtimePrice'):
