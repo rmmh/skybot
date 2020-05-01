@@ -26,8 +26,8 @@ def get_video_description(vid_id, api_key):
 
     duration = j['contentDetails']['duration'].replace('PT', '').lower()
 
-    published = time.strptime(j['snippet']['publishedAt'],
-                              "%Y-%m-%dT%H:%M:%SZ")
+    published = j['snippet']['publishedAt'].replace('.000Z', 'Z')
+    published = time.strptime(published, "%Y-%m-%dT%H:%M:%SZ")
     published = time.strftime("%Y.%m.%d", published)
 
     views = group_int_digits(j['statistics']['viewCount'], ',')
