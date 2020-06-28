@@ -22,7 +22,7 @@ except:
 with hooks():
     import urllib.request, urllib.parse, urllib.error
 
-    from urllib.parse import quote, unquote, urlencode, quote_plus as _quote_plus
+    from urllib.parse import quote, unquote, urlencode, urlparse, parse_qsl, quote_plus as _quote_plus
     from urllib.error import HTTPError, URLError
 
 

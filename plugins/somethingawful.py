@@ -5,7 +5,7 @@ import re
 from util import hook, http
 
 
-SA_THREAD_RE  = r"(?i)forums\.somethingawful\.com/\S*\?(?:\S+&)?threadid=(\d+)"
+SA_THREAD_RE  = r"(?i)forums\.somethingawful\.com/\S*\?(?:\S+&)?threadid=(\d+)\S*"
 SA_PROFILE_RE = r"(?i)forums\.somethingawful\.com/member.php\?\S+(userid|username)=([^&]+)"
 
 LOGIN_URL = "https://forums.somethingawful.com/account.php"
@@ -159,6 +159,12 @@ def parse_thread_html(document):
     else:
         post_count = 1
 
+    posts = {x.attrib['id']: (
+        x.xpath('.//dt[contains(@class, "author")]')[0].text_content(),
+        x.xpath('.//*[@class="postdate"]')[0].text_content().strip('\n #?'),
+        x.xpath('.//*[@class="postbody"]')[0].text_content().strip())
+        for x in document.xpath('//table[contains(@class, "post")]')}
+
     return {
         "id": thread_id,
         "breadcrumbs": breadcrumbs,
@@ -166,11 +172,12 @@ def parse_thread_html(document):
         "thread_title": thread_title,
         "author": author,
         "post_count": post_count,
-        "thread_link": http.prepare_url(THREAD_URL, {'threadid': thread_id})
+        "posts": posts,
+        "thread_link": http.prepare_url(THREAD_URL, {'threadid': thread_id}),
     }
 
 
-def get_thread_by_id(credentials, id):
+def get_thread_by_id(credentials, id, params=None):
     """
     Get thread data via the ID of the thread
 
@@ -184,7 +191,7 @@ def get_thread_by_id(credentials, id):
     thread_document = http.get_html(
         THREAD_URL,
         cookies=True,
-        query_params={
+        query_params=params or {
             "noseen": 1,
             "threadid": id,
             "perpage": 1
@@ -316,7 +323,14 @@ def thread_link(inp, api_key=None):
     if not inp:
         return
 
-    thread = get_thread_by_id(api_key, inp.group(1))
+    post = None
+    if '#post' in inp.group(0):
+        parsed = http.urlparse(inp.group(0))
+        thread = get_thread_by_id(api_key, inp.group(1), params=dict(http.parse_qsl(parsed.query)))
+        post = thread['posts'].get(parsed.fragment)
+        print(post)
+    else:
+        thread = get_thread_by_id(api_key, inp.group(1))
 
     if not thread:
         return
@@ -325,6 +339,16 @@ def thread_link(inp, api_key=None):
         thread['thread_title'] = thread['thread_title'][0:97] + '\u2026'
 
     thread['post_count_word'] = 'posts' if thread['post_count'] > 1 else 'post'
+
+    if post:
+        author, date, content = post
+        content = re.sub(r'\n+', ' // ', content)
+        if len(content) > 400:
+            content = content[:400] + '...'
+        return (
+            "\x02{forum_title}\x02 > \x02{thread_title}\x02: "
+            "\x02{poster}\x02 on {date}: {content}"
+        ).format(poster=author, date=date, content=content, **thread)
 
     return (
         "\x02{forum_title}\x02 > \x02{thread_title}\x02 by \x02{author}\x02, "
