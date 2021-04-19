@@ -7,7 +7,7 @@ from util import hook, http
 def calc(inp):
     '''.calc <term> -- returns Google Calculator result'''
 
-    h = http.get_html('http://www.google.com/search', q=inp)
+    h = http.get_latin_html('http://www.google.com/search', q=inp)
 
     m = h.xpath('//h2[@class="r"]/text()')
 
