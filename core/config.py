@@ -3,18 +3,22 @@ import inspect
 import json
 import os
 
+
 def find_config():
     # for backwards compatibility, look for either 'config' or 'config.json'
-    if os.path.exists('config'):
-        return 'config'
-    return 'config.json'
+    if os.path.exists("config"):
+        return "config"
+    return "config.json"
+
 
 def save(conf):
-    json.dump(conf, open(find_config(), 'w'), sort_keys=True, indent=2)
+    json.dump(conf, open(find_config(), "w"), sort_keys=True, indent=2)
+
 
 if not os.path.exists(find_config()):
-    open('config.json', 'w').write(inspect.cleandoc(
-        r'''
+    open("config.json", "w").write(
+        inspect.cleandoc(
+            r"""
         {
           "connections":
           {
@@ -42,7 +46,10 @@ if not os.path.exists(find_config()):
             "!coz",
             "!tell /x"
           ]
-        }''') + '\n')
+        }"""
+        )
+        + "\n"
+    )
 
 
 def config():
@@ -53,18 +60,20 @@ def config():
             bot.config = json.load(open(find_config()))
             bot._config_mtime = config_mtime
 
-            for name, conf in bot.config['connections'].items():
-                conf.setdefault('censored_strings', bot.config.get('censored_strings', []))
+            for name, conf in bot.config["connections"].items():
+                conf.setdefault(
+                    "censored_strings", bot.config.get("censored_strings", [])
+                )
 
                 if name in bot.conns:
                     bot.conns[name].set_conf(conf)
                 else:
-                    if conf.get('ssl'):
+                    if conf.get("ssl"):
                         bot.conns[name] = SSLIRC(conf)
                     else:
                         bot.conns[name] = IRC(conf)
         except ValueError as e:
-            print('ERROR: malformed config!', e)
+            print("ERROR: malformed config!", e)
 
 
 bot._config_mtime = 0

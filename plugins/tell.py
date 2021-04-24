@@ -7,24 +7,28 @@ from util import hook, timesince
 
 def db_init(db):
     "check to see that our db has the tell table and return a dbection."
-    db.execute("create table if not exists tell"
-               "(user_to, user_from, message, chan, time,"
-               "primary key(user_to, message))")
+    db.execute(
+        "create table if not exists tell"
+        "(user_to, user_from, message, chan, time,"
+        "primary key(user_to, message))"
+    )
     db.commit()
 
     return db
 
 
 def get_tells(db, user_to):
-    return db.execute("select user_from, message, time, chan from tell where"
-                      " user_to=lower(?) order by time",
-                      (user_to.lower(),)).fetchall()
+    return db.execute(
+        "select user_from, message, time, chan from tell where"
+        " user_to=lower(?) order by time",
+        (user_to.lower(),),
+    ).fetchall()
 
 
 @hook.singlethread
-@hook.event('PRIVMSG')
+@hook.event("PRIVMSG")
 def tellinput(paraml, input=None, db=None):
-    if 'showtells' in input.msg.lower():
+    if "showtells" in input.msg.lower():
         return
 
     db_init(db)
@@ -35,19 +39,20 @@ def tellinput(paraml, input=None, db=None):
         user_from, message, time, chan = tells[0]
         reltime = timesince.timesince(time)
 
-        reply = "%s said %s ago in %s: %s" % (user_from, reltime, chan,
-                                              message)
+        reply = "%s said %s ago in %s: %s" % (user_from, reltime, chan, message)
         if len(tells) > 1:
             reply += " (+%d more, .showtells to view)" % (len(tells) - 1)
 
-        db.execute("delete from tell where user_to=lower(?) and message=?",
-                   (input.nick, message))
+        db.execute(
+            "delete from tell where user_to=lower(?) and message=?",
+            (input.nick, message),
+        )
         db.commit()
         input.pm(reply)
 
 
 @hook.command(autohelp=False)
-def showtells(inp, nick='', chan='', pm=None, db=None):
+def showtells(inp, nick="", chan="", pm=None, db=None):
     ".showtells -- view all pending tell messages (sent in PM)."
 
     db_init(db)
@@ -63,16 +68,15 @@ def showtells(inp, nick='', chan='', pm=None, db=None):
         past = timesince.timesince(time)
         pm("%s said %s ago in %s: %s" % (user_from, past, chan, message))
 
-    db.execute("delete from tell where user_to=lower(?)",
-               (nick,))
+    db.execute("delete from tell where user_to=lower(?)", (nick,))
     db.commit()
 
 
 @hook.command
-def tell(inp, nick='', chan='', db=None, conn=None):
+def tell(inp, nick="", chan="", db=None, conn=None):
     ".tell <nick> <message> -- relay <message> to <nick> when <nick> is around"
 
-    query = inp.split(' ', 1)
+    query = inp.split(" ", 1)
 
     if len(query) != 2:
         return tell.__doc__
@@ -82,21 +86,25 @@ def tell(inp, nick='', chan='', db=None, conn=None):
     user_from = nick
 
     if chan.lower() == user_from.lower():
-        chan = 'a pm'
+        chan = "a pm"
 
     if user_to in (user_from.lower(), conn.nick.lower()):
         return "No."
 
     db_init(db)
 
-    if db.execute("select count() from tell where user_to=?",
-                  (user_to,)).fetchone()[0] >= 5:
+    if (
+        db.execute("select count() from tell where user_to=?", (user_to,)).fetchone()[0]
+        >= 5
+    ):
         return "That person has too many things queued."
 
     try:
-        db.execute("insert into tell(user_to, user_from, message, chan,"
-                   "time) values(?,?,?,?,?)", (user_to, user_from, message,
-                                               chan, time.time()))
+        db.execute(
+            "insert into tell(user_to, user_from, message, chan,"
+            "time) values(?,?,?,?,?)",
+            (user_to, user_from, message, chan, time.time()),
+        )
         db.commit()
     except db.IntegrityError:
         return "Message has already been queued."

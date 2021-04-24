@@ -4,8 +4,8 @@ import re
 from util import hook, http
 
 
-PRE_DB_SEARCH_URL = 'https://pr3.us/search.php'
-PRE_DB_RE_NOT_FOUND = re.compile('^Nothing found for: .+$')
+PRE_DB_SEARCH_URL = "https://pr3.us/search.php"
+PRE_DB_RE_NOT_FOUND = re.compile("^Nothing found for: .+$")
 
 
 def get_predb_release(release_name):
@@ -20,10 +20,7 @@ def get_predb_release(release_name):
             ts=timestamp,
             pretimezone=0,
             timezone=0,
-            headers={
-                'Accept': '*/*',
-                'Accept-Language': 'en-US,en;q=0.5'
-            }
+            headers={"Accept": "*/*", "Accept-Language": "en-US,en;q=0.5"},
         )
     except http.HTTPError:
         return None
@@ -38,17 +35,16 @@ def get_predb_release(release_name):
     if PRE_DB_RE_NOT_FOUND.match(first_result.text_content()):
         return None
 
-    section_field, name_field, _, size_field, ts_field = \
-        first_result.xpath('./td')[:5]
+    section_field, name_field, _, size_field, ts_field = first_result.xpath("./td")[:5]
 
     date, time = ts_field.text_content().split()
 
     return {
-        'date': date,
-        'time': time,
-        'section': section_field.text_content(),
-        'name': name_field.text_content().strip(),
-        'size': size_field.text_content()
+        "date": date,
+        "time": time,
+        "section": section_field.text_content(),
+        "name": name_field.text_content().strip(),
+        "size": size_field.text_content(),
     }
 
 
@@ -59,9 +55,9 @@ def predb(inp):
     release = get_predb_release(inp)
 
     if not release:
-        return 'zero results'
+        return "zero results"
 
-    if release['size']:
-        release['size'] = ' - %s' % release['size']
+    if release["size"]:
+        release["size"] = " - %s" % release["size"]
 
-    return '{date} - {section} - {name}{size}'.format(**release)
+    return "{date} - {section} - {name}{size}".format(**release)

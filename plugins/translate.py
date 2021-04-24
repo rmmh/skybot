@@ -1,7 +1,7 @@
-'''
+"""
 A Google API key is required and retrieved from the bot config file.
 Since December 1, 2011, the Google Translate API is a paid service only.
-'''
+"""
 
 from builtins import zip
 from builtins import chr
@@ -35,20 +35,26 @@ def unescape(text):
 
     return re.sub("&#?\w+;", fixup, text)
 
+
 ##############################################################################
 
 
 def goog_trans(api_key, text, slang, tlang):
-    url = 'https://www.googleapis.com/language/translate/v2'
-    parsed = http.get_json(
-        url, key=api_key, q=text, source=slang, target=tlang)
-    if not 200 <= parsed['responseStatus'] < 300:
-        raise IOError('error with the translation server: %d: %s' % (
-            parsed['responseStatus'], parsed['responseDetails']))
+    url = "https://www.googleapis.com/language/translate/v2"
+    parsed = http.get_json(url, key=api_key, q=text, source=slang, target=tlang)
+    if not 200 <= parsed["responseStatus"] < 300:
+        raise IOError(
+            "error with the translation server: %d: %s"
+            % (parsed["responseStatus"], parsed["responseDetails"])
+        )
     if not slang:
-        return unescape('(%(detectedSourceLanguage)s) %(translatedText)s' %
-                        (parsed['responseData']['data']['translations'][0]))
-    return unescape('%(translatedText)s' % parsed['responseData']['data']['translations'][0])
+        return unescape(
+            "(%(detectedSourceLanguage)s) %(translatedText)s"
+            % (parsed["responseData"]["data"]["translations"][0])
+        )
+    return unescape(
+        "%(translatedText)s" % parsed["responseData"]["data"]["translations"][0]
+    )
 
 
 def match_language(fragment):
@@ -64,49 +70,47 @@ def match_language(fragment):
     return None
 
 
-@hook.api_key('google')
+@hook.api_key("google")
 @hook.command
-def translate(inp, api_key=''):
-    '.translate [source language [target language]] <sentence> -- translates' \
-        ' <sentence> from source language (default autodetect) to target' \
-        ' language (default English) using Google Translate'
+def translate(inp, api_key=""):
+    ".translate [source language [target language]] <sentence> -- translates" " <sentence> from source language (default autodetect) to target" " language (default English) using Google Translate"
 
-    args = inp.split(' ', 2)
+    args = inp.split(" ", 2)
 
     try:
         if len(args) >= 2:
             sl = match_language(args[0])
             if not sl:
-                return goog_trans(api_key, inp, '', 'en')
+                return goog_trans(api_key, inp, "", "en")
             if len(args) == 2:
-                return goog_trans(api_key, args[1], sl, 'en')
+                return goog_trans(api_key, args[1], sl, "en")
             if len(args) >= 3:
                 tl = match_language(args[1])
                 if not tl:
-                    if sl == 'en':
-                        return 'unable to determine desired target language'
-                    return goog_trans(api_key, args[1] + ' ' + args[2], sl, 'en')
+                    if sl == "en":
+                        return "unable to determine desired target language"
+                    return goog_trans(api_key, args[1] + " " + args[2], sl, "en")
                 return goog_trans(api_key, args[2], sl, tl)
-        return goog_trans(api_key, inp, '', 'en')
+        return goog_trans(api_key, inp, "", "en")
     except IOError as e:
         return e
 
 
-languages = 'ja fr de ko ru zh'.split()
+languages = "ja fr de ko ru zh".split()
 language_pairs = zip(languages[:-1], languages[1:])
 
 
 def babel_gen(inp):
     for language in languages:
-        inp = inp.encode('utf8')
-        trans = goog_trans(api_key, inp, 'en', language).encode('utf8')
-        inp = goog_trans(api_key, trans, language, 'en')
+        inp = inp.encode("utf8")
+        trans = goog_trans(api_key, inp, "en", language).encode("utf8")
+        inp = goog_trans(api_key, trans, language, "en")
         yield language, trans, inp
 
 
-@hook.api_key('google')
+@hook.api_key("google")
 @hook.command
-def babel(inp, api_key=''):
+def babel(inp, api_key=""):
     ".babel <sentence> -- translates <sentence> through multiple languages"
 
     try:
@@ -115,9 +119,9 @@ def babel(inp, api_key=''):
         return e
 
 
-@hook.api_key('google')
+@hook.api_key("google")
 @hook.command
-def babelext(inp, api_key=''):
+def babelext(inp, api_key=""):
     ".babelext <sentence> -- like .babel, but with more detailed output"
 
     try:
@@ -125,14 +129,14 @@ def babelext(inp, api_key=''):
     except IOError as e:
         return e
 
-    out = ''
+    out = ""
     for lang, trans, text in babels:
-        out += '%s:"%s", ' % (lang, text.decode('utf8'))
+        out += '%s:"%s", ' % (lang, text.decode("utf8"))
 
-    out += 'en:"' + babels[-1][2].decode('utf8') + '"'
+    out += 'en:"' + babels[-1][2].decode("utf8") + '"'
 
     if len(out) > 300:
-        out = out[:150] + ' ... ' + out[-150:]
+        out = out[:150] + " ... " + out[-150:]
 
     return out
 
@@ -197,5 +201,5 @@ lang_pairs = [
     ("ur", "Urdu"),
     ("vi", "Vietnamese"),
     ("cy", "Welsh"),
-    ("yi", "Yiddish")
+    ("yi", "Yiddish"),
 ]

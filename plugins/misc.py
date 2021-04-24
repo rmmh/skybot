@@ -9,25 +9,27 @@ socket.setdefaulttimeout(10)  # global setting
 
 def get_version():
     try:
-        stdout = subprocess.check_output(['git', 'log', '--format=%h'])
+        stdout = subprocess.check_output(["git", "log", "--format=%h"])
     except:
         revnumber = 0
-        shorthash = '????'
+        shorthash = "????"
     else:
         revs = stdout.splitlines()
         revnumber = len(revs)
         shorthash = revs[0]
 
-    shorthash = shorthash.decode('utf-8')
+    shorthash = shorthash.decode("utf-8")
 
-    http.ua_skybot = 'Skybot/r%d %s (http://github.com/rmmh/skybot)' \
-        % (revnumber, shorthash)
+    http.ua_skybot = "Skybot/r%d %s (http://github.com/rmmh/skybot)" % (
+        revnumber,
+        shorthash,
+    )
 
     return shorthash, revnumber
 
 
 # autorejoin channels
-@hook.event('KICK')
+@hook.event("KICK")
 def rejoin(paraml, conn=None):
     if paraml[1] == conn.nick:
         if paraml[0].lower() in conn.channels:
@@ -35,12 +37,12 @@ def rejoin(paraml, conn=None):
 
 
 # join channels when invited
-@hook.event('INVITE')
+@hook.event("INVITE")
 def invite(paraml, conn=None):
     conn.join(paraml[-1])
 
 
-@hook.event('004')
+@hook.event("004")
 def onjoin(paraml, conn=None):
     # identify to services
     nickserv_password = conn.nickserv_password
@@ -53,7 +55,7 @@ def onjoin(paraml, conn=None):
     # set mode on self
     mode = conn.user_mode
     if mode:
-        conn.cmd('MODE', [conn.nick, mode])
+        conn.cmd("MODE", [conn.nick, mode])
 
     conn.join_channels()
 
@@ -61,8 +63,10 @@ def onjoin(paraml, conn=None):
     get_version()
 
 
-@hook.regex(r'^\x01VERSION\x01$')
+@hook.regex(r"^\x01VERSION\x01$")
 def version(inp, notice=None):
     ident, rev = get_version()
-    notice('\x01VERSION skybot %s r%d - http://github.com/rmmh/'
-           'skybot/\x01' % (ident, rev))
+    notice(
+        "\x01VERSION skybot %s r%d - http://github.com/rmmh/"
+        "skybot/\x01" % (ident, rev)
+    )

@@ -19,10 +19,10 @@ def get_fixture_file_data(testcase, file):
 
 def execute_skybot_regex(command_method, inp, **kwargs):
     for type, (func, func_args) in command_method._hook:
-        if not type == 'regex' or 're' not in func_args:
+        if not type == "regex" or "re" not in func_args:
             continue
 
-        search_result = func_args['re'].search(inp)
+        search_result = func_args["re"].search(inp)
 
         if search_result:
             return command_method(search_result, **kwargs)

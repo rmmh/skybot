@@ -23,6 +23,7 @@ inspired by:
 
 from builtins import str
 from builtins import object
+
 __license__ = "Python"
 
 from future.builtins import str
@@ -33,7 +34,7 @@ import urllib.parse
 from urllib.parse import quote, unquote
 
 default_port = {
-    'http': 80,
+    "http": 80,
 }
 
 
@@ -42,27 +43,39 @@ class Normalizer(object):
         self.regex = regex
         self.normalize = normalize_func
 
-normalizers = ( Normalizer( re.compile(r'(?:https?://)?(?:[a-zA-Z0-9\-]+\.)?(?:amazon|amzn){1}\.(?P<tld>[a-zA-Z\.]{2,})\/(gp/(?:product|offer-listing|customer-media/product-gallery)/|exec/obidos/tg/detail/-/|o/ASIN/|dp/|(?:[A-Za-z0-9\-]+)/dp/)?(?P<ASIN>[0-9A-Za-z]{10})'),
-                            lambda m: r'http://amazon.%s/dp/%s' % (m.group('tld'), m.group('ASIN'))),
-                Normalizer( re.compile(r'.*waffleimages\.com.*/([0-9a-fA-F]{40})'),
-                            lambda m: r'http://img.waffleimages.com/%s' % m.group(1) ),
-                Normalizer( re.compile(r'(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)([-_a-z0-9]+)'),
-                            lambda m: r'http://youtube.com/watch?v=%s' % m.group(1) ),
-    )
+
+normalizers = (
+    Normalizer(
+        re.compile(
+            r"(?:https?://)?(?:[a-zA-Z0-9\-]+\.)?(?:amazon|amzn){1}\.(?P<tld>[a-zA-Z\.]{2,})\/(gp/(?:product|offer-listing|customer-media/product-gallery)/|exec/obidos/tg/detail/-/|o/ASIN/|dp/|(?:[A-Za-z0-9\-]+)/dp/)?(?P<ASIN>[0-9A-Za-z]{10})"
+        ),
+        lambda m: r"http://amazon.%s/dp/%s" % (m.group("tld"), m.group("ASIN")),
+    ),
+    Normalizer(
+        re.compile(r".*waffleimages\.com.*/([0-9a-fA-F]{40})"),
+        lambda m: r"http://img.waffleimages.com/%s" % m.group(1),
+    ),
+    Normalizer(
+        re.compile(
+            r"(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)([-_a-z0-9]+)"
+        ),
+        lambda m: r"http://youtube.com/watch?v=%s" % m.group(1),
+    ),
+)
 
 
 def normalize(url):
     """Normalize a URL."""
 
     scheme, auth, path, query, fragment = urllib.parse.urlsplit(str(url.strip()))
-    userinfo, host, port = re.search('([^@]*@)?([^:]*):?(.*)', auth).groups()
+    userinfo, host, port = re.search("([^@]*@)?([^:]*):?(.*)", auth).groups()
 
     # Always provide the URI scheme in lowercase characters.
     scheme = scheme.lower()
 
     # Always provide the host, if any, in lowercase characters.
     host = host.lower()
-    if host and host[-1] == '.':
+    if host and host[-1] == ".":
         host = host[:-1]
     if host and host.startswith("www."):
         if not scheme:
@@ -78,18 +91,23 @@ def normalize(url):
     # All portions of the URI must be utf-8 encoded NFC from Unicode strings
     def clean(string):
         string = str(unquote(string))
-        return unicodedata.normalize('NFC', string).encode('utf-8')
+        return unicodedata.normalize("NFC", string).encode("utf-8")
+
     path = quote(clean(path), "~:/?#[]@!$&'()*+,;=")
     fragment = quote(clean(fragment), "~")
 
     # note care must be taken to only encode & and = characters as values
-    query = "&".join(["=".join([quote(clean(t), "~:/?#[]@!$'()*+,;=")
-        for t in q.split("=", 1)]) for q in query.split("&")])
+    query = "&".join(
+        [
+            "=".join([quote(clean(t), "~:/?#[]@!$'()*+,;=") for t in q.split("=", 1)])
+            for q in query.split("&")
+        ]
+    )
 
     # Prevent dot-segments appearing in non-relative URI paths.
     if scheme in ["", "http", "https", "ftp", "file"]:
         output = []
-        for input in path.split('/'):
+        for input in path.split("/"):
             if input == "":
                 if not output:
                     output.append(input)
@@ -102,7 +120,7 @@ def normalize(url):
                 output.append(input)
         if input in ["", ".", ".."]:
             output.append("")
-        path = '/'.join(output)
+        path = "/".join(output)
 
     # For schemes that define a default authority, use an empty authority if
     # the default is desired.
@@ -120,7 +138,7 @@ def normalize(url):
         if port.isdigit():
             port = str(int(port))
             if int(port) == default_port[scheme]:
-                port = ''
+                port = ""
 
     # Put it all back together again
     auth = (userinfo or "") + host
@@ -128,7 +146,9 @@ def normalize(url):
         auth += ":" + port
     if url.endswith("#") and query == "" and fragment == "":
         path += "#"
-    normal_url = urllib.parse.urlunsplit((scheme, auth, path, query, fragment)).replace("http:///", "http://")
+    normal_url = urllib.parse.urlunsplit((scheme, auth, path, query, fragment)).replace(
+        "http:///", "http://"
+    )
     for norm in normalizers:
         m = norm.regex.match(normal_url)
         if m:
