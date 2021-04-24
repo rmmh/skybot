@@ -5,26 +5,24 @@ import re
 from util import hook, http
 
 
-SA_THREAD_RE  = r"(?i)forums\.somethingawful\.com/\S*\?(?:\S+&)?threadid=(\d+)\S*"
-SA_PROFILE_RE = r"(?i)forums\.somethingawful\.com/member.php\?\S+(userid|username)=([^&]+)"
+SA_THREAD_RE = r"(?i)forums\.somethingawful\.com/\S*\?(?:\S+&)?threadid=(\d+)\S*"
+SA_PROFILE_RE = (
+    r"(?i)forums\.somethingawful\.com/member.php\?\S+(userid|username)=([^&]+)"
+)
 
 LOGIN_URL = "https://forums.somethingawful.com/account.php"
 THREAD_URL = "https://forums.somethingawful.com/showthread.php"
 PROFILE_URL = "https://forums.somethingawful.com/member.php"
 
-MATCH_OBJECT = type(re.match(r"", "")) # Is there a nicer way to get this??
+MATCH_OBJECT = type(re.match(r"", ""))  # Is there a nicer way to get this??
 
-GENDER_UNICODE = {
-    "male": "\u2642",
-    "female": "\u2640",
-    "porpoise": "\uE520"
-}
+GENDER_UNICODE = {"male": "\u2642", "female": "\u2640", "porpoise": "\uE520"}
 
 FORUM_ABBREVS = {
     "Serious Hardware / Software Crap": "SHSC",
     "The Cavern of COBOL": "CoC",
     "General Bullshit": "GBS",
-    "Haus of Tech Support": "HoTS"
+    "Haus of Tech Support": "HoTS",
 }
 
 
@@ -39,8 +37,10 @@ def login(user, password):
     """
 
     get_sa_cookies = lambda jar: [
-        c for c in jar
-        if c.domain.endswith("forums.somethingawful.com") and (c.name == "bbuserid" or c.name == "bbpassword")
+        c
+        for c in jar
+        if c.domain.endswith("forums.somethingawful.com")
+        and (c.name == "bbuserid" or c.name == "bbpassword")
     ]
 
     http.clear_expired_cookies()
@@ -85,7 +85,9 @@ def parse_profile_html(document):
         profile["registered"] = registered_elements[0].text_content()
 
     if avatar_elements:
-        profile["avatar"] = avatar_elements[0].attrib["src"] if avatar_elements[0].attrib["src"] else ""
+        profile["avatar"] = (
+            avatar_elements[0].attrib["src"] if avatar_elements[0].attrib["src"] else ""
+        )
         profile["is_newbie"] = profile["avatar"].endswith("/images/newbie.gif")
 
     if info_elements:
@@ -108,9 +110,13 @@ def parse_profile_html(document):
             profile["gender"] = gender.group(1).lower()
 
     if "id" in profile:
-        profile["profile_link"] = http.prepare_url(PROFILE_URL, { "action": "getinfo", "userid": profile["id"]})
+        profile["profile_link"] = http.prepare_url(
+            PROFILE_URL, {"action": "getinfo", "userid": profile["id"]}
+        )
     elif "username" in profile:
-        profile["profile_link"] = http.prepare_url(PROFILE_URL, {"action": "getinfo", "username": profile["username"]})
+        profile["profile_link"] = http.prepare_url(
+            PROFILE_URL, {"action": "getinfo", "username": profile["username"]}
+        )
 
     return profile
 
@@ -135,9 +141,9 @@ def parse_thread_html(document):
     if len(breadcrumbs_elements) < 2:
         return
 
-    thread_id = int(breadcrumbs_elements[-1].attrib['href'].rsplit('=', 2)[1])
+    thread_id = int(breadcrumbs_elements[-1].attrib["href"].rsplit("=", 2)[1])
 
-    breadcrumbs = [ e.text_content() for e in breadcrumbs_elements ]
+    breadcrumbs = [e.text_content() for e in breadcrumbs_elements]
 
     thread_title = breadcrumbs[-1]
     forum_title = breadcrumbs[-2]
@@ -145,11 +151,11 @@ def parse_thread_html(document):
     if author_elements:
         author = author_elements[0].text_content().strip()
     else:
-        author = 'Unknown Author'
+        author = "Unknown Author"
 
     # Handle GBS / FYAD / E/N / etc
-    if ':' in forum_title:
-        forum_title = forum_title.split(':')[0].strip()
+    if ":" in forum_title:
+        forum_title = forum_title.split(":")[0].strip()
 
     if forum_title in FORUM_ABBREVS:
         forum_title = FORUM_ABBREVS[forum_title]
@@ -159,11 +165,14 @@ def parse_thread_html(document):
     else:
         post_count = 1
 
-    posts = {x.attrib['id']: (
-        x.xpath('.//dt[contains(@class, "author")]')[0].text_content(),
-        x.xpath('.//*[@class="postdate"]')[0].text_content().strip('\n #?'),
-        x.xpath('.//*[@class="postbody"]')[0].text_content().strip())
-        for x in document.xpath('//table[contains(@class, "post")]')}
+    posts = {
+        x.attrib["id"]: (
+            x.xpath('.//dt[contains(@class, "author")]')[0].text_content(),
+            x.xpath('.//*[@class="postdate"]')[0].text_content().strip("\n #?"),
+            x.xpath('.//*[@class="postbody"]')[0].text_content().strip(),
+        )
+        for x in document.xpath('//table[contains(@class, "post")]')
+    }
 
     return {
         "id": thread_id,
@@ -173,7 +182,7 @@ def parse_thread_html(document):
         "author": author,
         "post_count": post_count,
         "posts": posts,
-        "thread_link": http.prepare_url(THREAD_URL, {'threadid': thread_id}),
+        "thread_link": http.prepare_url(THREAD_URL, {"threadid": thread_id}),
     }
 
 
@@ -186,16 +195,12 @@ def get_thread_by_id(credentials, id, params=None):
     :return: a dictionary representing the thread
     """
     if not login(credentials["user"], credentials["password"]):
-        raise ValueError('invalid login')
+        raise ValueError("invalid login")
 
     thread_document = http.get_html(
         THREAD_URL,
         cookies=True,
-        query_params=params or {
-            "noseen": 1,
-            "threadid": id,
-            "perpage": 1
-        }
+        query_params=params or {"noseen": 1, "threadid": id, "perpage": 1},
     )
 
     return parse_thread_html(thread_document)
@@ -210,15 +215,10 @@ def get_profile_by_id(credentials, id):
     :return: a dictionary representing a profile
     """
     if not login(credentials["user"], credentials["password"]):
-        raise ValueError('invalid login')
+        raise ValueError("invalid login")
 
     profile_document = http.get_html(
-        PROFILE_URL,
-        cookies=True,
-        query_params={
-            "action": "getinfo",
-            "userid": id
-        }
+        PROFILE_URL, cookies=True, query_params={"action": "getinfo", "userid": id}
     )
 
     return parse_profile_html(profile_document)
@@ -233,15 +233,12 @@ def get_profile_by_username(credentials, username):
     :return: a dictionary representing a profile
     """
     if not login(credentials["user"], credentials["password"]):
-        raise ValueError('invalid login')
+        raise ValueError("invalid login")
 
     profile_document = http.get_html(
         PROFILE_URL,
         cookies=True,
-        query_params={
-            "action": "getinfo",
-            "username": username
-        }
+        query_params={"action": "getinfo", "username": username},
     )
 
     return parse_profile_html(profile_document)
@@ -273,6 +270,7 @@ def format_profile_response(profile, show_link=False):
             "\x02{username}\x02 ({gender_symbol}) - registered \x02{registered}\x02 - "
             "last post \x02{last_post}\x02 - {post_rate} posts per day"
         ).format(**profile)
+
 
 @hook.api_key("somethingawful")
 @hook.command("profile")
@@ -324,10 +322,12 @@ def thread_link(inp, api_key=None):
         return
 
     post = None
-    if '#post' in inp.group(0):
+    if "#post" in inp.group(0):
         parsed = http.urlparse(inp.group(0))
-        thread = get_thread_by_id(api_key, inp.group(1), params=dict(http.parse_qsl(parsed.query)))
-        post = thread['posts'].get(parsed.fragment)
+        thread = get_thread_by_id(
+            api_key, inp.group(1), params=dict(http.parse_qsl(parsed.query))
+        )
+        post = thread["posts"].get(parsed.fragment)
         print(post)
     else:
         thread = get_thread_by_id(api_key, inp.group(1))
@@ -335,16 +335,16 @@ def thread_link(inp, api_key=None):
     if not thread:
         return
 
-    if len(thread['thread_title']) > 100:
-        thread['thread_title'] = thread['thread_title'][0:97] + '\u2026'
+    if len(thread["thread_title"]) > 100:
+        thread["thread_title"] = thread["thread_title"][0:97] + "\u2026"
 
-    thread['post_count_word'] = 'posts' if thread['post_count'] > 1 else 'post'
+    thread["post_count_word"] = "posts" if thread["post_count"] > 1 else "post"
 
     if post:
         author, date, content = post
-        content = re.sub(r'\n+', ' // ', content)
+        content = re.sub(r"\n+", " // ", content)
         if len(content) > 400:
-            content = content[:400] + '...'
+            content = content[:400] + "..."
         return (
             "\x02{forum_title}\x02 > \x02{thread_title}\x02: "
             "\x02{poster}\x02 on {date}: {content}"

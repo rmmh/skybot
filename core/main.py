@@ -12,9 +12,9 @@ _thread.stack_size(1024 * 512)  # reduce vm size
 
 
 class Input(dict):
-
-    def __init__(self, conn, raw, prefix, command, params,
-                 nick, user, host, paraml, msg):
+    def __init__(
+        self, conn, raw, prefix, command, params, nick, user, host, paraml, msg
+    ):
 
         server = conn.server_host
 
@@ -29,7 +29,7 @@ class Input(dict):
             if chan == nick:  # PMs don't need prefixes
                 self.say(msg)
             else:
-                self.say(nick + ': ' + msg)
+                self.say(nick + ": " + msg)
 
         def pm(msg, nick=nick):
             conn.msg(nick, msg)
@@ -41,24 +41,43 @@ class Input(dict):
             self.say("\x01%s %s\x01" % ("ACTION", msg))
 
         def notice(msg):
-            conn.cmd('NOTICE', [nick, msg])
+            conn.cmd("NOTICE", [nick, msg])
 
         def kick(target=None, reason=None):
-            conn.cmd('KICK', [chan, target or nick, reason or ''])
+            conn.cmd("KICK", [chan, target or nick, reason or ""])
 
         def ban(target=None):
-            conn.cmd('MODE', [chan, '+b', target or host])
+            conn.cmd("MODE", [chan, "+b", target or host])
 
         def unban(target=None):
-            conn.cmd('MODE', [chan, '-b', target or host])
+            conn.cmd("MODE", [chan, "-b", target or host])
 
-
-        dict.__init__(self, conn=conn, raw=raw, prefix=prefix, command=command,
-                      params=params, nick=nick, user=user, host=host,
-                      paraml=paraml, msg=msg, server=server, chan=chan,
-                      notice=notice, say=say, reply=reply, pm=pm, bot=bot,
-                      kick=kick, ban=ban, unban=unban, me=me,
-                      set_nick=set_nick, lastparam=paraml[-1])
+        dict.__init__(
+            self,
+            conn=conn,
+            raw=raw,
+            prefix=prefix,
+            command=command,
+            params=params,
+            nick=nick,
+            user=user,
+            host=host,
+            paraml=paraml,
+            msg=msg,
+            server=server,
+            chan=chan,
+            notice=notice,
+            say=say,
+            reply=reply,
+            pm=pm,
+            bot=bot,
+            kick=kick,
+            ban=ban,
+            unban=unban,
+            me=me,
+            set_nick=set_nick,
+            lastparam=paraml[-1],
+        )
 
     # make dict keys accessible as attributes
     def __getattr__(self, key):
@@ -71,13 +90,13 @@ class Input(dict):
 def run(func, input):
     args = func._args
 
-    if 'inp' not in input:
+    if "inp" not in input:
         input.inp = input.paraml
 
     if args:
-        if 'db' in args and 'db' not in input:
+        if "db" in args and "db" not in input:
             input.db = get_db_connection(input.conn)
-        if 'input' in args:
+        if "input" in args:
             input.input = input
         if 0 in args:
             out = func(input.inp, **input)
@@ -94,14 +113,14 @@ def do_sieve(sieve, bot, input, func, type, args):
     try:
         return sieve(bot, input, func, type, args)
     except Exception:
-        print('sieve error', end=' ')
+        print("sieve error", end=" ")
         traceback.print_exc()
         return None
 
 
 class Handler(object):
 
-    '''Runs plugins in their own threads (ensures order)'''
+    """Runs plugins in their own threads (ensures order)"""
 
     def __init__(self, func):
         self.func = func
@@ -109,7 +128,7 @@ class Handler(object):
         _thread.start_new_thread(self.start, ())
 
     def start(self):
-        uses_db = 'db' in self.func._args
+        uses_db = "db" in self.func._args
         db_conns = {}
         while True:
             input = self.input_queue.get()
@@ -137,23 +156,27 @@ class Handler(object):
 
 
 def dispatch(input, kind, func, args, autohelp=False):
-    for sieve, in bot.plugs['sieve']:
+    for (sieve,) in bot.plugs["sieve"]:
         input = do_sieve(sieve, bot, input, func, kind, args)
         if input == None:
             return
 
-    if autohelp and args.get('autohelp', True) and not input.inp \
-            and func.__doc__ is not None:
+    if (
+        autohelp
+        and args.get("autohelp", True)
+        and not input.inp
+        and func.__doc__ is not None
+    ):
         input.reply(func.__doc__)
         return
 
-    if hasattr(func, '_apikeys'):
-        bot_keys = bot.config.get('api_keys', {})
+    if hasattr(func, "_apikeys"):
+        bot_keys = bot.config.get("api_keys", {})
         keys = {key: bot_keys.get(key) for key in func._apikeys}
 
         missing = [keyname for keyname, value in keys.items() if value is None]
         if missing:
-            input.reply('error: missing api keys - {}'.format(missing))
+            input.reply("error: missing api keys - {}".format(missing))
             return
 
         # Return a single key as just the value, and multiple keys as a dict.
@@ -180,36 +203,39 @@ def match_command(command):
 
     return command
 
+
 def make_command_re(bot_prefix, is_private, bot_nick):
     if not isinstance(bot_prefix, list):
         bot_prefix = [bot_prefix]
     if is_private:
-        bot_prefix.append('')  # empty prefix
-    bot_prefix = '|'.join(re.escape(p) for p in bot_prefix)
-    bot_prefix += '|' + bot_nick + r'[:,]+\s+'
-    command_re = r'(?:%s)(\w+)(?:$|\s+)(.*)' % bot_prefix
+        bot_prefix.append("")  # empty prefix
+    bot_prefix = "|".join(re.escape(p) for p in bot_prefix)
+    bot_prefix += "|" + bot_nick + r"[:,]+\s+"
+    command_re = r"(?:%s)(\w+)(?:$|\s+)(.*)" % bot_prefix
     return re.compile(command_re)
 
+
 def test_make_command_re():
-    match = make_command_re('.', False, 'bot').match
-    assert not match('foo')
-    assert not match('bot foo')
+    match = make_command_re(".", False, "bot").match
+    assert not match("foo")
+    assert not match("bot foo")
     for _ in range(2):
-        assert match('.test').groups() == ('test', '')
-        assert match('bot: foo args').groups() == ('foo', 'args')
-        match = make_command_re('.', True, 'bot').match
-    assert match('foo').groups() == ('foo', '')
-    match = make_command_re(['.', '!'], False, 'bot').match
-    assert match('!foo args').groups() == ('foo', 'args')
+        assert match(".test").groups() == ("test", "")
+        assert match("bot: foo args").groups() == ("foo", "args")
+        match = make_command_re(".", True, "bot").match
+    assert match("foo").groups() == ("foo", "")
+    match = make_command_re([".", "!"], False, "bot").match
+    assert match("!foo args").groups() == ("foo", "args")
+
 
 def main(conn, out):
     inp = Input(conn, *out)
 
     # EVENTS
-    for func, args in bot.events[inp.command] + bot.events['*']:
+    for func, args in bot.events[inp.command] + bot.events["*"]:
         dispatch(Input(conn, *out), "event", func, args)
 
-    if inp.command == 'PRIVMSG':
+    if inp.command == "PRIVMSG":
         # COMMANDS
         config_prefix = bot.config.get("prefix", ".")
         is_private = inp.chan == inp.nick  # no prefix required
@@ -223,8 +249,9 @@ def main(conn, out):
 
             if isinstance(command, list):  # multiple potential matches
                 input = Input(conn, *out)
-                input.reply("did you mean %s or %s?" %
-                            (', '.join(command[:-1]), command[-1]))
+                input.reply(
+                    "did you mean %s or %s?" % (", ".join(command[:-1]), command[-1])
+                )
             elif command in bot.commands:
                 input = Input(conn, *out)
                 input.trigger = trigger
@@ -235,8 +262,8 @@ def main(conn, out):
                 dispatch(input, "command", func, args, autohelp=True)
 
         # REGEXES
-        for func, args in bot.plugs['regex']:
-            m = args['re'].search(inp.lastparam)
+        for func, args in bot.plugs["regex"]:
+            m = args["re"].search(inp.lastparam)
             if m:
                 input = Input(conn, *out)
                 input.inp = m
