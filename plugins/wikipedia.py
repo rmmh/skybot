@@ -105,12 +105,14 @@ def url_wrapper(instance, url):
     return "\x02{} -\x02 {}".format(title, output)
 
 
+@hook.command("ed")
 @hook.command
 def drama(inp):
     "drama <article> -- search an Encyclopedia Dramatica article"
     return command_wrapper("encyclopediadramatica", inp)
 
 
+@hook.command("w")
 @hook.command
 def wikipedia(inp):
     "wikipedia <article> -- search a wikipedia article"
