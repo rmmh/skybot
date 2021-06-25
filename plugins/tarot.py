@@ -22,9 +22,11 @@ def tarot(inp):
 
     return card["name"] + ": " + ", ".join(card["keywords"])
 
-
+@hook.command(autohelp=False)
 def fortune():
-    ".fortune -- returns one random card and it's fortune"
+    """
+    .fortune -- returns one random card and it's fortune
+    """
 
     try:
         cards = http.get_json("https://tarot-api.com/draw/1")
