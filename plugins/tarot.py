@@ -9,7 +9,6 @@ with hooks():
 
 from util import hook, http
 
-
 @hook.command
 def tarot(inp):
     ".tarot <cardname> -- finds a card by name"
@@ -18,7 +17,7 @@ def tarot(inp):
     try:
         card = http.get_json(f"https://tarot-api.com/find/{search}")
     except HTTPError:
-        return "the spirits are displeased."
+        return "The spirits are displeased."
 
     return card["name"] + ": " + ", ".join(card["keywords"])
 
@@ -31,7 +30,7 @@ def fortune(inp):
     try:
         cards = http.get_json("https://tarot-api.com/draw/1")
     except HTTPError:
-        return "the spirits are displeased."
+        return "The spirits are displeased."
 
     card = cards[0]
 
