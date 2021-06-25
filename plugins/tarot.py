@@ -23,7 +23,7 @@ def tarot(inp):
     return card["name"] + ": " + ", ".join(card["keywords"])
 
 @hook.command(autohelp=False)
-def fortune():
+def fortune(inp):
     """
     .fortune -- returns one random card and it's fortune
     """
