@@ -36,7 +36,3 @@ def fortune(inp):
 
     return card["name"] + ": " + ", ".join(card["keywords"])
 
-
-if __name__ == '__main__':
-    result = tarot("ten of swords")
-    print(result)
