@@ -1,7 +1,6 @@
 """
 🔮 Spooky fortunes and assistance for witches
 """
-import urllib
 from util import hook, http
 from urllib.error import HTTPError
 
