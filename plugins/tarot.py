@@ -12,7 +12,7 @@ def tarot(inp):
         card = http.get_json(
             "https://tarot-api.com/find/" + inp
         )
-    except http.HTTPError:
+    except HTTPError:
         return "the spirits are displeased."
 
 
@@ -24,7 +24,7 @@ def fortune():
 
     try:
         cards = http.get_json("https://tarot-api.com/draw/1")
-    except http.HTTPError:
+    except HTTPError:
         return "the spirits are displeased."
 
     card = cards[0]
