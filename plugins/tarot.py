@@ -9,9 +9,7 @@ def tarot(inp):
 
     try:
         card = http.get_json(
-            "https://tarot-api.com/find/{search}".format(
-                search=inp
-            )
+            "https://tarot-api.com/find/" + inp
         )
     except http.HTTPError:
         return "the spirits are displeased."
@@ -19,7 +17,7 @@ def tarot(inp):
 
     return card["name"] + ": " + ", ".join(card["keywords"])
 
-
+@hook.command
 def fortune():
     ".fortune -- returns one random card and it's fortune"
 
