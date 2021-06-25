@@ -2,6 +2,7 @@
 🔮 Spooky fortunes and assistance for witches
 """
 from util import hook, http
+from urllib.error import HTTPError
 
 @hook.command
 def tarot(inp):
