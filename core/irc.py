@@ -117,7 +117,7 @@ class crlf_tcp(object):
 
 class crlf_ssl_tcp(crlf_tcp):
 
-    "Handles ssl tcp connetions that consist of utf-8 lines ending with crlf"
+    "Handles ssl tcp connections that consist of utf-8 lines ending with crlf"
 
     def __init__(self, host, port, ignore_cert_errors, timeout=300):
         self.ignore_cert_errors = ignore_cert_errors

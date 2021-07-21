@@ -54,7 +54,7 @@ def main():
 
     while True:
         reload()  # these functions only do things
-        config()  # if changes have occured
+        config()  # if changes have occurred
 
         for conn in bot.conns.values():
             try:
