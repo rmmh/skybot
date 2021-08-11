@@ -90,6 +90,10 @@ def twitter(inp, api_key=None):
         text = "RT @%s %s" % (rt["user"]["screen_name"], rt_text)
     else:
         text = http.unescape(tweet["full_text"]).replace("\n", " ")
+        for url in tweet.get('entities', {}).get('urls', []):
+            new_text = text.replace(url['url'], url['expanded_url'])
+            if len(new_text) < 350:
+                text = new_text
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
