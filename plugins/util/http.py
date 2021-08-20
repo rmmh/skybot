@@ -72,6 +72,7 @@ def open(
     url,
     query_params=None,
     post_data=None,
+    json_data=None,
     get_method=None,
     cookies=False,
     oauth=False,
@@ -90,7 +91,13 @@ def open(
         post_data = urllib.parse.urlencode(post_data)
         post_data = post_data.encode("UTF-8")
 
+    if json_data and isinstance(json_data, dict):
+        post_data = json.dumps(json_data).encode("utf-8")
+
     request = urllib.request.Request(url, post_data)
+
+    if json_data:
+        request.add_header("Content-Type", "application/json")
 
     if get_method is not None:
         request.get_method = lambda: get_method
