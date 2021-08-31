@@ -94,6 +94,20 @@ def twitter(inp, api_key=None):
             new_text = text.replace(url['url'], url['expanded_url'])
             if len(new_text) < 350:
                 text = new_text
+        for url in tweet.get('extended_entities', tweet.get('entities', {})).get('media', []):
+            if url['type'] == 'video':
+                try:
+                    media_url = max(url['video_info']['variants'], key=lambda x: x.get('bitrate', 0))['url']
+                except KeyError:
+                    continue
+            else:
+                media_url = url['media_url_https']
+            if url['url'] in text:
+                new_text = text.replace(url['url'], media_url)
+            else:
+                new_text = text + ' ' + media_url
+            if len(new_text) < 400:
+                text = new_text
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
