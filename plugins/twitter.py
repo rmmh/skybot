@@ -95,7 +95,7 @@ def twitter(inp, api_key=None):
             if len(new_text) < 350:
                 text = new_text
         for url in tweet.get('extended_entities', tweet.get('entities', {})).get('media', []):
-            if url['type'] == 'video':
+            if url['type'] in ('video', 'animated_gif'):
                 try:
                     media_url = max(url['video_info']['variants'], key=lambda x: x.get('bitrate', 0))['url']
                 except KeyError:
