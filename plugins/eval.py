@@ -28,51 +28,79 @@ def piston(language, version, content, filename=None):
     result = http.get_json(api_url, json_data=payload, get_methods="POST")
 
     if result["run"]["stderr"] != "":
-        return f"Error: " + result["run"]["stderr"]
+        return "Error: " + result["run"]["stderr"]
 
     return result["run"]["output"].replace("\n", " ")
 
 
+@hook.command
+def lua(inp, nick=None):
+    return piston("lua", "5.4.2", inp, filename=nick)
+
+
+@hook.command("cl")
+def lisp(inp, nick=None):
+    return piston("lisp", "2.1.2", inp, filename=nick)
+
+
+@hook.command("elisp")
+@hook.command("el")
+def emacs(inp, nick=None):
+    return piston("emacs", "27.1.0", inp, filename=nick)
+
+
+@hook.command("clj")
+def clojure(inp, nick=None):
+    return piston("clojure", "1.10.3", inp, filename=nick)
+
+
+@hook.command("rs")
+def rust(inp, nick=None):
+    contents = "func main() {" + inp + "}";
+    return piston("rust", "1.50.0", contents, filename=nick)
+
+
 @hook.command("py")
 @hook.command("py3")
-def python(inp):
-    return piston("python", "3.9.4", inp)
+def python(inp, nick=None):
+    return piston("python", "3.10.0", inp, filename=nick)
 
 
 @hook.command("py2")
-def python2(inp):
-    return piston("python2", "2.7.18", inp)
+def python2(inp, nick=None):
+    return piston("python2", "2.7.18", inp, filename=nick)
 
 
 @hook.command("rb")
-def ruby(inp):
-    return piston("ruby", "3.0.1", inp)
+def ruby(inp, nick=None):
+    return piston("ruby", "3.0.1", inp, filename=nick)
 
 
 @hook.command("ts")
-def typescript(inp):
-    return piston("typescript", "4.2.3", inp)
+def typescript(inp, nick=None):
+    return piston("typescript", "4.2.3", inp, filename=nick)
 
 
 @hook.command("js")
 @hook.command("node")
-def javascript(inp):
-    return piston("javascript", "16.3.0", inp)
+def javascript(inp, nick=None):
+    return piston("javascript", "16.3.0", inp, filename=nick)
 
 
 @hook.command
-def perl(inp):
-    return piston("perl", "5.26.1", inp)
+def perl(inp, nick=None):
+    return piston("perl", "5.26.1", inp, filename=nick)
 
 
 @hook.command
-def php(inp):
-    return piston("php", "8.0.2", inp)
+def php(inp, nick=None):
+    contents = "<?php" + inp + "?>"
+    return piston("php", "8.0.2", contents, filename=nick)
 
 
 @hook.command
-def swift(inp):
-    return piston("swift", "5.3.3", inp)
+def swift(inp, nick=None):
+    return piston("swift", "5.3.3", inp, filename=nick)
 
 
 if __name__ == "__main__":
