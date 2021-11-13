@@ -32,6 +32,9 @@ def piston(language, version, content, filename=None):
 
     return result["run"]["output"].replace("\n", " ")
 
+@hook.command
+def cpp(inp, nick=None):
+    return piston("c++", "10.2.0", inp, filename=nick)
 
 @hook.command
 def lua(inp, nick=None):
