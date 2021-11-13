@@ -34,7 +34,39 @@ def piston(language, version, content, filename=None):
 
 @hook.command
 def cpp(inp, nick=None):
-    return piston("c++", "10.2.0", inp, filename=nick)
+    headers = ['algorithm', 'any', 'array', 'atomic', 'bit', 'bitset',
+               'cassert', 'ccomplex', 'cctype', 'cerrno', 'cfenv', 'cfloat',
+               'charconv', 'chrono', 'cinttypes', 'ciso646', 'climits',
+               'clocale', 'cmath', 'codecvt', 'complex', 'complex.h',
+               'condition_variable', 'csetjmp', 'csignal', 'cstdalign',
+               'cstdarg', 'cstdbool', 'cstddef', 'cstdint', 'cstdio',
+               'cstdlib', 'cstring', 'ctgmath', 'ctime', 'cuchar', 'cwchar',
+               'cwctype', 'cxxabi.h', 'deque', 'exception', 'execution',
+               'fenv.h', 'filesystem', 'forward_list', 'fstream',
+               'functional', 'future', 'initializer_list', 'iomanip', 'ios',
+               'iosfwd', 'iostream', 'istream', 'iterator', 'limits', 'list',
+               'locale', 'map', 'math.h', 'memory', 'memory_resource', 'mutex',
+               'new', 'numeric', 'optional', 'ostream', 'queue', 'random',
+               'ratio', 'regex', 'scoped_allocator', 'set', 'shared_mutex',
+               'sstream', 'stack', 'stdexcept', 'stdlib.h', 'streambuf',
+               'string', 'string_view', 'system_error', 'tgmath.h', 'thread',
+               'tuple', 'typeindex', 'typeinfo', 'type_traits',
+               'unordered_map', 'unordered_set', 'utility', 'valarray',
+               'variant', 'vector', 'version']
+    header_includes = "\n".join([f"#include <{x}>" for x in headers])
+    contents = f"""
+        {header_includes}
+        using namespace std;
+        using namespace std::chrono_literals;
+        using namespace std::complex_literals;
+        using namespace std::string_literals;
+        using namespace std::string_view_literals;
+        int main() {{
+            {inp};
+        }}
+    """
+    return piston("c++", "10.2.0", contents, filename=nick)
+
 
 @hook.command
 def lua(inp, nick=None):
