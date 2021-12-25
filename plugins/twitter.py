@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 
 import random
 import re
+from datetime import datetime
 from time import strptime, strftime
 from urllib.parse import quote
 
-from util import hook, http
+from util import hook, http, timesince
 
 
 @hook.api_key("twitter")
@@ -108,15 +109,25 @@ def twitter(inp, api_key=None):
                 new_text = text + ' ' + media_url
             if len(new_text) < 400:
                 text = new_text
+    
     screen_name = tweet["user"]["screen_name"]
+    real_name = tweet["user"]["name"]
     time = tweet["created_at"]
 
-    time = strftime("%Y-%m-%d %H:%M:%S", strptime(time, "%a %b %d %H:%M:%S +0000 %Y"))
+    dt_time = datetime.strptime(time, "%a %b %d %H:%M:%S +0000 %Y")
 
-    return "%s \x02%s\x02: %s" % (time, screen_name, text)
+    rel_time = timesince.timesince(dt_time)
+
+    #time = strftime("%Y-%m-%d %H:%M:%S", strptime(time, "%a %b %d %H:%M:%S +0000 %Y"))✓
+    if tweet["user"]["verified"] == True:
+        return "^ \x02@%s ✓\x02 (%s) %s (%s ago)" % (screen_name, real_name, text, rel_time)
+    else:
+        return "^ \x02@%s\x02 (%s) %s (%s ago)" % (screen_name, real_name, text, rel_time)
 
 
 @hook.api_key("twitter")
 @hook.regex(r"https?://(mobile\.)?twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(?P<id>\d+)")
-def show_tweet(match, api_key=None):
-    return twitter(match.group("id"), api_key)
+def show_tweet(match, say=None, api_key=None):
+    say(twitter(match.group("id"), api_key))
+    pass
+    #return twitter(match.group("id"), api_key)
