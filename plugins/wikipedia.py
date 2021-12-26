@@ -121,7 +121,7 @@ def drama(inp):
     return command_wrapper("encyclopediadramatica", inp)
 
 
-@hook.command("w")
+@hook.command("wiki")
 @hook.command
 def wikipedia(inp):
     "wikipedia <article> -- search a wikipedia article"

@@ -31,6 +31,7 @@ def get_current_weather_data(api_key, lat, long):
 
     return parsed_json
 
+
 def get_forecast_data(api_key, lat, long):
     """Get weather forecast data from openweathermap."""
     query = f"forecast?lat={lat}&lon={long}&appid={api_key}&units=imperial"
@@ -54,7 +55,7 @@ def mph_to_kph(mph):
 
 
 def format_forecast(u_time, conditions, temp, tzoffset):
-   # d_time = datetime.utcfromtimestamp(u_time).strftime('%Y-%m-%d %H:%M:%S')
+    """format forecast for output"""
     f_time = make_dayname(u_time, tzoffset)
     f_temp = format_temp(temp)
     f_forecast = "| \x02{}\x02 :: \x02{}\x02 - {} ".format(f_time, conditions, f_temp)
@@ -62,6 +63,7 @@ def format_forecast(u_time, conditions, temp, tzoffset):
     
 
 def format_temp(temp):
+    """format temp for forecast that is a bit more sane"""
     first_digit = str(round(temp))[0]
     end_digit = str(round(temp))[-1]
     if len(str(round(temp))) > 2:
@@ -75,17 +77,19 @@ def format_temp(temp):
     temp_string = "{} {}0s".format(temp_mod, first_digit)
     return temp_string
 
+
 def make_dayname(utcts, tzoffset):
-    # OWM gives timestamps in UTC, but the /weather endpoint provides a timezone
-    # offset in seconds. Use this data with pendulum to generate a human readable time.
+    """convert offset datetime to something readable"""
     ts = utcts + tzoffset
     print(ts)
     if pendulum:
         dt = pendulum.from_timestamp(ts)
-        return dt.format('dddd hA')  # Return strings like "Sunday 8PM"
-    return ts  # fallback
+        return dt.format('dddd hA')
+    return ts
     
+
 @hook.api_key("google", "openweathermap")
+@hook.command("w",autohelp=False)
 @hook.command(autohelp=False)
 def weather(inp, chan="", nick="", reply=None, db=None, api_key=None):
     """.weather <location> [dontsave] | @<nick> -- Get weather data."""
@@ -148,6 +152,7 @@ def weather(inp, chan="", nick="", reply=None, db=None, api_key=None):
     forecast_list = [forecast for forecast in forecast_data["list"][1::2]]
 
     forecast_string = ""
+
     for x in range(0,3):
         forecast_string += format_forecast(forecast_list[x]["dt"], forecast_list[x]["weather"][0]["main"], forecast_list[x]["main"]["temp"], tzoffset)
 

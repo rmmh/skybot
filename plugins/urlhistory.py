@@ -3,7 +3,7 @@ from past.utils import old_div
 import math
 import time
 
-from util import hook, urlnorm, timesince
+from util import hook, urlnorm, timesince, http
 
 
 expiration_period = 60 * 60 * 24  # 1 day
@@ -33,6 +33,14 @@ def get_history(db, chan, url):
         "chan=? and url=? order by time desc",
         (chan, url),
     ).fetchall()
+
+
+def get_last_url(db, chan):
+    return db.execute(
+        "select url, time from urlhistory where "
+        "chan=? order by time desc",
+        (chan,),
+    ).fetchone()
 
 
 def nicklist(nicks):
@@ -90,3 +98,11 @@ def urlinput(match, nick="", chan="", db=None, bot=None):
 
         if nick not in dict(history):
             return format_reply(history)
+
+
+@hook.command()
+def tinylast(inp, chan="", db=None, bot=None):
+    db_init(db)
+    last_url = get_last_url(db, chan)
+    tiny_url = http.get("https://tinyurl.com/api-create.php?url={}".format(last_url[0]))
+    return(tiny_url)
