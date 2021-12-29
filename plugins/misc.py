@@ -20,7 +20,7 @@ def get_version():
 
     shorthash = shorthash.decode("utf-8")
 
-    http.ua_skybot = "Skybot/r%d %s (http://github.com/rmmh/skybot)" % (
+    http.ua_skybot = "Skybot/r%d %s (http://github.com/nodebean/)" % (
         revnumber,
         shorthash,
     )
@@ -67,6 +67,6 @@ def onjoin(paraml, conn=None):
 def version(inp, notice=None):
     ident, rev = get_version()
     notice(
-        "\x01VERSION skybot %s r%d - http://github.com/rmmh/"
+        "\x01VERSION skybot %s r%d - http://github.com/nodebean/"
         "skybot/\x01" % (ident, rev)
     )

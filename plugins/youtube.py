@@ -41,7 +41,7 @@ def get_video_description(vid_id, api_key):
 
     out = (
         "\x02{title}\x02 - length \x02{duration}\x02 - "
-        "{likes}\u2191{dislikes}\u2193 - "
+        "{likes}\u2191 - "
         "\x02{views}\x02 views - "
         "\x02{snippet[channelTitle]}\x02 on \x02{published}\x02"
     ).format(

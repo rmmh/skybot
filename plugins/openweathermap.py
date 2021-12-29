@@ -81,7 +81,7 @@ def format_temp(temp):
 def make_dayname(utcts, tzoffset):
     """convert offset datetime to something readable"""
     ts = utcts + tzoffset
-    print(ts)
+
     if pendulum:
         dt = pendulum.from_timestamp(ts)
         return dt.format('dddd hA')
@@ -154,21 +154,35 @@ def weather(inp, chan="", nick="", reply=None, db=None, api_key=None):
     forecast_string = ""
 
     for x in range(0,3):
-        forecast_string += format_forecast(forecast_list[x]["dt"], forecast_list[x]["weather"][0]["main"], forecast_list[x]["main"]["temp"], tzoffset)
+        forecast_string += format_forecast(
+            forecast_list[x]["dt"], 
+            forecast_list[x]["weather"][0]["main"], 
+            forecast_list[x]["main"]["temp"], 
+            tzoffset
+        )
 
     info = {
         "city": current["name"],
         "country": current["sys"]["country"],
         "t_f": current['main']["temp"],
         "t_c": f_to_c(current['main']["temp"]),
-        "conditions": current["weather"][0]["main"],
+        "conditions": current["weather"][0]["description"],
         "humid": current["main"]["humidity"],
         "wind": "\x02Wind\x02: {mph:.1f}mph/{kph:.1f}kph".format(
-            mph=current["wind"]["speed"], kph=mph_to_kph(current["wind"]["speed"])
-        )
+            mph=current["wind"]["speed"], 
+            kph=mph_to_kph(current["wind"]["speed"])
+            ),
+        # "gust":"\x02 / \x02{mph:.1f}mph/{kph:.1f}kph".format(
+        #     mph=current["wind"]["gust"], 
+        #     kph=mph_to_kph(current["wind"]["gust"])
+        #     )
+    
     }
 
-    reply("(\x02{city}, {country}\x02) :: \x02{conditions}\x02 | \x02Temp\x02: {t_f:.1f}F/{t_c:.1f}C | \x02Humidity\x02: {humid}% | {wind} ".format(**info) + forecast_string)
+    reply("(\x02{city}, {country}\x02) :: \x02{conditions}\x02 | " \
+        "\x02Temp\x02: {t_f:.1f}F/{t_c:.1f}C | " \
+        "\x02Humidity\x02: {humid}% | " \
+        "{wind} ".format(**info) + forecast_string)
     
 
     if inp and not dontsave:
