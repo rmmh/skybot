@@ -105,6 +105,15 @@ def url_wrapper(instance, url):
     return "\x02{} -\x02 {}".format(title, output)
 
 
+def snarf_wrapper(url):
+    output, title = scrape_text(url)
+
+    if len(output) > OUTPUT_LIMIT:
+        output = output[:420] + "..."
+
+    return "^ {}".format(output)
+
+
 @hook.command("ed")
 @hook.command
 def drama(inp):
@@ -112,8 +121,15 @@ def drama(inp):
     return command_wrapper("encyclopediadramatica", inp)
 
 
-@hook.command("w")
+@hook.command("wiki")
 @hook.command
 def wikipedia(inp):
     "wikipedia <article> -- search a wikipedia article"
     return command_wrapper("wikipedia_en", inp)
+
+@hook.regex(r"(https?://en\.wikipedia\.org/wiki/[^ ]+)")
+def get_article(match, say=None):
+    try:
+        say(snarf_wrapper(match.group()))
+    except:
+        pass

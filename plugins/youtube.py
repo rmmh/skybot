@@ -41,7 +41,7 @@ def get_video_description(vid_id, api_key):
 
     out = (
         "\x02{title}\x02 - length \x02{duration}\x02 - "
-        "{likes}\u2191{dislikes}\u2193 - "
+        "{likes}\u2191 - "
         "\x02{views}\x02 views - "
         "\x02{snippet[channelTitle]}\x02 on \x02{published}\x02"
     ).format(
@@ -71,8 +71,9 @@ def group_int_digits(number, delimiter=" ", grouping=3):
 
 @hook.api_key("google")
 @hook.regex(*youtube_re)
-def youtube_url(match, api_key=None):
-    return get_video_description(match.group(1), api_key)
+def youtube_url(match, say=None, api_key=None):
+    say("^ %s" % (get_video_description(match.group(1), api_key)))
+    pass #return get_video_description(match.group(1), api_key)
 
 
 @hook.api_key("google")
