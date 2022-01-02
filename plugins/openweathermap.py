@@ -57,8 +57,10 @@ def mph_to_kph(mph):
 def format_forecast(u_time, conditions, temp, tzoffset):
     """format forecast for output"""
     f_time = make_dayname(u_time, tzoffset)
-    f_temp = format_temp(temp)
-    f_forecast = "| \x02{}\x02 :: \x02{}\x02 - {} ".format(f_time, conditions, f_temp)
+    # f_temp = format_temp(temp)
+    f_temp = "{}F/{}C".format(round(temp), round(f_to_c(temp)))
+    
+    f_forecast = "| \x02{}\x02 :: \x02{}\x02 : {} ".format(f_time, conditions, f_temp)
     return f_forecast 
     
 
