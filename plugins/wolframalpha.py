@@ -10,7 +10,7 @@ from util import hook, http
 @hook.api_key("wolframalpha")
 @hook.command("what")
 @hook.command
-def ask(inp, msg=None, nick=None, api_key=None):
+def ask(inp, say=None, nick=None, api_key=None):
     ".ask <query> -- ask wolfram a question, get an answer"
 
     if not inp:
@@ -24,7 +24,7 @@ def ask(inp, msg=None, nick=None, api_key=None):
     result = response.get("result")
 
     if not result:
-        return f"Sorry, I do not know how to answer that {nick}."
+        say(f"Sorry, I do not know how to answer that {nick}.")
 
     return result
 
