@@ -8,7 +8,7 @@ from util import hook, http
 
 
 youtube_re = (
-    r"(?:youtube.*?(?:v=|/v/)|youtu\.be/|yooouuutuuube.*?id=)" "([-_a-z0-9]+)",
+    r"(?:youtube.*?(?:v=|/v/|/shorts/)|youtu\.be/|yooouuutuuube.*?id=)" "([-_a-z0-9]+)",
     re.I,
 )
 
