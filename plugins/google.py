@@ -15,6 +15,13 @@ def api_get(query, key, is_image=None, num=1):
 
 
 @hook.api_key("google")
+@hook.command("can i get a picture of")
+@hook.command("can i get a photo of")
+@hook.command("can i get an image of")
+@hook.command("show me a picture of")
+@hook.command("show me a photo of")
+@hook.command("show me an image of")
+@hook.command("give me a print out of")
 @hook.command
 def gis(inp, api_key=None):
     """.gis <term> -- finds an image using google images (safesearch off)"""
