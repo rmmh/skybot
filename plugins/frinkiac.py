@@ -3,23 +3,28 @@ import random
 
 from util import hook, http
 
-FRINKIAC_SEARCH_URL = "https://frinkiac.com/api/search"
-FRINKIAC_CAPTIONS_URL = "https://frinkiac.com/api/caption"
-FRINKIAC_SITE_URL = "https://frinkiac.com/caption"
+MORBOTRON_URL = "https://morbotron.com"
+FRINKIAC_URL = "https://frinkiac.com"
+
+SEARCH_ENDPOINT = "/api/search"
+CAPTIONS_ENDPOINT = "/api/caption"
+LINK_URL = "/caption"
 
 
-def get_frames(query):
+def get_frames(site_root, query):
     try:
-        content = http.get_json(FRINKIAC_SEARCH_URL, q=query)
+        url = site_root + SEARCH_ENDPOINT
+        content = http.get_json(url, q=query)
     except IOError:
         return None
 
     return content
 
 
-def get_caption(episode, timestamp):
+def get_caption(site_root, episode, timestamp):
     try:
-        content = http.get_json(FRINKIAC_CAPTIONS_URL, e=episode, t=timestamp)
+        url = site_root + CAPTIONS_ENDPOINT
+        content = http.get_json(url, e=episode, t=timestamp)
     except IOError:
         return None
 
@@ -35,28 +40,25 @@ def find_mention(subtitles, query):
     return None
 
 
-@hook.command('simpsons')
-@hook.command()
-def frinkiac(inp):
-    """.frinkiac <query> -- Get a frame from The Simpsons."""
-    frames = get_frames(inp)
+def get_response(site_root, input):
+    frames = get_frames(site_root, input)
 
     if frames is None or len(frames) == 0:
         return 'no results'
 
-    frame = frames[random.randint(0, len(frames)-1)]
+    frame = frames[0]
 
     episode = frame['Episode']
     timestamp = frame['Timestamp']
 
-    caption = get_caption(episode, timestamp)
-    url = '{}/{}/{}'.format(FRINKIAC_SITE_URL, episode, timestamp)
+    caption = get_caption(site_root, episode, timestamp)
+    url = '{}/{}/{}'.format(site_root + LINK_URL, episode, timestamp)
 
     subtitles = caption['Subtitles']
     if len(subtitles) == 0:
         return '{} - {}'.format(episode, url)
 
-    subtitle = find_mention(subtitles, inp)
+    subtitle = find_mention(subtitles, input)
 
     if subtitle is None:
         subtitle = subtitles[random.randint(0, len(subtitles)-1)]
@@ -64,12 +66,30 @@ def frinkiac(inp):
     return '{} - {} {} '.format(subtitle['Content'], episode, url)
 
 
-@hook.regex(r"(?i)https://frinkiac\.com/(caption|img)/S(\d{2})E(\d{2})/(\d+)")
-def frinkiac_lookup(match):
-    season_episode = 'S{}E{}'.format(match.group(2), match.group(3))
-    timestamp = match.group(4)
+@hook.command('simpsons')
+@hook.command()
+def frinkiac(inp):
+    """.frinkiac <query> -- Get a frame from The Simpsons."""
+    return get_response(FRINKIAC_URL, inp)
 
-    caption = get_caption(season_episode, timestamp)
+
+@hook.command('futurama')
+@hook.command()
+def morbotron(inp):
+    """.morbotron <query> -- Get a frame from Futurama."""
+    return get_response(MORBOTRON_URL, inp)
+
+
+@hook.regex(r"(?i)https://(frinkiac|morbotron)\.com"
+            r"/(caption|img)/S(\d{2})E(\d{2})/(\d+)")
+def lookup(match):
+    site = match.group(1)
+
+    season_episode = 'S{}E{}'.format(match.group(3), match.group(4))
+    timestamp = match.group(5)
+
+    site_root = FRINKIAC_URL if site == 'frinkiac' else MORBOTRON_URL
+    caption = get_caption(site_root, season_episode, timestamp)
 
     episode = caption['Episode']
     title = episode['Title']
