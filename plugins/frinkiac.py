@@ -1,10 +1,10 @@
 from __future__ import unicode_literals
-import random
 
 from util import hook, http
 
 MORBOTRON_URL = "https://morbotron.com"
 FRINKIAC_URL = "https://frinkiac.com"
+MASTEROFALLSCIENCE_URL = "https://masterofallscience.com"
 
 SEARCH_ENDPOINT = "/api/search"
 CAPTIONS_ENDPOINT = "/api/caption"
@@ -68,15 +68,29 @@ def morbotron(inp):
     return get_response(MORBOTRON_URL, inp)
 
 
-@hook.regex(r"(?i)https://(frinkiac|morbotron)\.com"
+@hook.command('morty')
+@hook.command('rick')
+@hook.command()
+def rickandmorty(inp):
+    """.rickandmorty <query> -- Get a frame from Rick and Morty."""
+    return get_response(MASTEROFALLSCIENCE_URL, inp)
+
+
+@hook.regex(r"(?i)https://(frinkiac|morbotron|masterofallscience)\.com"
             r"/(caption|img)/S(\d{2})E(\d{2})/(\d+)")
 def lookup(match):
-    site = match.group(1)
+    domain = match.group(1)
 
     season_episode = 'S{}E{}'.format(match.group(3), match.group(4))
     timestamp = match.group(5)
 
-    site_root = FRINKIAC_URL if site == 'frinkiac' else MORBOTRON_URL
+    urls = {
+        'frinkiac': FRINKIAC_URL,
+        'morbotron': MORBOTRON_URL,
+        'masterofallscience': MASTEROFALLSCIENCE_URL
+    }
+
+    site_root = urls[domain]
     caption = get_caption(site_root, season_episode, timestamp)
 
     episode = caption['Episode']
