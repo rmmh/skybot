@@ -31,15 +31,6 @@ def get_caption(site_root, episode, timestamp):
     return content
 
 
-def find_mention(subtitles, query):
-    for subtitle in subtitles:
-        content = subtitle['Content'].lower()
-        if query.lower() in content:
-            return subtitle
-
-    return None
-
-
 def get_response(site_root, input):
     frames = get_frames(site_root, input)
 
@@ -58,12 +49,9 @@ def get_response(site_root, input):
     if len(subtitles) == 0:
         return '{} - {}'.format(episode, url)
 
-    subtitle = find_mention(subtitles, input)
+    subtitle = ' '.join(s['Content'] for s in subtitles)
 
-    if subtitle is None:
-        subtitle = subtitles[random.randint(0, len(subtitles)-1)]
-
-    return '{} - {} {} '.format(subtitle['Content'], episode, url)
+    return '{} - {} {} '.format(subtitle, episode, url)
 
 
 @hook.command('simpsons')
