@@ -94,6 +94,13 @@ def lookup(match):
     caption = get_caption(site_root, season_episode, timestamp)
 
     episode = caption['Episode']
+    episode_key = episode['Key']
     title = episode['Title']
 
-    return '{} - {}'.format(season_episode, title)
+    subtitles = caption['Subtitles']
+    if len(subtitles) == 0:
+        return '{} - {}'.format(episode_key, title)
+
+    subtitle = ' '.join(s['Content'] for s in subtitles)
+
+    return '{} - {}'.format(subtitle, episode_key)
