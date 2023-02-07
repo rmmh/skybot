@@ -28,8 +28,8 @@ def soundcloud_track(match):
     name = d.xpath('.//meta[@itemprop="name"]/@content')[0]
     plays = d.xpath('.//meta[@property="soundcloud:play_count"]/@content')[0]
     title = d.xpath('//meta[@property="og:title"]/@content')[0]
-    likes = int(d.xpath(
-        '//meta[@itemprop="interactionCount" and starts-with(@content, "UserLikes:")]/@content')[0].split(":")[1])
+    likes = d.xpath('//meta[@itemprop="interactionCount" '
+                    'and starts-with(@content, "UserLikes:")]/@content')[0].split(":")[1]
 
     out = (
         "\x02{title}\x02 by "
