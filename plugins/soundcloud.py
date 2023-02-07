@@ -18,22 +18,18 @@ def soundcloud_track(match):
     d = http.get_html(url)
 
     # iso 8601 fmt expected, e.g. PT01H53M22S
-    duration = d.find('.//meta[@itemprop="duration"]').get('content')
-    duration = duration.replace("PT", "").replace("00H", "").lower().strip('0')
+    duration = d.xpath('.//meta[@itemprop="duration"]/@content')[
+        0].replace("PT", "").replace("00H", "").lower().strip('0')
 
     # iso 8601 fmt expected, e.g. 2022-12-30T21:09:15Z
     published = d.find('.//time[@pubdate]').text[:10]
 
     title = d.find('.//a[@itemprop="url"]').text
-    name = d.find('.//meta[@itemprop="name"]').get('content')
-    plays = d.find('.//meta[@property="soundcloud:play_count"]').get('content')
-
-    interactions = d.findall('.//meta[@itemprop="interactionCount"]')
-    likes = 0
-    for i in interactions:
-        content = i.get("content", "")
-        if "UserLikes" in content:
-            likes = content.split(":")[1]
+    name = d.xpath('.//meta[@itemprop="name"]/@content')[0]
+    plays = d.xpath('.//meta[@property="soundcloud:play_count"]/@content')[0]
+    title = d.xpath('//meta[@property="og:title"]/@content')[0]
+    likes = int(d.xpath(
+        '//meta[@itemprop="interactionCount" and starts-with(@content, "UserLikes:")]/@content')[0].split(":")[1])
 
     out = (
         "\x02{title}\x02 by "
@@ -41,7 +37,7 @@ def soundcloud_track(match):
         "length \x02{duration}\x02 - "
         "{likes}\u2191 - "
         "\x02{plays}\x02 plays - "
-        "on \x02{published}\x02"
+        "posted on \x02{published}\x02"
     )
 
     output = out.format(title=title, duration=duration, likes=likes,
