@@ -18,9 +18,8 @@ def soundcloud_track(match):
     d = http.get_html(url)
 
     # iso 8601 fmt expected, e.g. PT01H53M22S
-    duration_str = d.find('.//meta[@itemprop="duration"]').get('content')
-    duration = duration_str.replace("PT", "").replace(
-        "00H", "").lower().strip('0')
+    duration = d.find('.//meta[@itemprop="duration"]').get('content')
+    duration = duration.replace("PT", "").replace("00H", "").lower().strip('0')
 
     # iso 8601 fmt expected, e.g. 2022-12-30T21:09:15Z
     published = d.find('.//time[@pubdate]').text[:10]
