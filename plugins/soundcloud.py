@@ -37,8 +37,8 @@ def soundcloud_track(match):
 
     out = (
         "\x02{title}\x02 by "
-        "\x02{name}\x02 -"
-        " length \x02{duration}\x02 - "
+        "\x02{name}\x02 - "
+        "length \x02{duration}\x02 - "
         "{likes}\u2191 - "
         "\x02{plays}\x02 plays - "
         "on \x02{published}\x02"
