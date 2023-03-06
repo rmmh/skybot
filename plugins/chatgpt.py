@@ -46,6 +46,6 @@ def chatgpt(inp, api_key=None, reply=None):
     print(result['usage'])
 
     if result['usage']['total_tokens'] > 2048:
-        prompt.pop(1)
+        prompt.pop(2)
 
     reply(msg['content'].replace('\n', '  '))
