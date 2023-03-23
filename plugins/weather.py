@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from util import hook, http
 
 GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
-DARKSKY_URL = "https://api.darksky.net/forecast/"
 OPENWEATHERMAP_URL = "https://api.openweathermap.org/data/3.0/onecall"
 
 def geocode_location(api_key, loc):
