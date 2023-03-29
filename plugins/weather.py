@@ -1,11 +1,10 @@
-"""Weather, thanks to openweathermap and google geocoding."""
+"""Weather, thanks to pirateweather and google geocoding."""
 from __future__ import unicode_literals
 
 from util import hook, http
 
 GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
-DARKSKY_URL = "https://api.darksky.net/forecast/"
-OPENWEATHERMAP_URL = "https://api.openweathermap.org/data/3.0/onecall"
+PIRATEWEATHER_URL = "https://api.pirateweather.net/forecast/"
 
 def geocode_location(api_key, loc):
     """Get a geocoded location from gooogle's geocoding api."""
@@ -18,9 +17,9 @@ def geocode_location(api_key, loc):
 
 
 def get_weather_data(api_key, lat, long):
-    """Get weather data from openweathermap."""
-    query = "?appid={api_key}&lat={lat}&lon={long}&units=imperial".format(api_key=api_key, lat=lat, long=long)
-    url = OPENWEATHERMAP_URL + query
+    """Get weather data from pirateweather."""
+    query = "{key}/{lat},{long}".format(key=api_key, lat=lat, long=long)
+    url = PIRATEWEATHER_URL + query
     try:
         parsed_json = http.get_json(url)
     except IOError:
@@ -39,11 +38,11 @@ def mph_to_kph(mph):
     return mph * 1.609
 
 
-@hook.api_key("google", "openweathermap")
+@hook.api_key("google", "pirateweather")
 @hook.command(autohelp=False)
 def weather(inp, chan="", nick="", reply=None, db=None, api_key=None):
     """.weather <location> [dontsave] | @<nick> -- Get weather data."""
-    if "google" not in api_key and "openweathermap" not in api_key:
+    if "google" not in api_key and "pirateweather" not in api_key:
         return None
 
     # this database is used by other plugins interested in user's locations,
@@ -89,34 +88,34 @@ def weather(inp, chan="", nick="", reply=None, db=None, api_key=None):
         lat = geo["lat"]
         lng = geo["lng"]
 
-    parsed_json = get_weather_data(api_key["openweathermap"], lat, lng)
-    current = parsed_json.get("current")
+    parsed_json = get_weather_data(api_key["pirateweather"], lat, lng)
+    current = parsed_json.get("currently")
 
     if not current:
         reply("Failed to get weather data for {}".format(inp))
         return
 
-    forecast = parsed_json["daily"][0]
+    forecast = parsed_json["daily"]["data"][0]
 
     info = {
         "city": addr,
-        "t_f": current["temp"],
-        "t_c": f_to_c(current["temp"]),
-        "h_f": forecast["temp"]["max"],
-        "h_c": f_to_c(forecast["temp"]["max"]),
-        "l_f": forecast["temp"]["min"],
-        "l_c": f_to_c(forecast["temp"]["min"]),
-        "weather": current["weather"][0]["description"],
-        "humid": current["humidity"],
+        "t_f": current["temperature"],
+        "t_c": f_to_c(current["temperature"]),
+        "h_f": forecast["temperatureHigh"],
+        "h_c": f_to_c(forecast["temperatureHigh"]),
+        "l_f": forecast["temperatureLow"],
+        "l_c": f_to_c(forecast["temperatureLow"]),
+        "weather": current["summary"],
+        "humid": int(current["humidity"] * 100),
         "wind": "Wind: {mph:.1f}mph/{kph:.1f}kph".format(
-            mph=current["wind_speed"], kph=mph_to_kph(current["wind_speed"])
+            mph=current["windSpeed"], kph=mph_to_kph(current["windSpeed"])
         ),
-        "forecast": parsed_json.get("hourly", [{}])[0].get("weather", "[{}]")[0].get("description", ""),
+        "forecast": parsed_json.get("hourly", {}).get("summary", ""),
     }
     reply(
         "{city}: {weather}, {t_f:.1f}F/{t_c:.1f}C"
         "(H:{h_f:.1f}F/{h_c:.1f}C L:{l_f:.1f}F/{l_c:.1f}C)"
-        ", Humidity: {humid}%, {wind}, Forecast for the next hour: \x02{forecast}\x02".format(**info)
+        ", Humidity: {humid}%, {wind} \x02{forecast}\x02".format(**info)
     )
 
     if inp and not dontsave:
