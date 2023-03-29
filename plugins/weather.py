@@ -3,8 +3,10 @@ from __future__ import unicode_literals
 
 from util import hook, http
 
+
 GEOCODING_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 PIRATEWEATHER_URL = "https://api.pirateweather.net/forecast/"
+
 
 def geocode_location(api_key, loc):
     """Get a geocoded location from gooogle's geocoding api."""
