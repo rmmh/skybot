@@ -8,51 +8,17 @@ from urllib.parse import quote
 from util import hook, http
 
 
-@hook.api_key("twitter")
 @hook.command
-def twitter(inp, api_key=None):
-    ".twitter <user>/<user> <n>/<id>/#<search>/#<search> <n> -- " "get <user>'s last/<n>th tweet/get tweet <id>/do <search>/get <n>th <search> result"
-
-    if not isinstance(api_key, dict) or any(
-        key not in api_key
-        for key in ("consumer", "consumer_secret", "access", "access_secret")
-    ):
-        return "error: api keys not set"
-
-    getting_id = False
-    doing_search = False
-    index_specified = False
+def twitter(inp):
+    ".twitter <id> -- get tweet <id>"
 
     if re.match(r"^\d+$", inp):
-        getting_id = True
-        request_url = "https://api.twitter.com/1.1/statuses/show.json?id=%s" % inp
+        request_url = "https://cdn.syndication.twimg.com/tweet-result?id=%s&lang=en" % inp
     else:
-        try:
-            inp, index = re.split("\s+", inp, 1)
-            index = int(index)
-            index_specified = True
-        except ValueError:
-            index = 0
-        if index < 0:
-            index = 0
-        if index >= 20:
-            return "error: only supports up to the 20th tweet"
-
-        if re.match(r"^#", inp):
-            doing_search = True
-            request_url = "https://api.twitter.com/1.1/search/tweets.json?q=%s" % quote(
-                inp
-            )
-        else:
-            request_url = (
-                "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=%s"
-                % inp
-            )
+        return 'error: can only get tweets by id'
 
     try:
-        tweet = http.get_json(
-            request_url, oauth=True, oauth_keys=api_key, tweet_mode="extended"
-        )
+        tweet = http.get_json(request_url)
     except http.HTTPError as e:
         errors = {
             400: "bad request (ratelimited?)",
@@ -65,43 +31,34 @@ def twitter(inp, api_key=None):
             410: "twitter shut off api v1.",
         }
         if e.code == 404:
-            return "error: invalid " + ["username", "tweet id"][getting_id]
+            return "error: invalid tweet id"
         if e.code in errors:
             return "error: " + errors[e.code]
         return "error: unknown %s" % e.code
 
-    if doing_search:
-        try:
-            tweet = tweet["statuses"]
-            if not index_specified:
-                index = random.randint(0, len(tweet) - 1)
-        except KeyError:
-            return "error: no results"
-
-    if not getting_id:
-        try:
-            tweet = tweet[index]
-        except IndexError:
-            return "error: not that many tweets found"
+    print(tweet)
 
     if "retweeted_status" in tweet:
         rt = tweet["retweeted_status"]
         rt_text = http.unescape(rt["full_text"]).replace("\n", " ")
         text = "RT @%s %s" % (rt["user"]["screen_name"], rt_text)
     else:
-        text = http.unescape(tweet["full_text"]).replace("\n", " ")
+        text = http.unescape(tweet["text"]).replace("\n", " ")
         for url in tweet.get('entities', {}).get('urls', []):
             new_text = text.replace(url['url'], url['expanded_url'])
             if len(new_text) < 350:
                 text = new_text
-        for url in tweet.get('extended_entities', tweet.get('entities', {})).get('media', []):
-            if url['type'] in ('video', 'animated_gif'):
+        for url in tweet.get('mediaDetails', []) + tweet.get('entities', {}).get('media', []):
+            print(url)
+            if url.get('type') in ('video', 'animated_gif'):
                 try:
                     media_url = max(url['video_info']['variants'], key=lambda x: x.get('bitrate', 0))['url']
                 except KeyError:
                     continue
-            else:
+            elif 'media_url_https' in url:
                 media_url = url['media_url_https']
+            else:
+                continue
             if url['url'] in text:
                 new_text = text.replace(url['url'], media_url)
             else:
@@ -111,12 +68,11 @@ def twitter(inp, api_key=None):
     screen_name = tweet["user"]["screen_name"]
     time = tweet["created_at"]
 
-    time = strftime("%Y-%m-%d %H:%M:%S", strptime(time, "%a %b %d %H:%M:%S +0000 %Y"))
+    time = strftime("%Y-%m-%d %H:%M:%S", strptime(time, "%Y-%m-%dT%H:%M:%S.000Z"))
 
     return "%s \x02%s\x02: %s" % (time, screen_name, text)
 
 
-@hook.api_key("twitter")
 @hook.regex(r"https?://(mobile\.)?twitter.com/(#!/)?([_0-9a-zA-Z]+)/status/(?P<id>\d+)")
-def show_tweet(match, api_key=None):
-    return twitter(match.group("id"), api_key)
+def show_tweet(match):
+    return twitter(match.group("id"))
