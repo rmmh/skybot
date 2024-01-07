@@ -111,6 +111,6 @@ def twitter(inp):
     return "%s \x02%s\x02: %s" % (time, screen_name, text)
 
 
-@hook.regex(r"https?://((mobile\.)?twitter|x).com/(#!/)?([_0-9a-zA-Z]+)/status/(?P<id>\d+)")
+@hook.regex(r"https?://((mobile\.|fx|vx)?twitter|x).com/(#!/)?([_0-9a-zA-Z]+)/status/(?P<id>\d+)")
 def show_tweet(match):
     return twitter(match.group("id"))
