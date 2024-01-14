@@ -6,7 +6,7 @@ from util import hook, http
 
 
 def dotnetpad(lang, code):
-    "Posts a provided snippet of code in a provided langugage to dotnetpad.net"
+    "Posts a provided snippet of code in a provided language to dotnetpad.net"
 
     code = code.encode("utf8")
     params = {"language": lang, "code": code}
