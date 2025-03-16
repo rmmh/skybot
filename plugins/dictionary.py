@@ -2,6 +2,7 @@
 import re
 
 from util import hook, http
+from urllib.error import HTTPError
 
 
 @hook.command("u")
@@ -92,15 +93,14 @@ def define(inp):
 def etymology(inp):
     ".e/.etymology <word> -- Retrieves the etymology of chosen word"
 
-    h = http.get_html("https://www.etymonline.com/search", q=inp)
-
     try:
-        etym = h.xpath('//main/section/div[1]//div[contains(@class,"border")]')[0].text_content()
+        h = http.get_html(f'https://www.etymonline.com/word/{http.quote_plus(inp)}')
+        etym = h.xpath('//section[starts-with(@class, "word__defination")]/..')[0].text_content() # yes really 'defination'
     except IndexError:
         return "No etymology found for " + inp
+    except HTTPError:
+        return "No etymology found for " + inp
 
-    etym = re.sub(r'(?<=\S)(\([^)]*\))(?=\S)', r' \1 ', etym, count=1)
-    etym = re.sub(r'\s*Related entries.*', '', etym)
     etym = etym.replace(inp, "\x02%s\x02" % inp)
 
     if len(etym) > 400:
