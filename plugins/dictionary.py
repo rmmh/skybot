@@ -95,7 +95,7 @@ def etymology(inp):
 
     try:
         h = http.get_html(f'https://www.etymonline.com/word/{http.quote_plus(inp)}')
-        etym = h.xpath('//section[starts-with(@class, "word__defination")]/..')[0].text_content() # yes really 'defination'
+        etym = h.xpath('//section[starts-with(@class, "prose-lg")]/section')[0].text_content()
     except IndexError:
         return "No etymology found for " + inp
     except HTTPError:
