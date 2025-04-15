@@ -7,7 +7,7 @@ import time
 import _thread
 import queue
 
-from ssl import wrap_socket, CERT_NONE, CERT_REQUIRED, SSLError
+from ssl import CERT_NONE, CERT_REQUIRED, SSLError, create_default_context, Purpose
 
 
 DEFAULT_NAME = "skybot"
@@ -124,11 +124,10 @@ class crlf_ssl_tcp(crlf_tcp):
         crlf_tcp.__init__(self, host, port, timeout)
 
     def create_socket(self):
-        return wrap_socket(
-            crlf_tcp.create_socket(self),
-            server_side=False,
-            cert_reqs=CERT_NONE if self.ignore_cert_errors else CERT_REQUIRED,
-        )
+        context = create_default_context(Purpose.SERVER_AUTH)
+        context.verify_mode = CERT_NONE if self.ignore_cert_errors else CERT_REQUIRED
+
+        return context.wrap_socket(crlf_tcp.create_socket(self), server_hostname=self.host)
 
     def recv_from_socket(self, nbytes):
         return self.socket.read(nbytes)
