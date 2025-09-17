@@ -19,7 +19,7 @@ def ask(inp, say=None, trigger=None, nick=None, api_key=None):
     if trigger in ["who", "what", "where", "when", "why"]:
         inp = f"{trigger} {inp}"
 
-    base_url = "http://api.wolframalpha.com/v1/conversation.jsp"
+    base_url = "https://api.wolframalpha.com/v1/conversation.jsp"
     query = urllib.parse.quote_plus(inp)
     url = f"{base_url}?appid={api_key}&i={query}"
 
@@ -38,7 +38,7 @@ def ask(inp, say=None, trigger=None, nick=None, api_key=None):
 def wolframalpha(inp, api_key=None):
     ".wa/.wolframalpha <query> -- computes <query> using Wolfram Alpha"
 
-    url = "http://api.wolframalpha.com/v2/query?format=plaintext"
+    url = "https://api.wolframalpha.com/v2/query?format=plaintext"
 
     result = http.get_xml(url, input=inp, appid=api_key)
 
