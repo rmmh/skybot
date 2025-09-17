@@ -1,5 +1,4 @@
 # IMDb lookup plugin by Ghetto Wizard (2011).
-from __future__ import unicode_literals
 
 from util import hook, http
 

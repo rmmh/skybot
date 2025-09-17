@@ -2,7 +2,6 @@
 log.py: written by Scaevolus 2009
 """
 
-from __future__ import print_function, unicode_literals
 
 from builtins import str
 import os

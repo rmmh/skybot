@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, unicode_literals
 from builtins import range, object
 from past.utils import old_div
 import math

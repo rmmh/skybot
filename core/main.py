@@ -1,12 +1,7 @@
-from __future__ import print_function
-from builtins import str
-from builtins import range
-from builtins import object
 import re
 import _thread
 import traceback
 from queue import Queue
-from future.builtins import str
 
 _thread.stack_size(1024 * 512)  # reduce vm size
 
@@ -118,8 +113,7 @@ def do_sieve(sieve, bot, input, func, type, args):
         return None
 
 
-class Handler(object):
-
+class Handler:
     """Runs plugins in their own threads (ensures order)"""
 
     def __init__(self, func):

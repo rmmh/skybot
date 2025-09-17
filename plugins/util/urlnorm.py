@@ -21,12 +21,7 @@ inspired by:
   Mark Nottingham, http://www.mnot.net/python/urlnorm.py
 """
 
-from builtins import str
-from builtins import object
-
 __license__ = "Python"
-
-from future.builtins import str
 
 import re
 import unicodedata
@@ -38,7 +33,7 @@ default_port = {
 }
 
 
-class Normalizer(object):
+class Normalizer:
     def __init__(self, regex, normalize_func):
         self.regex = regex
         self.normalize = normalize_func

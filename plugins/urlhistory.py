@@ -1,4 +1,3 @@
-from __future__ import division, unicode_literals
 from past.utils import old_div
 import math
 import time

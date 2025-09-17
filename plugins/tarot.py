@@ -1,11 +1,9 @@
 """
 🔮 Spooky fortunes and assistance for witches
 """
-from future.standard_library import hooks
 
-with hooks():
-    from urllib.error import HTTPError
-    from urllib.parse import quote
+from urllib.error import HTTPError
+from urllib.parse import quote
 
 from util import hook, http
 

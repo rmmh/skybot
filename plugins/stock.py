@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import division, unicode_literals, print_function
 from past.utils import old_div
 import re
 

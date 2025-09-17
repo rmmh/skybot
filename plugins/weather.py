@@ -1,5 +1,4 @@
 """Weather, thanks to pirateweather and google geocoding."""
-from __future__ import unicode_literals
 
 from util import hook, http
 

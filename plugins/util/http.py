@@ -1,5 +1,3 @@
-from future.standard_library import hooks
-
 from lxml import etree, html
 
 import binascii
@@ -14,23 +12,19 @@ from hashlib import sha1
 from builtins import str
 from builtins import range
 
-try:
-    from http.cookiejar import CookieJar
-except:
-    from future.backports.http.cookiejar import CookieJar
+from http.cookiejar import CookieJar
 
-with hooks():
-    import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.parse, urllib.error
 
-    from urllib.parse import (
-        quote,
-        unquote,
-        urlencode,
-        urlparse,
-        parse_qsl,
-        quote_plus as _quote_plus,
-    )
-    from urllib.error import HTTPError, URLError
+from urllib.parse import (
+    quote,
+    unquote,
+    urlencode,
+    urlparse,
+    parse_qsl,
+    quote_plus as _quote_plus,
+)
+from urllib.error import HTTPError, URLError
 
 
 ua_skybot = "Skybot/1.0 https://github.com/rmmh/skybot"
