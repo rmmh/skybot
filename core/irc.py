@@ -123,10 +123,11 @@ class crlf_ssl_tcp(crlf_tcp):
         crlf_tcp.__init__(self, host, port, timeout)
 
     def create_socket(self):
-        return create_default_context().wrap_socket(
+        ctx = create_default_context()
+        ctx.verify_mode = CERT_NONE if self.ignore_cert_errors else CERT_REQUIRED
+        return ctx.wrap_socket(
             crlf_tcp.create_socket(self),
             server_side=False,
-            cert_reqs=CERT_NONE if self.ignore_cert_errors else CERT_REQUIRED,
         )
 
     def recv_from_socket(self, nbytes):
