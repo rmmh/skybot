@@ -120,6 +120,7 @@ class crlf_ssl_tcp(crlf_tcp):
 
     def __init__(self, host, port, ignore_cert_errors, timeout=300):
         self.ignore_cert_errors = ignore_cert_errors
+        self.host = host
         crlf_tcp.__init__(self, host, port, timeout)
 
     def create_socket(self):
@@ -128,6 +129,7 @@ class crlf_ssl_tcp(crlf_tcp):
         return ctx.wrap_socket(
             crlf_tcp.create_socket(self),
             server_side=False,
+            server_hostname=self.host,
         )
 
     def recv_from_socket(self, nbytes):
