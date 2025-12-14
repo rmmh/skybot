@@ -18,10 +18,12 @@ def _now():
     return int(time.time())
 
 
-def _format_timestamp(ts=None):
-    if ts is None:
-        ts = time.time()
-    return time.strftime("%m/%d %H:%M:%S", time.localtime(ts))
+def _normalize_repo(repo):
+    repo = (repo or "").strip()
+    m = _repo_re.match(repo)
+    if not m:
+        raise ValueError("expected owner/repo")
+    return f"{m.group('owner')}/{m.group('repo')}"
 
 
 def _db_init(db):
@@ -31,31 +33,23 @@ def _db_init(db):
         "repo text not null, "
         "last_id text, "
         "etag text, "
-        "primary key(chan, repo)"
+        "primary key (chan, repo)"
         ")"
     )
     db.commit()
 
 
-def _normalize_repo(repo):
-    repo = (repo or "").strip()
-    m = _repo_re.match(repo)
-    if not m:
-        raise ValueError("expected owner/repo")
-    return f"{m.group('owner')}/{m.group('repo')}"
-
-
 def _github_token(bot):
     # Optional: set in config.json under api_keys.github
     bot_keys = (bot.config or {}).get("api_keys", {})
-    token = bot_keys.get("github")
-    return token
+    return bot_keys.get("github")
 
 
 def _github_headers(token=None, etag=None):
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "skybot-github-plugin",
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
@@ -297,11 +291,6 @@ def format_event(event, token=None):
     return f"[{_repo_short(repo)}] {actor} did {etype or 'something'} in {repo}"
 
 
-def _announce_prefix(bot):
-    cfg = (bot.config or {}).get("github", {})
-    return cfg.get("announce_prefix", "%GitHub")
-
-
 def _poll_interval(bot):
     cfg = (bot.config or {}).get("github", {})
     try:
@@ -336,9 +325,9 @@ def _post(conn, chan, text):
 
 
 def _post_announcement(conn, chan, bot, text):
-    prefix = _announce_prefix(bot)
-    msg = f"[{_format_timestamp()}] <{prefix}> {text}"
-    _post(conn, chan, msg)
+    # No embedded timestamps and no pseudo-nick prefix.
+    _post(conn, chan, text)
+
 
 def ghevent(inp, bot=None):
     """Show the latest public event for a repo.
