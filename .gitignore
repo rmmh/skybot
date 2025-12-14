@@ -12,3 +12,4 @@ pep8.py
 web
 .vscode/
 .idea/
+.env
