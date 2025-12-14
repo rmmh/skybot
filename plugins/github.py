@@ -297,6 +297,9 @@ def _poll_interval(bot):
         interval = int(cfg.get("poll_interval", DEFAULT_POLL_INTERVAL))
     except Exception:
         interval = DEFAULT_POLL_INTERVAL
+    # GitHub unauthenticated API rate limit is very low; avoid hammering.
+    if not _github_token(bot):
+        interval = max(interval, 300)
     return max(15, interval)
 
 
@@ -338,7 +341,17 @@ def ghevent(inp, bot=None):
     repo = _normalize_repo(inp)
     token = _github_token(bot)
 
-    events, _ = _fetch_repo_events(repo, token=token)
+    try:
+        events, _ = _fetch_repo_events(repo, token=token)
+    except http.HTTPError as e:
+        code = getattr(e, "code", None)
+        if code == 403:
+            return "GitHub API rate limit exceeded (add api_keys.github token or increase github.poll_interval)"
+        if code is not None:
+            return f"GitHub API error (HTTP {code})"
+        return "GitHub API error"
+    except Exception:
+        return "GitHub API error"
     if not events:
         return "no recent events"
     return format_event(events[0], token=token)
