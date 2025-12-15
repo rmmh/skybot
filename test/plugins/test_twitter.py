@@ -7,14 +7,6 @@ from helpers import get_fixture_file_data, execute_skybot_regex
 from twitter import show_tweet, twitter
 
 
-FAKE_API_KEY = {
-    "consumer": "AAAAAAAAAAAAAAAAAAAAAAAAA",
-    "consumer_secret": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "access": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "access_secret": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-}
-
-
 class TestTwitter(TestCase):
     @patch("util.http.get_json")
     def test_tweet_regex(self, mock_http_get):
@@ -36,7 +28,7 @@ class TestTwitter(TestCase):
         )
 
         url = "https://twitter.com/jk_rowling/status/1014260007771295745"
-        actual = execute_skybot_regex(show_tweet, url, api_key=FAKE_API_KEY)
+        actual = execute_skybot_regex(show_tweet, url)
 
         assert expected == actual
 
@@ -54,7 +46,7 @@ class TestTwitter(TestCase):
             u"from us."
         )
 
-        actual = twitter("loneblockbuster", api_key=FAKE_API_KEY)
+        actual = twitter("loneblockbuster")
 
         assert expected == actual
 
@@ -70,7 +62,7 @@ class TestTwitter(TestCase):
             u"front if we knew we'd get so many death threats."
         )
 
-        actual = twitter("loneblockbuster 10", api_key=FAKE_API_KEY)
+        actual = twitter("loneblockbuster 10")
 
         assert expected == actual
 
@@ -95,7 +87,7 @@ class TestTwitter(TestCase):
             u"https://t.co/xAJVRhjOww"
         )
 
-        actual = twitter("#NYC", api_key=FAKE_API_KEY)
+        actual = twitter("#NYC")
 
         assert expected == actual
 
@@ -114,6 +106,6 @@ class TestTwitter(TestCase):
             u"https://t.co/bq9i0FZN89"
         )
 
-        actual = twitter("#NYC 10", api_key=FAKE_API_KEY)
+        actual = twitter("#NYC 10")
 
         assert expected == actual
