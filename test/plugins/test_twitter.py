@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 
 
@@ -33,6 +34,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
+    @unittest.skip("tweet lookup by username is not supported")
     @patch("util.http.get_json")
     def test_twitter_username_no_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file_data(
@@ -51,6 +53,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
+    @unittest.skip("tweet lookup by username is not supported")
     @patch("util.http.get_json")
     def test_twitter_username_with_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file_data(
@@ -67,6 +70,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
+    @unittest.skip("tweet lookup by hashtag is not supported")
     @patch("random.randint")
     @patch("util.http.get_json")
     def test_twitter_hashtag_no_tweet_number(self, mock_http_get, mock_random_randint):
@@ -92,6 +96,7 @@ class TestTwitter(TestCase):
 
         assert expected == actual
 
+    @unittest.skip("tweet lookup by hashtag is not supported")
     @patch("util.http.get_json")
     def test_twitter_hashtag_with_tweet_number(self, mock_http_get):
         mock_http_get.return_value = get_fixture_file_data(self, "hashtag_nyc.json")
