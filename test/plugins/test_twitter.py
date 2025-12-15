@@ -24,7 +24,8 @@ class TestTwitter(TestCase):
             u"hahahahahahahahahahahahahahahahahahahahaha"
             u"hahahahahahahahahahahahahahahahahahahahaha"
             u"hahahahahahahahahahahahahahahahahahahahaha"
-            u"haha https://t.co/gbionAPK9Z"
+            u"haha "
+            u"https://x.com/realDonaldTrump/status/1014257237945176071"
         )
 
         url = "https://twitter.com/jk_rowling/status/1014260007771295745"
