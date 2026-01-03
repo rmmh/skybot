@@ -263,3 +263,7 @@ def main(conn, out):
                 input.inp = m
 
                 dispatch(input, "regex", func, args)
+        
+        # TIMERS
+        for func, args in bot.plugs['timer']:
+            dispatch(input, "timer", func, args)
