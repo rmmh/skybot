@@ -139,7 +139,7 @@ class Handler:
 
             try:
                 run(self.func, input)
-            except:
+            except Exception:
                 traceback.print_exc()
 
     def stop(self):

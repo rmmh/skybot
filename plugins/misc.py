@@ -10,7 +10,7 @@ socket.setdefaulttimeout(10)  # global setting
 def get_version():
     try:
         stdout = subprocess.check_output(["git", "log", "--format=%h"])
-    except:
+    except Exception:
         revnumber = 0
         shorthash = "????"
     else:
