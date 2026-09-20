@@ -3,65 +3,91 @@ TV information, written by Lurchington 2010
 modified by rmmh 2010, 2013
 """
 
-from builtins import map
 import datetime
 
 from util import hook, http, timesince
 
 
-base_url = "http://thetvdb.com/api/"
-api_key = "469B73127CA0C411"
+base_url = "https://api4.thetvdb.com/v4"
+_tokens = {}
 
 
-def get_episodes_for_series(seriesname):
-    res = {"error": None, "ended": False, "episodes": None, "name": None}
-    # http://thetvdb.com/wiki/index.php/API:GetSeries
-    try:
-        query = http.get_xml(base_url + "GetSeries.php", seriesname=seriesname)
-    except http.URLError:
-        res["error"] = "error contacting thetvdb.com"
-        return res
+def get_token(api_key):
+    """Exchange a v4 API key for a token."""
+    if api_key in _tokens:
+        return _tokens[api_key]
 
-    series_id = query.xpath("//seriesid/text()")
+    response = http.get_json(base_url + "/login", json_data={"apikey": api_key})
+    token = response["data"]["token"]
+    _tokens[api_key] = token
+    return token
 
-    if not series_id:
-        res["error"] = "unknown tv series (using www.thetvdb.com)"
-        return res
 
-    series_id = series_id[0]
-
-    try:
-        series = http.get_xml(
-            base_url + "%s/series/%s/all/en.xml" % (api_key, series_id)
+def api_get(path, api_key, **params):
+    def request(token):
+        return http.get_json(
+            base_url + path,
+            headers={"Authorization": "Bearer " + token},
+            **params
         )
-    except http.URLError:
+
+    token = get_token(api_key)
+    try:
+        return request(token)
+    except http.HTTPError as error:
+        if error.code != 401:
+            raise
+
+    # Tokens are valid for one month. If the cached token expires while the
+    # bot is running, authenticate again and retry the request once.
+    _tokens.pop(api_key, None)
+    return request(get_token(api_key))
+
+
+def get_episodes_for_series(seriesname, api_key):
+    res = {"error": None, "ended": False, "episodes": None, "name": None}
+    try:
+        matches = api_get(
+            "/search", api_key, query=seriesname, type="series", limit=1
+        ).get("data", [])
+        if not matches:
+            res["error"] = "unknown tv series (using www.thetvdb.com)"
+            return res
+
+        series_id = matches[0].get("tvdb_id") or matches[0]["id"]
+        series = api_get(
+            "/series/%s/extended" % series_id,
+            api_key,
+            meta="episodes",
+            short="true",
+        )
+        series = series["data"]
+    except (http.URLError, KeyError, TypeError):
         res["error"] = "error contacting thetvdb.com"
         return res
 
-    series_name = series.xpath("//SeriesName/text()")[0]
-
-    if series.xpath("//Status/text()")[0] == "Ended":
-        res["ended"] = True
-
-    res["episodes"] = series.xpath("//Episode")
-    res["name"] = series_name
+    status = series.get("status") or {}
+    status_name = status.get("name") if isinstance(status, dict) else status
+    res["name"] = series.get("name") or matches[0].get("name")
+    res["ended"] = status_name == "Ended"
+    res["episodes"] = sorted(
+        series.get("episodes") or [], key=lambda episode: episode.get("aired") or ""
+    )
     return res
 
 
 def get_episode_info(episode):
-    episode_air_date = episode.findtext("FirstAired")
+    episode_air_date = episode.get("aired")
+    season_number = episode.get("seasonNumber")
+    episode_number = episode.get("number")
+    episode_name = episode.get("name")
 
     try:
-        airdate = datetime.date(*list(map(int, episode_air_date.split("-"))))
+        airdate = datetime.datetime.strptime(episode_air_date, "%Y-%m-%d").date()
+        episode_num = "S%02dE%02d" % (int(season_number), int(episode_number))
     except (ValueError, TypeError):
         return None
 
-    episode_num = "S%02dE%02d" % (
-        int(episode.findtext("SeasonNumber")),
-        int(episode.findtext("EpisodeNumber")),
-    )
-
-    episode_name = episode.findtext("EpisodeName")
     # in the event of an unannounced episode title, users either leave the
     # field out (None) or fill it with TBA
     if episode_name == "TBA":
@@ -75,9 +101,10 @@ def get_episode_info(episode):
 
 @hook.command
 @hook.command("tv")
-def tv_next(inp):
+@hook.api_key("tvdb")
+def tv_next(inp, api_key=None):
     ".tv_next <series> -- get the next episode of <series>"
-    episodes = get_episodes_for_series(inp)
+    episodes = get_episodes_for_series(inp, api_key)
 
     if episodes["error"]:
         return episodes["error"]
@@ -130,9 +157,10 @@ def tv_next(inp):
 
 @hook.command
 @hook.command("tv_prev")
-def tv_last(inp):
+@hook.api_key("tvdb")
+def tv_last(inp, api_key=None):
     ".tv_last <series> -- gets the most recently aired episode of <series>"
-    episodes = get_episodes_for_series(inp)
+    episodes = get_episodes_for_series(inp, api_key)
 
     if episodes["error"]:
         return episodes["error"]
