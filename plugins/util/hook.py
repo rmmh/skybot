@@ -1,5 +1,6 @@
 import inspect
 import re
+import time
 
 
 def _hook_add(func, add, name=""):
@@ -92,6 +93,35 @@ def api_key(*keys):
 
     return annotate
 
+class Timer():
+    def __init__(self,func,cycle):
+        self.func = func
+        self.func_name = func.func_name
+        self.__name__ = func.__name__
+        self.func_code = func.func_code
+        self._args = ['bot']
+        self.cycle = cycle
+    
+    def __call__(self,inp,**kwargs):
+        while True:
+            self.func(inp,**kwargs)
+            time.sleep(self.cycle)
+
+def timer(timer, **kwargs):
+    args = kwargs
+
+    def timer_wrapper(func):
+        func = Timer(func,timer)
+        args['name'] = func.func_name
+        args['timer'] = timer
+        singlethread(func)
+        _hook_add(func, ['timer', (func, args)], 'timer')
+        return func
+
+    if isinstance(timer,type(0)):
+        return timer_wrapper
+    else:
+        raise ValueError("timer decorators require a time to cyclically run.")
 
 def regex(regex, flags=0, **kwargs):
     args = kwargs
